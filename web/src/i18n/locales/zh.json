@@ -7336,6 +7336,7 @@
     "Zhipu": "智谱",
     "Zhipu GLM": "智谱GLM",
     "Zhipu V4": "智谱 V4",
-    "Zoom": "缩放"
+    "Zoom": "缩放",
+    "Works with Claude Code and Codex CLI through one OpenAI-compatible endpoint.": "支持 Claude Code 与 Codex CLI，通过一个兼容 OpenAI 的端点接入。"
   }
 }

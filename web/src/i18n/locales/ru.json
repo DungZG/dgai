@@ -7336,6 +7336,7 @@
     "Zhipu": "Zhipu",
     "Zhipu GLM": "Zhipu GLM",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom"
+    "Zoom": "Zoom",
+    "Works with Claude Code and Codex CLI through one OpenAI-compatible endpoint.": "Работает с Claude Code и Codex CLI через одну конечную точку, совместимую с OpenAI."
   }
 }
