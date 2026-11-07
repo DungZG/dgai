@@ -147,21 +147,36 @@ Lỗi trả về theo cấu trúc:
 
 export const DOC_MODELS = `## Model đang mở bán
 
-| Model | Ngữ cảnh | Vào /1M token | Ra /1M token | Dùng cho |
-| --- | --- | --- | --- | --- |
-| \`deepseek-v4.1-flash\` | 1.0M | $0.08 | $0.28 | Viết code, phân tích, agent, xử lý tài liệu dài |
-| \`deepseek-v4.1-flash-1017\` | 1.0M | $0.08 | $0.28 | Cùng model, định tuyến nhà cung cấp khác — độ trễ thấp hơn |
+### Tính theo token
 
-Hai mã trên là cùng một model, khác nhà cung cấp phía sau. Nếu một mã chậm
-hoặc lỗi, đổi sang mã còn lại.
+| Model | Ngữ cảnh | Vào /1M | Ra /1M | Cache /1M | Dùng cho |
+| --- | --- | --- | --- | --- | --- |
+| \`deepseek-v4.1-flash\` | 1.0M | $0.08 | $0.28 | $0.004 | Viết code, agent, tài liệu dài |
+| \`deepseek-v4.1-flash-1017\` | 1.0M | $0.08 | $0.28 | $0.032 | Cùng model, provider khác |
+| \`claude-opus-5-5\` | 200K | $0.30 | $1.50 | $0.15 | Suy luận sâu, refactor lớn |
+| \`gpt-6.1-sol\` | 400K | $0.15 | $0.90 | $0.015 | Code, phân tích |
+| \`cx/gpt-6-luna\` | 400K | $0.03 | $0.06 | $0.0225 | Tác vụ nhanh, giá rẻ |
 
-## Giá và cách tính
+### Tính theo request
+
+Model tính giá cố định mỗi lần gọi, không phụ thuộc số token.
+
+| Model | Giá / request | Ghi chú |
+| --- | --- | --- |
+| \`claude-opus-4-8\` | $0.008 | Rẻ nhất, hợp batch nhỏ |
+| \`claude-opus-5.5\` | $0.02 | Opus thế hệ mới |
+| \`claude-fable-5.1-req\` | $0.02 | Fable 5.1 |
+
+Với model tính theo request, prompt càng dài càng lợi — giá không đổi.
+
+## Giá và cách tính## Giá và cách tính
 
 Giá tính theo lượng token thực tế của từng request:
 
 \`\`\`
-chi phí = (token_vào / 1.000.000 × $0.08)
-        + (token_ra  / 1.000.000 × $0.28)
+chi phí = (token_vào_mới / 1.000.000 × giá_vào)
+        + (token_đã_cache / 1.000.000 × giá_cache)
+        + (token_ra / 1.000.000 × giá_ra)
 \`\`\`
 
 Ví dụ: một request dùng 12.000 token vào và 3.000 token ra:

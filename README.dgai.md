@@ -63,6 +63,22 @@ Encrypt khi `DGAI_SITE_ADDRESS` trỏ đúng tên miền và bản ghi DNS đã 
 | `TRUSTED_PROXIES` | Dải IP của reverse proxy để lấy đúng IP khách |
 | `STREAMING_TIMEOUT` | Giây không có dữ liệu thì cắt stream (mặc định 120) |
 
+## Model đang bán
+
+| Model | Cách tính | Vào /1M | Ra /1M | Cache /1M |
+| --- | --- | --- | --- | --- |
+| `deepseek-v4.1-flash` | token | $0.08 | $0.28 | $0.004 |
+| `deepseek-v4.1-flash-1017` | token | $0.08 | $0.28 | $0.032 |
+| `claude-opus-5-5` | token | $0.30 | $1.50 | $0.15 |
+| `gpt-6.1-sol` | token | $0.15 | $0.90 | $0.015 |
+| `cx/gpt-6-luna` | token | $0.03 | $0.06 | $0.0225 |
+| `claude-opus-4-8` | request | $0.008/lần | — | — |
+| `claude-opus-5.5` | request | $0.02/lần | — | — |
+| `claude-fable-5.1-req` | request | $0.02/lần | — | — |
+
+Model tính theo request khai báo ở `ModelPrice` (USD mỗi lần gọi), model tính
+theo token khai báo ở `ModelRatio` + `CompletionRatio` + `CacheRatio`.
+
 ## Cấu hình nhà cung cấp
 
 Vào **Kênh → Thêm kênh**:
