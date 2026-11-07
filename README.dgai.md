@@ -72,6 +72,8 @@ Encrypt khi `DGAI_SITE_ADDRESS` trỏ đúng tên miền và bản ghi DNS đã 
 | `claude-opus-5-5` | token | $0.30 | $1.50 | $0.15 |
 | `gpt-6.1-sol` | token | $0.15 | $0.90 | $0.015 |
 | `cx/gpt-6-luna` | token | $0.03 | $0.06 | $0.0225 |
+| `slow/agy/gemini-3.8-flash-medium` | request | $0.002/lần | — | — |
+| `cnb/deepseek-pro-v4` | request | $0.003/lần | — | — |
 | `claude-opus-4-8` | request | $0.008/lần | — | — |
 | `claude-opus-5.5` | request | $0.02/lần | — | — |
 | `claude-fable-5.1-req` | request | $0.02/lần | — | — |

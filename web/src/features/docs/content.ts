@@ -163,7 +163,9 @@ Model tính giá cố định mỗi lần gọi, không phụ thuộc số token
 
 | Model | Giá / request | Ghi chú |
 | --- | --- | --- |
-| \`claude-opus-4-8\` | $0.008 | Rẻ nhất, hợp batch nhỏ |
+| \`slow/agy/gemini-3.8-flash-medium\` | $0.002 | Gemini 3.8 Flash, rẻ nhất |
+| \`cnb/deepseek-pro-v4\` | $0.003 | DeepSeek Pro V4 |
+| \`claude-opus-4-8\` | $0.008 | Opus 4.8 |
 | \`claude-opus-5.5\` | $0.02 | Opus thế hệ mới |
 | \`claude-fable-5.1-req\` | $0.02 | Fable 5.1 |
 
