@@ -95,6 +95,24 @@ Ví dụ bán $0.08 vào / $0.28 ra cho một model:
 
 Nguyên tắc: `giá bán ≥ giá vốn × 1.1` và `giá bán ≤ giá chính thức × 0.8`.
 
+## Cache prompt
+
+Upstream tự cache phần đầu prompt lặp lại (system prompt, tài liệu, lịch sử hội
+thoại). dgai tính phần đã cache với `CacheRatio` thấp hơn nhiều so với token mới.
+
+| Model | CacheRatio | Giá token cache /1M |
+| --- | --- | --- |
+| `deepseek-v4.1-flash` | 0.05 | $0.004 |
+| `deepseek-v4.1-flash-1017` | 0.4 | $0.032 |
+
+Đặt `CacheRatio` ở **Cài đặt hệ thống → Nhóm & Giá model**. Giá trị phải phản
+ánh giá vốn cache của upstream (`cached_input_price` trong `/v1/models`), nếu
+không sẽ bán lỗ phần cache.
+
+Rule `channel_affinity_setting` giữ request của cùng người dùng trên một channel
+trong 1 giờ (`dgai deepseek sticky`), để cache upstream không bị nguội do đổi
+nhà cung cấp giữa các lượt.
+
 ## Nạp tiền
 
 | Kênh | Trạng thái |

@@ -175,6 +175,39 @@ tổng                        = $0.0018
 Hạn mức được trừ trước khi gọi upstream rồi hoàn lại phần chênh lệch sau khi
 có \`usage\` thật, nên bạn không bị tính thừa.
 
+## Cache prompt — giảm tới 88% chi phí
+
+Nhà cung cấp upstream tự cache phần đầu của prompt (system prompt, tài liệu dài,
+lịch sử hội thoại). Phần được cache chỉ bị tính **5% giá vào** thay vì 100%.
+
+| Loại token | Giá /1M | Ghi chú |
+| --- | --- | --- |
+| Token vào mới | $0.08 | Chưa từng xuất hiện trong cache |
+| Token vào **đã cache** | **$0.004** | Trùng với request trước đó |
+| Token ra | $0.28 | Luôn tính đủ |
+
+Ví dụ với prompt 1.592 token, trong đó 1.536 token đã cache:
+
+\`\`\`
+không cache:  1.592 × $0.08/1M + 16 × $0.28/1M  = $0.000132
+có cache:       56 × $0.08/1M + 1.536 × $0.004/1M + 16 × $0.28/1M = $0.000015
+tiết kiệm: 88%
+\`\`\`
+
+### Cách tận dụng
+
+1. **Đặt phần cố định lên đầu prompt** — system prompt, hướng dẫn, tài liệu tham
+   khảo. Phần này lặp lại giữa các request nên được cache.
+2. **Giữ nguyên phần đầu giữa các lượt** — chỉ thêm tin nhắn mới vào cuối. Sửa
+   nội dung phía trước làm cache mất hiệu lực.
+3. **Gọi liên tiếp trong thời gian ngắn** — cache upstream có thời hạn (thường
+   vài phút đến vài giờ tùy nhà cung cấp).
+4. **Dùng cùng một model và cùng API key** — dgai giữ request của bạn trên cùng
+   một channel trong 1 giờ, nên cache không bị nguội do đổi nhà cung cấp.
+
+Phần tiết kiệm được phản ánh ngay trong số dư: nhật ký ghi \`cache_tokens\` và
+\`cache_ratio\` cho từng request.
+
 ## Bảng giá so sánh
 
 | | dgai | Giá chính thức DeepSeek |

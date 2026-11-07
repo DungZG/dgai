@@ -47,3 +47,7 @@ go.work.sum
 
 # dgai local secrets
 .env.dgai
+
+# local test credentials
+.sk
+.tok
