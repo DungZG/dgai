@@ -1,0 +1,103 @@
+# dgai — production stack built from local source (rebranded new-api).
+#
+#   cd web && bun install --frozen-lockfile && bun run build
+#   docker compose -f docker-compose.dgai.yml --env-file .env.dgai up -d --build
+#
+# The frontend is prebuilt on the host and embedded via //go:embed, so no
+# external frontend server is required.
+
+services:
+  dgai:
+    build:
+      context: .
+      dockerfile: Dockerfile.dgai
+    image: dgai/gateway:local
+    container_name: dgai
+    restart: always
+    command: --log-dir /app/logs
+    volumes:
+      - dgai_data:/data
+      - dgai_logs:/app/logs
+    environment:
+      - SQL_DSN=postgresql://dgai:${DGAI_DB_PASSWORD:?set DGAI_DB_PASSWORD}@postgres:5432/dgai
+      - REDIS_CONN_STRING=redis://:${DGAI_REDIS_PASSWORD:?set DGAI_REDIS_PASSWORD}@redis:6379
+      - SESSION_SECRET=${DGAI_SESSION_SECRET:?set DGAI_SESSION_SECRET}
+      - SESSION_COOKIE_SECURE=true
+      - SESSION_COOKIE_TRUSTED_URL=${DGAI_PUBLIC_URL:?set DGAI_PUBLIC_URL}
+      - TRUSTED_PROXIES=172.16.0.0/12
+      - TZ=Asia/Ho_Chi_Minh
+      - BATCH_UPDATE_ENABLED=true
+      - ERROR_LOG_ENABLED=true
+      - STREAMING_TIMEOUT=300
+      - NODE_NAME=dgai-node-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - dgai-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: dgai-redis
+    restart: always
+    command: ["redis-server", "--requirepass", "${DGAI_REDIS_PASSWORD:?set DGAI_REDIS_PASSWORD}"]
+    volumes:
+      - dgai_redis_data:/data
+    networks:
+      - dgai-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: dgai-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: dgai
+      POSTGRES_PASSWORD: ${DGAI_DB_PASSWORD:?set DGAI_DB_PASSWORD}
+      POSTGRES_DB: dgai
+    volumes:
+      - dgai_pg_data:/var/lib/postgresql/data
+    networks:
+      - dgai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dgai -d dgai"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: dgai-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DGAI_SITE_ADDRESS=${DGAI_SITE_ADDRESS:-localhost}
+    volumes:
+      - ./Caddyfile.dgai:/etc/caddy/Caddyfile:ro
+      - dgai_caddy_data:/data
+      - dgai_caddy_config:/config
+    depends_on:
+      dgai:
+        condition: service_started
+    networks:
+      - dgai-network
+
+volumes:
+  dgai_data:
+  dgai_logs:
+  dgai_pg_data:
+  dgai_redis_data:
+  dgai_caddy_data:
+  dgai_caddy_config:
+
+networks:
+  dgai-network:
+    driver: bridge

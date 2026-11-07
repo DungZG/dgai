@@ -1,0 +1,25 @@
+# dgai reverse proxy.
+#
+# Local/self-signed: `tls internal` issues a certificate from Caddy's local CA.
+# For a real domain, replace the site address with the domain and delete the
+# `tls internal` line so Caddy obtains a Let's Encrypt certificate automatically.
+
+{$DGAI_SITE_ADDRESS:localhost} {
+	tls internal
+
+	encode zstd gzip
+
+	reverse_proxy dgai:3000 {
+		flush_interval -1
+		transport http {
+			read_timeout 0
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
