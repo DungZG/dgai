@@ -120,6 +120,11 @@ export interface WaffoPayMethod {
  * Topup configuration information
  */
 export interface TopupInfo {
+  /** VietQR bank transfer is enabled */
+  enable_vietqr_topup?: boolean
+  vietqr_bank_code?: string
+  vietqr_bank_account?: string
+  vietqr_account_name?: string
   /** Whether online topup is enabled */
   enable_online_topup: boolean
   /** Whether Stripe topup is enabled */
@@ -179,6 +184,25 @@ export interface RedemptionRequest {
 /**
  * Payment request parameters
  */
+/**
+ * VietQR transfer details returned when a top-up order is created.
+ */
+export interface VietQRPaymentDetails {
+  trade_no: string
+  amount: number
+  pay_money: number
+  memo: string
+  vnd_amount: number
+  vnd_rate: number
+  qr_image_url: string
+  bank_code: string
+  bank_account: string
+  account_name: string
+  expires_at: number
+}
+
+export type VietQRPaymentResponse = ApiResponse<VietQRPaymentDetails>
+
 export interface PaymentRequest {
   /** Topup amount */
   amount: number

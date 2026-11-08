@@ -97,7 +97,29 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	if isVietQRTopUpEnabled() {
+		hasVietQR := false
+		for _, method := range payMethods {
+			if method["type"] == model.PaymentMethodVietQR {
+				hasVietQR = true
+				break
+			}
+		}
+		if !hasVietQR {
+			payMethods = append(payMethods, map[string]string{
+				"name":      "VietQR",
+				"type":      model.PaymentMethodVietQR,
+				"color":     "#ED4A3C",
+				"min_topup": strconv.Itoa(setting.VietQRMinTopUp),
+			})
+		}
+	}
+
 	data := gin.H{
+		"enable_vietqr_topup":              isVietQRTopUpEnabled(),
+		"vietqr_bank_code":                 setting.VietQRBankCode,
+		"vietqr_bank_account":              setting.VietQRBankAccount,
+		"vietqr_account_name":              setting.VietQRAccountName,
 		"enable_online_topup":              isEpayTopUpEnabled(),
 		"enable_stripe_topup":              isStripeTopUpEnabled(),
 		"enable_creem_topup":               isCreemTopUpEnabled(),

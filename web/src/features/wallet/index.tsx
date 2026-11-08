@@ -30,6 +30,7 @@ import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
 import { RechargeFormCard } from './components/recharge-form-card'
+import { VietQRDialog } from './components/dialogs/vietqr-dialog'
 import { SubscriptionPlansCard } from './components/subscription-plans-card'
 import { WalletStatsCard } from './components/wallet-stats-card'
 import { DEFAULT_DISCOUNT_RATE, PAYMENT_TYPES } from './constants'
@@ -42,6 +43,7 @@ import {
   useWaffoPayment,
   useWaffoPancakePayment,
 } from './hooks'
+import { requestVietQRPayment } from './api'
 import {
   getDefaultPaymentType,
   getMinTopupAmount,
@@ -53,6 +55,7 @@ import type {
   PresetAmount,
   CreemProduct,
   WaffoPayMethod,
+  VietQRPaymentDetails,
 } from './types'
 
 interface WalletProps {
@@ -79,6 +82,9 @@ export function Wallet(props: WalletProps) {
   const [selectedCreemProduct, setSelectedCreemProduct] =
     useState<CreemProduct | null>(null)
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(true)
+  const [vietqrDialogOpen, setVietqrDialogOpen] = useState(false)
+  const [vietqrDetails, setVietqrDetails] = useState<VietQRPaymentDetails | null>(null)
+  const [vietqrLoading, setVietqrLoading] = useState(false)
 
   const { status } = useStatus()
   const { currency } = useSystemConfig()
@@ -193,6 +199,26 @@ export function Wallet(props: WalletProps) {
   // Handle payment confirmation
   const handlePaymentConfirm = async () => {
     if (!selectedPaymentMethod) return
+
+    if (selectedPaymentMethod.type === PAYMENT_TYPES.VIETQR) {
+      setVietqrLoading(true)
+      setVietqrDialogOpen(true)
+      try {
+        const response = await requestVietQRPayment({
+          amount: Math.floor(topupAmount),
+          payment_method: PAYMENT_TYPES.VIETQR,
+        })
+        if (response.success && response.data) {
+          setVietqrDetails(response.data)
+          setConfirmDialogOpen(false)
+        } else {
+          setVietqrDialogOpen(false)
+        }
+      } finally {
+        setVietqrLoading(false)
+      }
+      return
+    }
 
     const success = await dispatchSelectedPayment(
       selectedPaymentMethod,
@@ -384,6 +410,13 @@ export function Wallet(props: WalletProps) {
         onConfirm={handleCreemConfirm}
         product={selectedCreemProduct}
         processing={creemProcessing}
+      />
+
+      <VietQRDialog
+        open={vietqrDialogOpen}
+        onOpenChange={setVietqrDialogOpen}
+        details={vietqrDetails}
+        loading={vietqrLoading}
       />
     </>
   )

@@ -127,6 +127,19 @@ func InitOptionMap() {
 	common.OptionMap["WaffoPancakeUnitPrice"] = strconv.FormatFloat(setting.WaffoPancakeUnitPrice, 'f', -1, 64)
 	common.OptionMap["WaffoPancakeMinTopUp"] = strconv.Itoa(setting.WaffoPancakeMinTopUp)
 	common.OptionMap["WaffoPancakeStoreID"] = setting.WaffoPancakeStoreID
+	common.OptionMap["VietQREnabled"] = strconv.FormatBool(setting.VietQREnabled)
+	common.OptionMap["VietQRBankCode"] = setting.VietQRBankCode
+	common.OptionMap["VietQRBankAccount"] = setting.VietQRBankAccount
+	common.OptionMap["VietQRAccountName"] = setting.VietQRAccountName
+	common.OptionMap["VietQRUsername"] = setting.VietQRUsername
+	common.OptionMap["VietQRPassword"] = setting.VietQRPassword
+	common.OptionMap["VietQRSecretKey"] = setting.VietQRSecretKey
+	common.OptionMap["VietQRSandbox"] = strconv.FormatBool(setting.VietQRSandbox)
+	common.OptionMap["VietQRSyncUsername"] = setting.VietQRSyncUsername
+	common.OptionMap["VietQRSyncPassword"] = setting.VietQRSyncPassword
+	common.OptionMap["VietQRSyncSecretKey"] = setting.VietQRSyncSecretKey
+	common.OptionMap["VietQRVNDRate"] = strconv.FormatFloat(setting.VietQRVNDRate, 'f', -1, 64)
+	common.OptionMap["VietQRMinTopUp"] = strconv.Itoa(setting.VietQRMinTopUp)
 	common.OptionMap["WaffoPancakeProductID"] = setting.WaffoPancakeProductID
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
@@ -551,6 +564,32 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.StripeMinTopUp, _ = strconv.Atoi(value)
 	case "StripePromotionCodesEnabled":
 		setting.StripePromotionCodesEnabled = value == "true"
+	case "VietQREnabled":
+		setting.VietQREnabled = value == "true"
+	case "VietQRBankCode":
+		setting.VietQRBankCode = value
+	case "VietQRBankAccount":
+		setting.VietQRBankAccount = value
+	case "VietQRAccountName":
+		setting.VietQRAccountName = value
+	case "VietQRUsername":
+		setting.VietQRUsername = value
+	case "VietQRPassword":
+		setting.VietQRPassword = value
+	case "VietQRSecretKey":
+		setting.VietQRSecretKey = value
+	case "VietQRSandbox":
+		setting.VietQRSandbox = value == "true"
+	case "VietQRSyncUsername":
+		setting.VietQRSyncUsername = value
+	case "VietQRSyncPassword":
+		setting.VietQRSyncPassword = value
+	case "VietQRSyncSecretKey":
+		setting.VietQRSyncSecretKey = value
+	case "VietQRVNDRate":
+		setting.VietQRVNDRate, _ = strconv.ParseFloat(value, 64)
+	case "VietQRMinTopUp":
+		setting.VietQRMinTopUp, _ = strconv.Atoi(value)
 	case "CreemApiKey":
 		setting.CreemApiKey = value
 	case "CreemProducts":

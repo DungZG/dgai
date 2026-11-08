@@ -20,6 +20,7 @@ import { api } from '@/lib/api'
 
 import type {
   RedemptionRequest,
+  VietQRPaymentResponse,
   PaymentRequest,
   AmountRequest,
   AffiliateTransferRequest,
@@ -119,6 +120,18 @@ export async function requestPayment(
     ...res.data,
     url: res.data.url || (res as unknown as { url?: string }).url,
   }
+}
+
+/**
+ * Create a VietQR top-up order and return the QR image + transfer memo.
+ */
+export async function requestVietQRPayment(
+  request: PaymentRequest
+): Promise<VietQRPaymentResponse> {
+  const res = await api.post('/api/user/vietqr/pay', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
 }
 
 /**
