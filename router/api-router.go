@@ -88,8 +88,12 @@ func SetApiRouter(router *gin.Engine) {
 			//userRoute.POST("/tokenlog", middleware.CriticalRateLimit(), controller.TokenLog)
 			userRoute.POST("/epay/notify", anonymousRequestBodyLimit, controller.EpayNotify)
 			userRoute.GET("/epay/notify", controller.EpayNotify)
-			userRoute.POST("/vietqr/token_generate", anonymousRequestBodyLimit, controller.VietQRTokenGenerate)
-			userRoute.POST("/vietqr/transaction-sync", anonymousRequestBodyLimit, controller.VietQRTransactionSync)
+			// The VietQR merchant portal takes a base URL and a base path, then
+			// appends /api/token_generate and /bank/api/transaction-sync itself.
+			// Both spellings are served: the flat /vqr base (path "vqr") and the
+			// namespaced /api/user/vietqr base.
+			userRoute.POST("/vietqr/api/token_generate", anonymousRequestBodyLimit, controller.VietQRTokenGenerate)
+			userRoute.POST("/vietqr/bank/api/transaction-sync", anonymousRequestBodyLimit, controller.VietQRTransactionSync)
 			userRoute.GET("/groups", controller.GetUserGroups)
 
 			selfRoute := userRoute.Group("/")

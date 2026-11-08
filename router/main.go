@@ -13,6 +13,7 @@ import (
 )
 
 func SetRouter(router *gin.Engine, assets WebAssets) {
+	SetVietQRRouter(router)
 	SetApiRouter(router)
 	SetDashboardRouter(router)
 	SetRelayRouter(router)
