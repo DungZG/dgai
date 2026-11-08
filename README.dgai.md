@@ -142,6 +142,38 @@ nhà cung cấp giữa các lượt.
 Mức nạp tối thiểu và các mức có sẵn đặt ở `MinTopUp` và
 `payment_setting.amount_options`.
 
+## VietQR (chuyển khoản ngân hàng)
+
+Bật ở **Cài đặt → Billing & Payment → VietQR**. Tài khoản nhận tiền hiện tại:
+**Techcombank · 0395185726**.
+
+| Cài đặt | Ý nghĩa |
+| --- | --- |
+| `VietQREnabled` | Bật phương thức thanh toán |
+| `VietQRBankCode` / `VietQRBankAccount` | `TCB` / `0395185726` |
+| `VietQRAccountName` | Tên chủ tài khoản (không dấu), hiện trên QR |
+| `VietQRVNDRate` | Tỷ giá USD→VND dùng để quy đổi số tiền trên QR |
+| `VietQRMinTopUp` | Mức nạp tối thiểu |
+
+Luồng: khách chọn VietQR → backend tạo đơn `pending` + trả ảnh QR (img.vietqr.io)
+với số tiền VND và nội dung `DGAI<userId><mã>` → khách quét và chuyển khoản.
+
+### Đối soát tự động
+
+Hai endpoint cho VietQR Callback API:
+
+| Endpoint | Việc |
+| --- | --- |
+| `POST /api/user/vietqr/token_generate` | Basic auth → bearer HMAC 5 phút |
+| `POST /api/user/vietqr/transaction-sync` | Nhận biến động số dư, cộng hạn mức |
+
+Cấu hình `VietQRSyncUsername/Password/SecretKey` rồi khai báo URL này với VietQR.
+Nếu chưa có hợp đồng merchant, để trống — quản trị viên xác nhận tay bằng
+`POST /api/user/topup/complete` với `trade_no` của đơn.
+
+Đối soát an toàn: replay cùng giao dịch không cộng hai lần; chuyển thiếu tiền bị
+từ chối (`AMOUNT_MISMATCH`); giao dịch ghi nợ (D) bị bỏ qua.
+
 ## Tài liệu trong ứng dụng
 
 Trang `/docs` phục vụ tài liệu riêng của dgai (nội dung ở
