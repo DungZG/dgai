@@ -111,5 +111,6 @@ export type ApiKeysDialogType =
   | 'create'
   | 'update'
   | 'delete'
+  | 'client-setup'
   | 'batch-delete'
   | 'cc-switch'

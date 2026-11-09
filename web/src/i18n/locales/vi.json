@@ -7337,6 +7337,14 @@
     "Zhipu GLM": "Zhipu GLM",
     "Zhipu V4": "Zhipu V4",
     "Zoom": "Zoom",
-    "Works with Claude Code and Codex CLI through one OpenAI-compatible endpoint.": "Hoạt động với Claude Code và Codex CLI qua một endpoint tương thích OpenAI."
+    "Works with Claude Code and Codex CLI through one OpenAI-compatible endpoint.": "Hoạt động với Claude Code và Codex CLI qua một endpoint tương thích OpenAI.",
+    "Codex reads this file at ~/.codex/config.toml": "Codex đọc file này tại ~/.codex/config.toml",
+    "Connect Claude Code / Codex": "Kết nối Claude Code / Codex",
+    "Optional": "Không bắt buộc",
+    "Haiku model": "Model Haiku",
+    "Opus model": "Model Opus",
+    "Sonnet model": "Model Sonnet",
+    "Pick a client, choose the models it should use, then copy the configuration.": "Chọn client, chọn model tương ứng rồi copy cấu hình.",
+    "Connect a CLI": "Kết nối CLI"
   }
 }

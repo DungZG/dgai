@@ -7337,6 +7337,14 @@
     "Zhipu GLM": "智譜GLM",
     "Zhipu V4": "智譜 V4",
     "Zoom": "縮放",
-    "Works with Claude Code and Codex CLI through one OpenAI-compatible endpoint.": "支援 Claude Code 與 Codex CLI，透過一個相容 OpenAI 的端點接入。"
+    "Works with Claude Code and Codex CLI through one OpenAI-compatible endpoint.": "支援 Claude Code 與 Codex CLI，透過一個相容 OpenAI 的端點接入。",
+    "Codex reads this file at ~/.codex/config.toml": "Codex 讀取此檔案：~/.codex/config.toml",
+    "Connect Claude Code / Codex": "連接 Claude Code / Codex",
+    "Optional": "選填",
+    "Haiku model": "Haiku 模型",
+    "Opus model": "Opus 模型",
+    "Sonnet model": "Sonnet 模型",
+    "Pick a client, choose the models it should use, then copy the configuration.": "選擇用戶端與對應模型，然後複製設定。",
+    "Connect a CLI": "連接 CLI"
   }
 }
