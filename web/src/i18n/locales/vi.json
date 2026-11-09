@@ -7346,6 +7346,7 @@
     "Sonnet model": "Model Sonnet",
     "Pick a client, choose the models it should use, then copy the configuration.": "Chọn client, chọn model tương ứng rồi copy cấu hình.",
     "Connect a CLI": "Kết nối CLI",
-    "Download config file": "Tải file cấu hình"
+    "Download config file": "Tải file cấu hình",
+    "Select a model to generate the configuration.": "Chọn model để sinh cấu hình."
   }
 }

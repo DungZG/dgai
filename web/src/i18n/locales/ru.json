@@ -7346,6 +7346,7 @@
     "Sonnet model": "Модель Sonnet",
     "Pick a client, choose the models it should use, then copy the configuration.": "Выберите клиент и модели, затем скопируйте конфигурацию.",
     "Connect a CLI": "Подключить CLI",
-    "Download config file": "Скачать файл конфигурации"
+    "Download config file": "Скачать файл конфигурации",
+    "Select a model to generate the configuration.": "Выберите модель, чтобы создать конфигурацию."
   }
 }

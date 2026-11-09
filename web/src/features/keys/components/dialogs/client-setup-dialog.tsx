@@ -180,11 +180,17 @@ export function ClientSetupDialog(props: Props) {
         </div>
       )}
 
-      <div className='space-y-3'>
-        {snippets.map((snippet) => (
-          <SnippetBlock key={snippet.id} snippet={snippet} />
-        ))}
-      </div>
+      {client === 'codex' && !codexModel ? (
+        <p className='text-muted-foreground text-sm'>
+          {t('Select a model to generate the configuration.')}
+        </p>
+      ) : (
+        <div className='space-y-3'>
+          {snippets.map((snippet) => (
+            <SnippetBlock key={snippet.id} snippet={snippet} />
+          ))}
+        </div>
+      )}
     </Dialog>
   )
 }

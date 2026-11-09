@@ -7346,6 +7346,7 @@
     "Sonnet model": "Sonnet 模型",
     "Pick a client, choose the models it should use, then copy the configuration.": "選擇用戶端與對應模型，然後複製設定。",
     "Connect a CLI": "連接 CLI",
-    "Download config file": "下載設定檔"
+    "Download config file": "下載設定檔",
+    "Select a model to generate the configuration.": "請選擇模型以產生設定。"
   }
 }
