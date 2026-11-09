@@ -29,7 +29,7 @@ cần kéo về — không cài Go/Bun.
 
 ### 1. Chuẩn bị DNS
 
-Trỏ bản ghi `A` (và `AAAA` nếu có IPv6) của domain về IP server. Mở port 80 và
+Trỏ bản ghi `A` của domain về IP server (`103.77.214.185`). Mở port 80 và
 443. Caddy sẽ tự xin chứng chỉ Let's Encrypt cho `DGAI_SITE_ADDRESS`.
 
 ### 2. Cài Docker trên server
@@ -209,7 +209,7 @@ Codex nói Responses API → `POST /v1/responses` với `wire_api = "responses"`
 Hai biến bắt buộc phía Claude Code:
 
 ```bash
-export ANTHROPIC_BASE_URL="https://dgai.vn"       # origin, không có /v1
+export ANTHROPIC_BASE_URL="https://dgai.io.vn"       # origin, không có /v1
 export ANTHROPIC_AUTH_TOKEN="sk-..."
 ```
 
@@ -221,7 +221,7 @@ model_provider = "dgai"
 
 [model_providers.dgai]
 name = "dgai"
-base_url = "https://dgai.vn/v1"
+base_url = "https://dgai.io.vn/v1"
 wire_api = "responses"
 env_key = "DGAI_API_KEY"
 ```

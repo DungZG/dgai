@@ -23,7 +23,8 @@ export type DocSection = {
   body: string
 }
 
-const baseUrl = 'https://dgai.vn'
+// Điền domain thật ở đây khi đổi tên miền; mọi snippet trong tài liệu dùng biến này.
+export const DOCS_BASE_URL = 'https://dgai.io.vn'
 
 export const DOC_QUICKSTART = `## 1. Lấy API key
 
@@ -38,7 +39,7 @@ trong ví sẽ bị trừ theo lượng token bạn dùng.
 ## 2. Gọi request đầu tiên
 
 \`\`\`bash
-curl ${baseUrl}/v1/chat/completions \\
+curl ${DOCS_BASE_URL}/v1/chat/completions \\
   -H "Authorization: Bearer sk-YOUR-KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -56,7 +57,7 @@ Response trả về theo chuẩn OpenAI, có trường \`usage\` để bạn đ�
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="${baseUrl}/v1",
+    base_url="${DOCS_BASE_URL}/v1",
     api_key="sk-YOUR-KEY",
 )
 
@@ -71,10 +72,10 @@ print(resp.choices[0].message.content)
 
 | Công cụ | Base URL | Ghi chú |
 | --- | --- | --- |
-| Cursor / Cline / Continue | \`${baseUrl}/v1\` | Chọn provider *OpenAI Compatible*, dán key |
-| Claude Code | \`${baseUrl}\` | Đặt \`ANTHROPIC_BASE_URL\`, \`ANTHROPIC_AUTH_TOKEN\` |
-| Codex CLI | \`${baseUrl}/v1\` | Dùng chế độ OpenAI compatible |
-| LiteLLM / LangChain | \`${baseUrl}/v1\` | Khai báo như endpoint OpenAI |
+| Cursor / Cline / Continue | \`${DOCS_BASE_URL}/v1\` | Chọn provider *OpenAI Compatible*, dán key |
+| Claude Code | \`${DOCS_BASE_URL}\` | Đặt \`ANTHROPIC_BASE_URL\`, \`ANTHROPIC_AUTH_TOKEN\` |
+| Codex CLI | \`${DOCS_BASE_URL}/v1\` | Dùng chế độ OpenAI compatible |
+| LiteLLM / LangChain | \`${DOCS_BASE_URL}/v1\` | Khai báo như endpoint OpenAI |
 
 > Model DeepSeek V4.1 Flash là model suy luận: nó ghi phần suy nghĩ vào
 > \`reasoning_content\` trước khi trả \`content\`. Đặt \`max_tokens\` từ 512 trở lên,
@@ -83,7 +84,7 @@ print(resp.choices[0].message.content)
 export const DOC_API = `## Base URL
 
 \`\`\`
-${baseUrl}/v1
+${DOCS_BASE_URL}/v1
 \`\`\`
 
 ## Xác thực
@@ -115,7 +116,7 @@ Thêm \`"stream": true\`. Response là SSE, mỗi dòng bắt đầu bằng \`da
 kết thúc bằng \`data: [DONE]\`.
 
 \`\`\`bash
-curl -N ${baseUrl}/v1/chat/completions \\
+curl -N ${DOCS_BASE_URL}/v1/chat/completions \\
   -H "Authorization: Bearer sk-YOUR-KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"model":"deepseek-v4.1-flash","stream":true,
@@ -235,7 +236,7 @@ Phần tiết kiệm được phản ánh ngay trong số dư: nhật ký ghi \`
 ## Xem danh sách model bằng API
 
 \`\`\`bash
-curl ${baseUrl}/v1/models -H "Authorization: Bearer sk-YOUR-KEY"
+curl ${DOCS_BASE_URL}/v1/models -H "Authorization: Bearer sk-YOUR-KEY"
 \`\`\``
 
 export const DOC_BILLING = `## Ví và hạn mức

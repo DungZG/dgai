@@ -20,13 +20,24 @@ import { useState } from 'react'
 
 import { PublicLayout } from '@/components/layout'
 import { Markdown } from '@/components/ui/markdown'
+import { useStatus } from '@/hooks/use-status'
 import { cn } from '@/lib/utils'
 
-import { DOC_SECTIONS } from './content'
+import { DOC_SECTIONS, DOCS_BASE_URL } from './content'
 
 export function Docs() {
+  const { status } = useStatus()
   const [activeId, setActiveId] = useState(DOC_SECTIONS[0].id)
   const active = DOC_SECTIONS.find((s) => s.id === activeId) ?? DOC_SECTIONS[0]
+
+  // Snippets follow the address this instance actually runs on, so the docs stay
+  // correct on a domain, an IP, or a tunnel without editing the content file.
+  const serverAddress =
+    typeof status?.server_address === 'string' &&
+    status.server_address.trim() !== ''
+      ? status.server_address.trim().replace(/\/+$/, '')
+      : DOCS_BASE_URL
+  const body = active.body.replaceAll(DOCS_BASE_URL, serverAddress)
 
   return (
     <PublicLayout>
@@ -54,7 +65,7 @@ export function Docs() {
         </nav>
 
         <article className='min-w-0 flex-1'>
-          <Markdown className='max-w-3xl'>{active.body}</Markdown>
+          <Markdown className='max-w-3xl'>{body}</Markdown>
         </article>
       </div>
     </PublicLayout>
