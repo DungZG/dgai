@@ -58,7 +58,8 @@ Sửa `.env.dgai`:
 | `DGAI_REDIS_PASSWORD` | `openssl rand -hex 24` |
 | `DGAI_SESSION_SECRET` | `openssl rand -hex 32` |
 
-Nếu repo GHCR để private, đăng nhập trước khi pull:
+Ảnh hiện được publish public tại `ghcr.io/dungzg/dgai:latest`, nên pull không
+cần đăng nhập. Nếu sau này chuyển package sang private:
 
 ```bash
 echo "$GHCR_TOKEN" | docker login ghcr.io -u <github-user> --password-stdin
