@@ -140,8 +140,9 @@ thoại). dgai tính phần đã cache với `CacheRatio` thấp hơn nhiều so
 
 | Model | CacheRatio | Giá token cache /1M |
 | --- | --- | --- |
-| `deepseek-v4.1-flash` | 0.05 | $0.004 |
 | `deepseek-v4.1-flash-1017` | 0.4 | $0.032 |
+| `gemini-3.8-flash` | 0.125 | $0.0075 |
+| `gpt-6-luna` | 0.75 | $0.0225 |
 
 Đặt `CacheRatio` ở **Cài đặt hệ thống → Nhóm & Giá model**. Giá trị phải phản
 ánh giá vốn cache của upstream (`cached_input_price` trong `/v1/models`), nếu

@@ -156,6 +156,7 @@ export const DOC_MODELS = `## Model đang mở bán
 | \`claude-opus-5-5\` | 200K | $0.30 | $1.50 | $0.15 | Suy luận sâu, refactor lớn |
 | \`gpt-6.1-sol\` | 400K | $0.15 | $0.90 | $0.015 | Code, phân tích |
 | \`gpt-6-luna\` | 400K | $0.03 | $0.06 | $0.0225 | Tác vụ nhanh, giá rẻ |
+| \`gemini-3.8-flash\` | 1.0M | $0.06 | $0.075 | $0.0075 | Xử lý ảnh, tài liệu dài, giá rẻ |
 
 ### Tính theo request
 
@@ -163,7 +164,6 @@ Model tính giá cố định mỗi lần gọi, không phụ thuộc số token
 
 | Model | Giá / request | Ghi chú |
 | --- | --- | --- |
-| \`gemini-3.8-flash-medium\` | $0.002 | Gemini 3.8 Flash, rẻ nhất |
 | \`deepseek-pro-v4\` | $0.003 | DeepSeek Pro V4 |
 | \`claude-opus-4-8\` | $0.008 | Opus 4.8 |
 | \`claude-opus-5.5\` | $0.02 | Opus thế hệ mới |
