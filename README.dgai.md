@@ -22,7 +22,93 @@ khách ──HTTPS──▶ Caddy ──▶ dgai (Go, :3000) ──▶ upstream 
 | `postgres` | Người dùng, token, hạn mức, nhật ký |
 | `redis` | Cache hạn mức và channel, chia sẻ giữa các tiến trình |
 
-## Triển khai
+## Triển khai lên server
+
+Ảnh production được build trên GitHub Actions và đẩy lên GHCR, nên server chỉ
+cần kéo về — không cài Go/Bun.
+
+### 1. Chuẩn bị DNS
+
+Trỏ bản ghi `A` (và `AAAA` nếu có IPv6) của domain về IP server. Mở port 80 và
+443. Caddy sẽ tự xin chứng chỉ Let's Encrypt cho `DGAI_SITE_ADDRESS`.
+
+### 2. Cài Docker trên server
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker "$USER"   # đăng nhập lại sau bước này
+```
+
+### 3. Lấy mã nguồn và cấu hình
+
+```bash
+git clone https://github.com/DungZG/dgai.git /opt/dgai
+cd /opt/dgai
+cp .env.dgai.example .env.dgai
+```
+
+Sửa `.env.dgai`:
+
+| Biến | Ghi chú |
+| --- | --- |
+| `DGAI_IMAGE_REPO` | `<owner>/dgai`, khớp tên repo GHCR |
+| `DGAI_SITE_ADDRESS` | Domain, không có `https://` |
+| `DGAI_PUBLIC_URL` | `https://<domain>` |
+| `DGAI_DB_PASSWORD` | `openssl rand -hex 24` |
+| `DGAI_REDIS_PASSWORD` | `openssl rand -hex 24` |
+| `DGAI_SESSION_SECRET` | `openssl rand -hex 32` |
+
+Nếu repo GHCR để private, đăng nhập trước khi pull:
+
+```bash
+echo "$GHCR_TOKEN" | docker login ghcr.io -u <github-user> --password-stdin
+```
+
+### 4. Khởi động
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.dgai pull
+docker compose -f docker-compose.prod.yml --env-file .env.dgai up -d
+```
+
+Mở `https://<domain>` và làm theo trình khởi tạo để tạo tài khoản quản trị.
+
+### 5. Cập nhật phiên bản
+
+Mỗi lần push lên `main`, GitHub Actions build ảnh mới với tag `latest` và tag
+`<sha>`. Trên server:
+
+```bash
+git pull
+docker compose -f docker-compose.prod.yml --env-file .env.dgai pull dgai
+docker compose -f docker-compose.prod.yml --env-file .env.dgai up -d dgai
+```
+
+Ghim phiên bản bằng cách đặt `DGAI_IMAGE_TAG=<sha>` thay vì `latest`.
+
+### 6. Sao lưu
+
+```bash
+./scripts/backup-dgai.sh
+```
+
+Ghi `pg_dump` nén vào `backups/`, giữ 14 ngày. Thêm vào cron:
+
+```
+0 3 * * * cd /opt/dgai && ./scripts/backup-dgai.sh >> /var/log/dgai-backup.log 2>&1
+```
+
+### 7. Kiểm tra sau khi lên
+
+```bash
+curl -s https://<domain>/api/status | head -c 200   # system_name phải là dgai
+docker compose -f docker-compose.prod.yml ps        # tất cả healthy
+```
+
+Sau đó vào **Cài đặt hệ thống → Site & Branding**, đặt `ServerAddress` =
+`https://<domain>` để link OAuth/VietQR sinh đúng.
+
+## Triển khai cục bộ (phát triển)
 
 Yêu cầu: Docker, Bun (build frontend trên máy host).
 
@@ -32,8 +118,8 @@ cat > .env.dgai <<'EOF'
 DGAI_DB_PASSWORD=<mật-khẩu-mạnh>
 DGAI_REDIS_PASSWORD=<mật-khẩu-mạnh>
 DGAI_SESSION_SECRET=<chuỗi-ngẫu-nhiên-32-byte>
-DGAI_PUBLIC_URL=https://dgai.vn
-DGAI_SITE_ADDRESS=dgai.vn
+DGAI_PUBLIC_URL=https://localhost
+DGAI_SITE_ADDRESS=localhost
 EOF
 
 # 2. Build frontend (được nhúng vào binary qua //go:embed)
@@ -43,75 +129,8 @@ cd web && bun install --frozen-lockfile && bun run build && cd ..
 docker compose -f docker-compose.dgai.yml --env-file .env.dgai up -d --build
 ```
 
-Mở `https://<DGAI_SITE_ADDRESS>` và làm theo trình khởi tạo để tạo tài khoản quản trị.
-
-### HTTPS
-
-`Caddyfile.dgai` mặc định dùng `tls internal` (chứng chỉ tự ký, dùng cho nội bộ).
-Với tên miền thật, xoá dòng `tls internal` — Caddy sẽ tự xin chứng chỉ Let's
-Encrypt khi `DGAI_SITE_ADDRESS` trỏ đúng tên miền và bản ghi DNS đã hoạt động.
-
-### Biến môi trường quan trọng
-
-| Biến | Ý nghĩa |
-| --- | --- |
-| `SQL_DSN` | Chuỗi kết nối PostgreSQL |
-| `REDIS_CONN_STRING` | Chuỗi kết nối Redis |
-| `SESSION_SECRET` | Khoá ký phiên; bắt buộc khi chạy nhiều node |
-| `SESSION_COOKIE_SECURE` | `true` khi chạy sau HTTPS |
-| `SESSION_COOKIE_TRUSTED_URL` | Origin HTTPS chính xác, không có dấu `/` cuối |
-| `TRUSTED_PROXIES` | Dải IP của reverse proxy để lấy đúng IP khách |
-| `STREAMING_TIMEOUT` | Giây không có dữ liệu thì cắt stream (mặc định 120) |
-
-## Model đang bán
-
-| Model | Cách tính | Vào /1M | Ra /1M | Cache /1M |
-| --- | --- | --- | --- | --- |
-| `deepseek-v4.1-flash` | token | $0.08 | $0.28 | $0.004 |
-| `deepseek-v4.1-flash-1017` | token | $0.08 | $0.28 | $0.032 |
-| `claude-opus-5-5` | token | $0.30 | $1.50 | $0.15 |
-| `gpt-6.1-sol` | token | $0.15 | $0.90 | $0.015 |
-| `cx/gpt-6-luna` | token | $0.03 | $0.06 | $0.0225 |
-| `slow/agy/gemini-3.8-flash-medium` | request | $0.002/lần | — | — |
-| `cnb/deepseek-pro-v4` | request | $0.003/lần | — | — |
-| `claude-opus-4-8` | request | $0.008/lần | — | — |
-| `claude-opus-5.5` | request | $0.02/lần | — | — |
-| `claude-fable-5.1-req` | request | $0.02/lần | — | — |
-
-Model tính theo request khai báo ở `ModelPrice` (USD mỗi lần gọi), model tính
-theo token khai báo ở `ModelRatio` + `CompletionRatio` + `CacheRatio`.
-
-## Cấu hình nhà cung cấp
-
-Vào **Kênh → Thêm kênh**:
-
-| Trường | Giá trị |
-| --- | --- |
-| Loại | `OpenAI` |
-| Base URL | Base URL của upstream, **không** kèm `/v1` |
-| Khóa | API key của upstream |
-| Model | ID model, phân tách bằng dấu phẩy, khớp chính xác upstream |
-
-Bấm **Kiểm tra**. Nếu báo `model_price_error` nghĩa là chưa khai báo giá —
-chuyển sang bước dưới.
-
-### Đặt giá bán
-
-**Cài đặt hệ thống → Nhóm & Giá model**:
-
-| Khóa | Công thức |
-| --- | --- |
-| `ModelRatio` | `giá_vào_USD_trên_1M ÷ 2` |
-| `CompletionRatio` | `giá_ra ÷ giá_vào` |
-
-Ví dụ bán $0.08 vào / $0.28 ra cho một model:
-
-```json
-{ "ModelRatio": { "deepseek-v4.1-flash": 0.04 },
-  "CompletionRatio": { "deepseek-v4.1-flash": 3.5 } }
-```
-
-Nguyên tắc: `giá bán ≥ giá vốn × 1.1` và `giá bán ≤ giá chính thức × 0.8`.
+`Caddyfile.dgai` dùng `tls internal` (chứng chỉ tự ký) nên trình duyệt sẽ cảnh
+báo. Dùng cho máy dev, không dùng cho khách.
 
 ## Cache prompt
 

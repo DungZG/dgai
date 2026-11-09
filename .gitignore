@@ -47,6 +47,7 @@ go.work.sum
 
 # dgai local secrets
 .env.dgai
+!.env.dgai.example
 
 # local test credentials
 .sk

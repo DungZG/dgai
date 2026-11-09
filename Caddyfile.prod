@@ -1,0 +1,27 @@
+# dgai reverse proxy — production.
+#
+# Caddy obtains and renews a Let's Encrypt certificate for DGAI_SITE_ADDRESS
+# automatically. Requirements:
+#   - DNS A/AAAA record for the domain points at this server
+#   - ports 80 and 443 reachable from the internet
+#
+# For a staging host that must stay on a self-signed certificate, use
+# Caddyfile.dgai (it adds `tls internal`) instead.
+
+{$DGAI_SITE_ADDRESS} {
+	encode zstd gzip
+
+	reverse_proxy dgai:3000 {
+		flush_interval -1
+		transport http {
+			read_timeout 0
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
