@@ -7345,6 +7345,7 @@
     "Opus model": "Opus 模型",
     "Sonnet model": "Sonnet 模型",
     "Pick a client, choose the models it should use, then copy the configuration.": "选择客户端与对应模型，然后复制配置。",
-    "Connect a CLI": "连接 CLI"
+    "Connect a CLI": "连接 CLI",
+    "Download config file": "下载配置文件"
   }
 }

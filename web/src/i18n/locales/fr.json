@@ -7345,6 +7345,7 @@
     "Opus model": "Modèle Opus",
     "Sonnet model": "Modèle Sonnet",
     "Pick a client, choose the models it should use, then copy the configuration.": "Choisissez un client et ses modèles, puis copiez la configuration.",
-    "Connect a CLI": "Connecter un CLI"
+    "Connect a CLI": "Connecter un CLI",
+    "Download config file": "Télécharger le fichier de configuration"
   }
 }

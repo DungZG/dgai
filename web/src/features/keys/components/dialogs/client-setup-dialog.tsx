@@ -20,9 +20,12 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Download } from 'lucide-react'
+
 import { CopyButton } from '@/components/copy-button'
 import { Dialog } from '@/components/dialog'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Combobox } from '@/components/ui/combobox'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -194,7 +197,27 @@ function SnippetBlock(props: { snippet: ClientSnippet }) {
         <span className='text-muted-foreground text-xs font-medium'>
           {props.snippet.title}
         </span>
-        <CopyButton value={props.snippet.body} variant='ghost' size='icon' />
+        <div className='flex items-center gap-1'>
+          {props.snippet.filename && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='size-7'
+                    aria-label={t('Download config file')}
+                    onClick={() => downloadText(props.snippet)}
+                  >
+                    <Download className='size-3.5' />
+                  </Button>
+                }
+              />
+              <TooltipContent>{t('Download config file')}</TooltipContent>
+            </Tooltip>
+          )}
+          <CopyButton value={props.snippet.body} variant='ghost' size='icon' />
+        </div>
       </div>
       <pre className='overflow-x-auto px-3 py-2 text-xs leading-relaxed'>
         <code>{props.snippet.body}</code>
@@ -206,4 +229,17 @@ function SnippetBlock(props: { snippet: ClientSnippet }) {
       )}
     </div>
   )
+}
+
+/** Saves a config snippet as a file so the user can drop it into place. */
+function downloadText(snippet: ClientSnippet) {
+  const blob = new Blob([snippet.body], {
+    type: 'text/plain;charset=utf-8',
+  })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = snippet.filename ?? `${snippet.id}.txt`
+  anchor.click()
+  URL.revokeObjectURL(url)
 }

@@ -7345,6 +7345,7 @@
     "Opus model": "Model Opus",
     "Sonnet model": "Model Sonnet",
     "Pick a client, choose the models it should use, then copy the configuration.": "Chọn client, chọn model tương ứng rồi copy cấu hình.",
-    "Connect a CLI": "Kết nối CLI"
+    "Connect a CLI": "Kết nối CLI",
+    "Download config file": "Tải file cấu hình"
   }
 }

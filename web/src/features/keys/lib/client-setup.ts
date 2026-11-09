@@ -33,6 +33,8 @@ export type ClientSnippet = {
   /** Language for the code block label. */
   language: 'bash' | 'powershell' | 'toml' | 'json'
   body: string
+  /** Suggested filename when the snippet is a config file worth downloading. */
+  filename?: string
 }
 
 export function normalizeKey(raw: string): string {
@@ -95,6 +97,7 @@ export function claudeSnippets(
       id: 'claude-settings',
       title: '~/.claude/settings.json',
       language: 'json',
+      filename: 'settings.json',
       body: JSON.stringify(
         {
           env: {
@@ -141,6 +144,7 @@ export function codexSnippets(
       id: 'codex-config',
       title: '~/.codex/config.toml',
       language: 'toml',
+      filename: 'config.toml',
       body: toml,
     },
     {
