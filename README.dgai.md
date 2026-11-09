@@ -210,8 +210,7 @@ env_key = "DGAI_API_KEY"
 
 Trang `/docs` phục vụ tài liệu riêng của dgai (nội dung ở
 `web/src/features/docs/content.ts`): bắt đầu nhanh, tham chiếu API, model và
-giá, ví và nạp tiền, cấu hình nhà cung cấp. Trang không liên kết ra tài liệu
-bên ngoài.
+giá, ví và nạp tiền. Trang không liên kết ra tài liệu bên ngoài.
 
 ## Phát triển
 
