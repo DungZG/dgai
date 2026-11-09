@@ -52,3 +52,7 @@ go.work.sum
 # local test credentials
 .sk
 .tok
+
+# local database dumps
+dgai-dump.sql.gz
+backups/
