@@ -43,7 +43,7 @@ curl ${DOCS_BASE_URL}/v1/chat/completions \\
   -H "Authorization: Bearer sk-YOUR-KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "model": "deepseek-v4.1-flash",
+    "model": "deepseek-v4.1-flash-1017",
     "messages": [{"role": "user", "content": "Xin chào"}],
     "max_tokens": 512
   }'
@@ -152,11 +152,10 @@ export const DOC_MODELS = `## Model đang mở bán
 
 | Model | Ngữ cảnh | Vào /1M | Ra /1M | Cache /1M | Dùng cho |
 | --- | --- | --- | --- | --- | --- |
-| \`deepseek-v4.1-flash\` | 1.0M | $0.08 | $0.28 | $0.004 | Viết code, agent, tài liệu dài |
-| \`deepseek-v4.1-flash-1017\` | 1.0M | $0.08 | $0.28 | $0.032 | Cùng model, provider khác |
+| \`deepseek-v4.1-flash-1017\` | 1.0M | $0.08 | $0.28 | $0.032 | Viết code, agent, tài liệu dài |
 | \`claude-opus-5-5\` | 200K | $0.30 | $1.50 | $0.15 | Suy luận sâu, refactor lớn |
 | \`gpt-6.1-sol\` | 400K | $0.15 | $0.90 | $0.015 | Code, phân tích |
-| \`cx/gpt-6-luna\` | 400K | $0.03 | $0.06 | $0.0225 | Tác vụ nhanh, giá rẻ |
+| \`gpt-6-luna\` | 400K | $0.03 | $0.06 | $0.0225 | Tác vụ nhanh, giá rẻ |
 
 ### Tính theo request
 
@@ -164,8 +163,8 @@ Model tính giá cố định mỗi lần gọi, không phụ thuộc số token
 
 | Model | Giá / request | Ghi chú |
 | --- | --- | --- |
-| \`slow/agy/gemini-3.8-flash-medium\` | $0.002 | Gemini 3.8 Flash, rẻ nhất |
-| \`cnb/deepseek-pro-v4\` | $0.003 | DeepSeek Pro V4 |
+| \`gemini-3.8-flash-medium\` | $0.002 | Gemini 3.8 Flash, rẻ nhất |
+| \`deepseek-pro-v4\` | $0.003 | DeepSeek Pro V4 |
 | \`claude-opus-4-8\` | $0.008 | Opus 4.8 |
 | \`claude-opus-5.5\` | $0.02 | Opus thế hệ mới |
 | \`claude-fable-5.1-req\` | $0.02 | Fable 5.1 |
