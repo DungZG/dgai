@@ -174,6 +174,38 @@ Nếu chưa có hợp đồng merchant, để trống — quản trị viên xá
 Đối soát an toàn: replay cùng giao dịch không cộng hai lần; chuyển thiếu tiền bị
 từ chối (`AMOUNT_MISMATCH`); giao dịch ghi nợ (D) bị bỏ qua.
 
+## Kết nối CLI (Claude Code / Codex)
+
+Trong **API Keys**, mở menu của một key → **Connect Claude Code / Codex**.
+
+| Client | Cần chọn | Sinh ra |
+| --- | --- | --- |
+| Claude Code | model cho Sonnet / Opus / Haiku | bash, PowerShell, `~/.claude/settings.json` |
+| Codex | một model GPT | `~/.codex/config.toml`, export `DGAI_API_KEY` |
+
+Claude Code nói Anthropic Messages API → gateway phục vụ tại `POST /v1/messages`.
+Codex nói Responses API → `POST /v1/responses` với `wire_api = "responses"`.
+
+Hai biến bắt buộc phía Claude Code:
+
+```bash
+export ANTHROPIC_BASE_URL="https://dgai.vn"       # origin, không có /v1
+export ANTHROPIC_AUTH_TOKEN="sk-..."
+```
+
+Phía Codex, key nằm trong biến mà `env_key` trỏ tới:
+
+```toml
+model = "gpt-6.1-sol"
+model_provider = "dgai"
+
+[model_providers.dgai]
+name = "dgai"
+base_url = "https://dgai.vn/v1"
+wire_api = "responses"
+env_key = "DGAI_API_KEY"
+```
+
 ## Tài liệu trong ứng dụng
 
 Trang `/docs` phục vụ tài liệu riêng của dgai (nội dung ở
