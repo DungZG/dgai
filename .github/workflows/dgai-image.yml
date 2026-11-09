@@ -29,6 +29,10 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
+      - name: Resolve lowercase image name
+        id: image
+        run: echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -58,7 +62,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ steps.image.outputs.repo }}:latest
+            ghcr.io/${{ steps.image.outputs.repo }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
