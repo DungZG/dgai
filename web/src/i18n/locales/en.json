@@ -7348,6 +7348,10 @@
     "Connect a CLI": "Connect a CLI",
     "Download config file": "Download config file",
     "Select a model to generate the configuration.": "Select a model to generate the configuration.",
-    "This payment code has expired. Create a new top-up to get a fresh code.": "This payment code has expired. Create a new top-up to get a fresh code."
+    "This payment code has expired. Create a new top-up to get a fresh code.": "This payment code has expired. Create a new top-up to get a fresh code.",
+    "I have paid — check my payment": "I have paid — check my payment",
+    "Payment confirmed. Your balance has been credited.": "Payment confirmed. Your balance has been credited.",
+    "Top-up credited": "Top-up credited",
+    "We have not received your transfer yet. Wait a moment and check again.": "We have not received your transfer yet. Wait a moment and check again."
   }
 }

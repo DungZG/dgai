@@ -135,6 +135,21 @@ export async function requestVietQRPayment(
 }
 
 /**
+ * Ask the gateway to check a VietQR order against the bank and credit it when
+ * the transfer is already visible. Returns status 'success' or 'pending'.
+ */
+export async function confirmVietQRPayment(
+  tradeNo: string
+): Promise<{ status: 'success' | 'pending' }> {
+  const res = await api.post(
+    '/api/user/vietqr/confirm',
+    { trade_no: tradeNo },
+    { skipBusinessError: true } as Record<string, unknown>
+  )
+  return res.data?.data ?? { status: 'pending' }
+}
+
+/**
  * Request Stripe payment
  */
 export async function requestStripePayment(

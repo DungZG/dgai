@@ -115,3 +115,66 @@ it('hides the countdown when the order carries no deadline', () => {
   renderDialog({ expires_at: 0 })
   expect(screen.queryByRole('timer')).not.toBeInTheDocument()
 })
+
+it('credits the order when the customer confirms a completed transfer', async () => {
+  const api = await import('@/lib/api')
+  const post = vi
+    .spyOn(api.api, 'post')
+    .mockResolvedValue({ data: { success: true, data: { status: 'success' } } })
+  const onPaid = vi.fn()
+  const now = Math.floor(Date.now() / 1000)
+
+  render(
+    <I18nextProvider i18n={i18n}>
+      <VietQRDialog
+        open
+        onOpenChange={vi.fn()}
+        details={{ ...details, expires_at: now + 600 }}
+        onPaid={onPaid}
+      />
+    </I18nextProvider>
+  )
+
+  await act(async () => {
+    screen.getByRole('button', { name: /kiểm tra thanh toán/i }).click()
+  })
+
+  expect(post).toHaveBeenCalledWith(
+    '/api/user/vietqr/confirm',
+    { trade_no: 'VQR11XF4LRX' },
+    expect.anything()
+  )
+  expect(onPaid).toHaveBeenCalledTimes(1)
+  expect(
+    screen.getByText('Đã xác nhận thanh toán. Số dư của bạn đã được cộng.')
+  ).toBeVisible()
+})
+
+it('keeps the button when the bank has not reported the transfer yet', async () => {
+  const api = await import('@/lib/api')
+  vi.spyOn(api.api, 'post').mockResolvedValue({
+    data: { success: true, data: { status: 'pending' } },
+  })
+  const onPaid = vi.fn()
+  const now = Math.floor(Date.now() / 1000)
+
+  render(
+    <I18nextProvider i18n={i18n}>
+      <VietQRDialog
+        open
+        onOpenChange={vi.fn()}
+        details={{ ...details, expires_at: now + 600 }}
+        onPaid={onPaid}
+      />
+    </I18nextProvider>
+  )
+
+  await act(async () => {
+    screen.getByRole('button', { name: /kiểm tra thanh toán/i }).click()
+  })
+
+  expect(onPaid).not.toHaveBeenCalled()
+  expect(
+    screen.getByRole('button', { name: /kiểm tra thanh toán/i })
+  ).toBeVisible()
+})

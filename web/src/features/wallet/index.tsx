@@ -417,6 +417,9 @@ export function Wallet(props: WalletProps) {
         onOpenChange={setVietqrDialogOpen}
         details={vietqrDetails}
         loading={vietqrLoading}
+        onPaid={() => {
+          void fetchUser()
+        }}
       />
     </>
   )

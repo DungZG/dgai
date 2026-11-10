@@ -16,11 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Clock, Loader2 } from 'lucide-react'
+import { CheckCircle2, Clock, Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { CopyButton } from '@/components/copy-button'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -28,8 +30,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { handleServerError } from '@/lib/handle-server-error'
 import { cn } from '@/lib/utils'
 
+import { confirmVietQRPayment } from '../../api'
 import type { VietQRPaymentDetails } from '../../types'
 
 interface VietQRDialogProps {
@@ -37,10 +41,13 @@ interface VietQRDialogProps {
   onOpenChange: (open: boolean) => void
   details: VietQRPaymentDetails | null
   loading?: boolean
+  onPaid?: () => void
 }
 
 export function VietQRDialog(props: VietQRDialogProps) {
   const { t } = useTranslation()
+  const [confirming, setConfirming] = useState(false)
+  const [paid, setPaid] = useState(false)
   const expiresAt = props.details?.expires_at ?? 0
   const secondsLeft = useSecondsLeft(expiresAt, props.open)
   const expired = expiresAt > 0 && secondsLeft === 0
@@ -153,6 +160,45 @@ export function VietQRDialog(props: VietQRDialogProps) {
                     'Keep the transfer content exactly as shown so the payment can be matched to your account. The balance is credited after the bank confirms the transaction.'
                   )}
             </p>
+
+            {paid ? (
+              <div className='flex items-center justify-center gap-2 rounded-lg border border-green-600/40 bg-green-600/5 px-3 py-2 text-sm text-green-700 dark:text-green-500'>
+                <CheckCircle2 className='size-4' aria-hidden='true' />
+                {t('Payment confirmed. Your balance has been credited.')}
+              </div>
+            ) : (
+              <Button
+                className='w-full'
+                disabled={confirming}
+                onClick={async () => {
+                  if (!props.details) return
+                  setConfirming(true)
+                  try {
+                    const result = await confirmVietQRPayment(
+                      props.details.trade_no
+                    )
+                    if (result.status === 'success') {
+                      setPaid(true)
+                      toast.success(t('Top-up credited'))
+                      props.onPaid?.()
+                    } else {
+                      toast.info(
+                        t(
+                          'We have not received your transfer yet. Wait a moment and check again.'
+                        )
+                      )
+                    }
+                  } catch (error) {
+                    handleServerError(error)
+                  } finally {
+                    setConfirming(false)
+                  }
+                }}
+              >
+                {confirming && <Loader2 className='me-2 size-4 animate-spin' />}
+                {t('I have paid — check my payment')}
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>

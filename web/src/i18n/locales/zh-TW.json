@@ -7348,6 +7348,10 @@
     "Connect a CLI": "連接 CLI",
     "Download config file": "下載設定檔",
     "Select a model to generate the configuration.": "請選擇模型以產生設定。",
-    "This payment code has expired. Create a new top-up to get a fresh code.": "該付款碼已過期，請重新發起儲值以取得新的付款碼。"
+    "This payment code has expired. Create a new top-up to get a fresh code.": "該付款碼已過期，請重新發起儲值以取得新的付款碼。",
+    "Payment confirmed. Your balance has been credited.": "付款已確認，餘額已入帳。",
+    "Top-up credited": "儲值已入帳",
+    "We have not received your transfer yet. Wait a moment and check again.": "尚未收到您的轉帳，請稍後再檢查。",
+    "I have paid — check my payment": "我已完成付款 — 檢查支付"
   }
 }

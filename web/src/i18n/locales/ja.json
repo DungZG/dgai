@@ -7348,6 +7348,10 @@
     "Connect a CLI": "CLI に接続",
     "Download config file": "設定ファイルをダウンロード",
     "Select a model to generate the configuration.": "モデルを選択すると設定が生成されます。",
-    "This payment code has expired. Create a new top-up to get a fresh code.": "この支払いコードは期限切れです。新しいコードを取得するには、再度チャージしてください。"
+    "This payment code has expired. Create a new top-up to get a fresh code.": "この支払いコードは期限切れです。新しいコードを取得するには、再度チャージしてください。",
+    "Payment confirmed. Your balance has been credited.": "支払いが確認されました。残高に反映されました。",
+    "Top-up credited": "チャージが反映されました",
+    "We have not received your transfer yet. Wait a moment and check again.": "まだ振り込みが確認できません。しばらく待ってから再度ご確認ください。",
+    "I have paid — check my payment": "支払いました — 支払いを確認する"
   }
 }

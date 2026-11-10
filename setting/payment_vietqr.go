@@ -27,4 +27,8 @@ var (
 	VietQRVNDRate = 26500.0
 
 	VietQRMinTopUp = 1
+
+	// VietQRAPIBaseURL is the VietQR host used for the QR generate and
+	// check-order APIs. Sandbox and production are different hosts.
+	VietQRAPIBaseURL = "https://dev.vietqr.org"
 )

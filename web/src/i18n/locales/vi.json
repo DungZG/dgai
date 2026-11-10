@@ -7348,6 +7348,10 @@
     "Connect a CLI": "Kết nối CLI",
     "Download config file": "Tải file cấu hình",
     "Select a model to generate the configuration.": "Chọn model để sinh cấu hình.",
-    "This payment code has expired. Create a new top-up to get a fresh code.": "Mã thanh toán này đã hết hạn. Hãy tạo lần nạp mới để nhận mã mới."
+    "This payment code has expired. Create a new top-up to get a fresh code.": "Mã thanh toán này đã hết hạn. Hãy tạo lần nạp mới để nhận mã mới.",
+    "Payment confirmed. Your balance has been credited.": "Đã xác nhận thanh toán. Số dư của bạn đã được cộng.",
+    "Top-up credited": "Đã cộng tiền nạp",
+    "We have not received your transfer yet. Wait a moment and check again.": "Chưa nhận được khoản chuyển của bạn. Vui lòng đợi một lát rồi kiểm tra lại.",
+    "I have paid — check my payment": "Tôi đã chuyển khoản — kiểm tra thanh toán"
   }
 }

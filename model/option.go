@@ -140,6 +140,7 @@ func InitOptionMap() {
 	common.OptionMap["VietQRSyncSecretKey"] = setting.VietQRSyncSecretKey
 	common.OptionMap["VietQRVNDRate"] = strconv.FormatFloat(setting.VietQRVNDRate, 'f', -1, 64)
 	common.OptionMap["VietQRMinTopUp"] = strconv.Itoa(setting.VietQRMinTopUp)
+	common.OptionMap["VietQRAPIBaseURL"] = setting.VietQRAPIBaseURL
 	common.OptionMap["WaffoPancakeProductID"] = setting.WaffoPancakeProductID
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
@@ -590,6 +591,8 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.VietQRVNDRate, _ = strconv.ParseFloat(value, 64)
 	case "VietQRMinTopUp":
 		setting.VietQRMinTopUp, _ = strconv.Atoi(value)
+	case "VietQRAPIBaseURL":
+		setting.VietQRAPIBaseURL = strings.TrimRight(value, "/")
 	case "CreemApiKey":
 		setting.CreemApiKey = value
 	case "CreemProducts":

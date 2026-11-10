@@ -1,10 +1,15 @@
 package controller
 
 import (
+	"context"
 	"crypto/hmac"
+	"crypto/md5"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"io"
 	"math"
 	"net/http"
 	"net/url"
@@ -193,6 +198,95 @@ func VietQRTokenGenerate(c *gin.Context) {
 	})
 }
 
+// vietqrAPIToken fetches a bearer token for VietQR's own APIs. This is the
+// merchant credential pair VietQR issued to us, not the pair we issue them.
+func vietqrAPIToken(ctx context.Context) (string, error) {
+	if setting.VietQRUsername == "" || setting.VietQRPassword == "" {
+		return "", errors.New("vietqr api credentials not configured")
+	}
+	credentials := base64.StdEncoding.EncodeToString([]byte(setting.VietQRUsername + ":" + setting.VietQRPassword))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, setting.VietQRAPIBaseURL+"/vqr/api/token_generate", strings.NewReader("{}"))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Basic "+credentials)
+
+	client := &http.Client{Timeout: 20 * time.Second}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(res.Body, 8<<10))
+	if err != nil {
+		return "", err
+	}
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("vietqr token endpoint returned %d: %s", res.StatusCode, strings.TrimSpace(string(body)))
+	}
+	var token struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := common.Unmarshal(body, &token); err != nil {
+		return "", err
+	}
+	if token.AccessToken == "" {
+		return "", errors.New("vietqr token endpoint returned an empty token")
+	}
+	return token.AccessToken, nil
+}
+
+// vietqrCheckOrderStatus asks VietQR whether the order has been paid. Status 1
+// means paid; 0 is still pending; 2 is expired. A missing transaction returns
+// E96, which is reported as pending so the caller can retry.
+func vietqrCheckOrderStatus(ctx context.Context, orderId string) (int, error) {
+	token, err := vietqrAPIToken(ctx)
+	if err != nil {
+		return 0, err
+	}
+	checkSum := fmt.Sprintf("%x", md5.Sum([]byte(setting.VietQRBankAccount+setting.VietQRUsername)))
+	payload, err := common.Marshal(map[string]string{
+		"bankAccount": setting.VietQRBankAccount,
+		"type":        "0",
+		"value":       orderId,
+		"checkSum":    checkSum,
+	})
+	if err != nil {
+		return 0, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, setting.VietQRAPIBaseURL+"/vqr/api/ecommerce-transactions/check-order", strings.NewReader(string(payload)))
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{Timeout: 20 * time.Second}
+	res, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(res.Body, 64<<10))
+	if err != nil {
+		return 0, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("vietqr check-order returned %d: %s", res.StatusCode, strings.TrimSpace(string(body)))
+	}
+	var orders []struct {
+		Status int `json:"status"`
+	}
+	if err := common.Unmarshal(body, &orders); err != nil {
+		return 0, err
+	}
+	if len(orders) == 0 {
+		return 0, nil
+	}
+	return orders[0].Status, nil
+}
+
 type VietQRTransactionSyncRequest struct {
 	BankAccount     string  `json:"bankaccount"`
 	Amount          float64 `json:"amount"`
@@ -285,4 +379,60 @@ func VietQRTransactionSync(c *gin.Context) {
 		"toastMessage": "Transaction processed successfully",
 		"object":       gin.H{"reftransactionid": req.TransactionId},
 	})
+}
+
+// VietQRConfirmPayment lets a customer ask the gateway to check their order
+// against VietQR and credit it as soon as the transfer is visible. It is the
+// manual fallback for the callback: the callback credits automatically, this
+// endpoint covers the window where the customer already paid but the callback
+// has not arrived yet.
+func VietQRConfirmPayment(c *gin.Context) {
+	userId := c.GetInt("id")
+	var req struct {
+		TradeNo string `json:"trade_no"`
+	}
+	if err := common.DecodeJson(c.Request.Body, &req); err != nil {
+		paymentError(c, common.NewMessage("Invalid parameters"))
+		return
+	}
+	tradeNo := strings.TrimSpace(req.TradeNo)
+	if tradeNo == "" {
+		paymentError(c, common.NewMessage("Invalid parameters"))
+		return
+	}
+
+	topUp := model.GetTopUpByTradeNo(tradeNo)
+	if topUp == nil || topUp.UserId != userId || topUp.PaymentProvider != model.PaymentProviderVietQR {
+		paymentError(c, common.NewMessage("Top-up order does not exist"))
+		return
+	}
+	if topUp.Status == common.TopUpStatusSuccess {
+		common.ApiSuccess(c, gin.H{"status": "success", "trade_no": topUp.TradeNo})
+		return
+	}
+	if topUp.Status != common.TopUpStatusPending {
+		paymentError(c, common.NewMessage("Order is not pending payment and cannot be completed"))
+		return
+	}
+
+	status, err := vietqrCheckOrderStatus(c.Request.Context(), topUp.TradeNo)
+	if err != nil {
+		logger.LogError(c.Request.Context(), common.LogText("vietqr check-order failed trade_no=%s error=%q", tradeNo, err.Error()))
+		paymentError(c, common.NewMessage("Failed to query the transaction, please try again later"))
+		return
+	}
+	if status != 1 {
+		// Still waiting for the bank, or no transaction yet.
+		common.ApiSuccess(c, gin.H{"status": "pending", "trade_no": topUp.TradeNo})
+		return
+	}
+
+	LockOrder(topUp.TradeNo)
+	defer UnlockOrder(topUp.TradeNo)
+	if err := model.ManualCompleteTopUp(topUp.TradeNo, c.ClientIP()); err != nil {
+		logger.LogError(c.Request.Context(), common.LogText("vietqr confirm failed trade_no=%s error=%q", tradeNo, err.Error()))
+		paymentError(c, common.NewMessage("Failed to credit the top-up"))
+		return
+	}
+	common.ApiSuccess(c, gin.H{"status": "success", "trade_no": topUp.TradeNo})
 }
