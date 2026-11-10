@@ -8,6 +8,10 @@
 # For a staging host that must stay on a self-signed certificate, use
 # Caddyfile.dgai (it adds `tls internal`) instead.
 
+www.{$DGAI_SITE_ADDRESS} {
+	redir https://{$DGAI_SITE_ADDRESS}{uri} permanent
+}
+
 {$DGAI_SITE_ADDRESS} {
 	encode zstd gzip
 

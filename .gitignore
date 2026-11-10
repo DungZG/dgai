@@ -54,5 +54,5 @@ go.work.sum
 .tok
 
 # local database dumps
-dgai-dump.sql.gz
+*.sql.gz
 backups/

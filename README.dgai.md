@@ -29,8 +29,9 @@ cần kéo về — không cài Go/Bun.
 
 ### 1. Chuẩn bị DNS
 
-Trỏ bản ghi `A` của domain về IP server (`103.77.214.185`). Mở port 80 và
-443. Caddy sẽ tự xin chứng chỉ Let's Encrypt cho `DGAI_SITE_ADDRESS`.
+Trỏ bản ghi `A` cho `@` (apex) và bản ghi `CNAME` cho `www` về apex. Mở port 80
+và 443. Caddy sẽ tự xin chứng chỉ Let's Encrypt cho cả `DGAI_SITE_ADDRESS` và
+`www.<DGAI_SITE_ADDRESS>`, rồi chuyển hướng `www` về apex.
 
 ### 2. Cài Docker trên server
 
