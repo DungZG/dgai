@@ -186,8 +186,12 @@ Hai endpoint cho VietQR Callback API:
 
 | Endpoint | Việc |
 | --- | --- |
-| `POST /api/user/vietqr/token_generate` | Basic auth → bearer HMAC 5 phút |
-| `POST /api/user/vietqr/transaction-sync` | Nhận biến động số dư, cộng hạn mức |
+| `POST /vqr/api/token_generate` | Basic auth → bearer HMAC 5 phút |
+| `POST /vqr/bank/api/transaction-sync` | Nhận biến động số dư, cộng hạn mức |
+
+Cổng merchant của VietQR ghép base URL với base path, nên khai báo base URL
+`https://dgai.io.vn` và base path `vqr`. Hai route tương đương cũng có dưới
+`/api/user/vietqr/...` nếu portal của bạn dùng đường dẫn đầy đủ.
 
 Cấu hình `VietQRSyncUsername/Password/SecretKey` rồi khai báo URL này với VietQR.
 Nếu chưa có hợp đồng merchant, để trống — quản trị viên xác nhận tay bằng
@@ -195,6 +199,34 @@ Nếu chưa có hợp đồng merchant, để trống — quản trị viên xá
 
 Đối soát an toàn: replay cùng giao dịch không cộng hai lần; chuyển thiếu tiền bị
 từ chối (`AMOUNT_MISMATCH`); giao dịch ghi nợ (D) bị bỏ qua.
+
+## Đăng nhập Google
+
+Tạo OAuth client trong Google Cloud Console rồi khai báo ở **Cài đặt → Auth →
+Custom OAuth**. Chạy wizard để được dẫn từng bước:
+
+```bash
+bash scripts/google-oauth-wizard.sh
+```
+
+Wizard mở đúng trang Console, nhắc dán redirect URI
+`https://<domain>/oauth/google`, rồi ghi provider vào dgai qua API quản trị.
+
+Endpoint dùng:
+
+| Trường | Giá trị |
+| --- | --- |
+| Authorization | `https://accounts.google.com/o/oauth2/v2/auth` |
+| Token | `https://oauth2.googleapis.com/token` |
+| UserInfo | `https://openidconnect.googleapis.com/v1/userinfo` |
+| Scopes | `openid email profile` |
+| User ID | `sub` |
+| Username / Email | `email` |
+| Display name | `name` |
+
+Consent screen để **Testing** thì chỉ tài khoản trong danh sách Test users đăng
+nhập được — đủ cho giai đoạn tạm thời. Muốn mở cho mọi người thì Publish app
+(Google sẽ review nếu dùng scope nhạy cảm).
 
 ## Kết nối CLI (Claude Code / Codex)
 
