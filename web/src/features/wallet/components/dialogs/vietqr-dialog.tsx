@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { CheckCircle2, Clock, Loader2 } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -98,14 +99,30 @@ export function VietQRDialog(props: VietQRDialogProps) {
             )}
 
             <div className='flex justify-center'>
-              <img
-                src={props.details.qr_image_url}
-                alt={t('VietQR payment code')}
-                className={cn(
-                  'border-border/50 w-full max-w-[280px] rounded-xl border bg-white p-2',
-                  expired && 'opacity-40'
-                )}
-              />
+              {props.details.qr_content ? (
+                <div
+                  className={cn(
+                    'border-border/50 rounded-xl border bg-white p-3',
+                    expired && 'opacity-40'
+                  )}
+                >
+                  <QRCodeSVG
+                    value={props.details.qr_content}
+                    size={240}
+                    level='M'
+                    aria-label={t('VietQR payment code')}
+                  />
+                </div>
+              ) : (
+                <img
+                  src={props.details.qr_image_url}
+                  alt={t('VietQR payment code')}
+                  className={cn(
+                    'border-border/50 w-full max-w-[280px] rounded-xl border bg-white p-2',
+                    expired && 'opacity-40'
+                  )}
+                />
+              )}
             </div>
 
             <dl className='space-y-2 text-sm'>

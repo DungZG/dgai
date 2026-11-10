@@ -143,12 +143,26 @@ func RequestVietQRPay(c *gin.Context) {
 		return
 	}
 
+	// Prefer a QR minted by VietQR: it registers this order id on their side,
+	// which is what lets the customer's "check payment" find the transfer.
+	qrImageURL := vietqrQRImageURL(vndAmount, memo)
+	qrContent := ""
+	if qr, content, err := vietqrCreateOrderQR(c.Request.Context(), tradeNo, vndAmount); err != nil {
+		logger.LogError(c.Request.Context(), common.LogText("vietqr generate-customer failed trade_no=%s error=%q", tradeNo, err.Error()))
+	} else {
+		// VietQR prefixes its own reference to the content it expects back, and
+		// only its own QR is registered for the check-payment lookup.
+		qrContent = qr
+		memo = content
+	}
+
 	common.ApiSuccess(c, gin.H{
 		"trade_no":     tradeNo,
 		"amount":       req.Amount,
 		"pay_money":    payMoney,
 		"memo":         memo,
-		"qr_image_url": vietqrQRImageURL(vndAmount, memo),
+		"qr_image_url": qrImageURL,
+		"qr_content":   qrContent,
 		"vnd_amount":   vndAmount,
 		"vnd_rate":     setting.VietQRVNDRate,
 		"bank_code":    setting.VietQRBankCode,
@@ -385,6 +399,62 @@ func VietQRTransactionSync(c *gin.Context) {
 		"toastMessage": "Transaction processed successfully",
 		"object":       gin.H{"reftransactionid": req.TransactionId},
 	})
+}
+
+// vietqrCreateOrder QR asks VietQR to mint the QR for this order. Registering
+// the order id there is what makes the customer's later "check payment" work:
+// check-order only knows about QR codes VietQR itself produced. It returns the
+// QR payload as a string plus the exact transfer content VietQR expects.
+func vietqrCreateOrderQR(ctx context.Context, tradeNo string, vndAmount int64) (qrContent string, content string, err error) {
+	token, err := vietqrAPIToken(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	memo := vietqrMemo(tradeNo)
+	payload, err := common.Marshal(map[string]any{
+		"bankCode":     setting.VietQRBankCode,
+		"bankAccount":  setting.VietQRBankAccount,
+		"userBankName": setting.VietQRAccountName,
+		"content":      memo,
+		"qrType":       0,
+		"amount":       vndAmount,
+		"orderId":      tradeNo,
+		"transType":    "C",
+	})
+	if err != nil {
+		return "", "", err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, setting.VietQRAPIBaseURL+"/vqr/api/qr/generate-customer", strings.NewReader(string(payload)))
+	if err != nil {
+		return "", "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{Timeout: 20 * time.Second}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", "", err
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(res.Body, 64<<10))
+	if err != nil {
+		return "", "", err
+	}
+	if res.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("vietqr generate-customer returned %d: %s", res.StatusCode, strings.TrimSpace(string(body)))
+	}
+	var order struct {
+		QRCode  string `json:"qrCode"`
+		Content string `json:"content"`
+	}
+	if err := common.Unmarshal(body, &order); err != nil {
+		return "", "", err
+	}
+	if order.QRCode == "" {
+		return "", "", errors.New("vietqr generate-customer returned an empty QR")
+	}
+	return order.QRCode, order.Content, nil
 }
 
 // VietQRConfirmPayment lets a customer ask the gateway to check their order

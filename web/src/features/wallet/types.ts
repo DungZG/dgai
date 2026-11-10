@@ -195,6 +195,9 @@ export interface VietQRPaymentDetails {
   vnd_amount: number
   vnd_rate: number
   qr_image_url: string
+  /** Raw VietQR payload from VietQR's own generate API; empty when the QR came
+   *  from the image service instead. */
+  qr_content?: string
   bank_code: string
   bank_account: string
   account_name: string
