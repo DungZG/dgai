@@ -25,15 +25,27 @@ type VietQRPayRequest struct {
 	Amount int64 `json:"amount"`
 }
 
+// vietqrTradeNoLen is the fixed length of a VietQR trade number: the "VQR"
+// prefix plus 8 random upper-case characters.
+const vietqrTradeNoLen = 11
+
 // vietqrMemo builds the transfer memo. VietQR caps `content` at 23 characters
-// and `orderId` at 13, both Latin-only, so the code is kept short and unique.
-func vietqrMemo(userId int, tradeNo string) string {
-	return fmt.Sprintf("DGAI%d%s", userId, tradeNo[:6])
+// and Latin-only, so the prefix stays short; tradeNo already carries the user
+// id and is unique, which is what the callback matches on.
+func vietqrMemo(tradeNo string) string {
+	return "DGAI" + tradeNo
 }
 
-// vietqrOrderId is what VietQR echoes back in the transaction callback.
-func vietqrOrderId(tradeNo string) string {
-	return tradeNo
+// vietqrNormalizeMemo makes a transfer description comparable: banks add
+// spaces and case freely, and some apps append the payer's own note.
+func vietqrNormalizeMemo(content string) string {
+	var b strings.Builder
+	for _, r := range strings.ToUpper(content) {
+		if (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }
 
 // vietqrVNDAmount converts the order amount (billing currency, USD by default)
@@ -103,8 +115,11 @@ func RequestVietQRPay(c *gin.Context) {
 		return
 	}
 
-	tradeNo := fmt.Sprintf("VQR%d%s", id, common.GetRandomString(8))
-	memo := vietqrMemo(id, tradeNo)
+	// Fixed 11-char trade number so the memo can be split back apart even when a
+	// bank app appends its own note. Uppercase because bank apps may upper-case
+	// the description, and the callback is matched against the memo.
+	tradeNo := "VQR" + strings.ToUpper(common.GetRandomString(8))
+	memo := vietqrMemo(tradeNo)
 	vndAmount := vietqrVNDAmount(payMoney)
 
 	topUp := &model.TopUp{
@@ -230,7 +245,20 @@ func VietQRTransactionSync(c *gin.Context) {
 		return
 	}
 
-	topUp := model.GetTopUpByTradeNo(req.OrderId)
+	// VietQR only echoes orderId for QRs minted through its own generate API.
+	// Our QR comes from img.vietqr.io, so the round-trip identifier is the memo
+	// the customer typed into the transfer description. Bank apps may append
+	// their own note, so read the fixed-width trade number that follows DGAI.
+	var topUp *model.TopUp
+	if req.OrderId != "" {
+		topUp = model.GetTopUpByTradeNo(req.OrderId)
+	}
+	if topUp == nil {
+		memo := vietqrNormalizeMemo(req.Content)
+		if i := strings.Index(memo, "DGAI"); i >= 0 && len(memo) >= i+4+vietqrTradeNoLen {
+			topUp = model.GetTopUpByTradeNo(memo[i+4 : i+4+vietqrTradeNoLen])
+		}
+	}
 	if topUp == nil || topUp.PaymentProvider != model.PaymentProviderVietQR {
 		vietqrSyncError(c, http.StatusBadRequest, "ORDER_NOT_FOUND", "Order not found for this transaction")
 		return

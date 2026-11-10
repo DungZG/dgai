@@ -167,18 +167,18 @@ Mức nạp tối thiểu và các mức có sẵn đặt ở `MinTopUp` và
 ## VietQR (chuyển khoản ngân hàng)
 
 Bật ở **Cài đặt → Billing & Payment → VietQR**. Tài khoản nhận tiền hiện tại:
-**Techcombank · 0395185726**.
+**TPBank · 10006460824 · NGUYEN TRI DUNG**.
 
 | Cài đặt | Ý nghĩa |
 | --- | --- |
 | `VietQREnabled` | Bật phương thức thanh toán |
-| `VietQRBankCode` / `VietQRBankAccount` | `TCB` / `0395185726` |
+| `VietQRBankCode` / `VietQRBankAccount` | `TPB` / `10006460824` |
 | `VietQRAccountName` | Tên chủ tài khoản (không dấu), hiện trên QR |
 | `VietQRVNDRate` | Tỷ giá USD→VND dùng để quy đổi số tiền trên QR |
 | `VietQRMinTopUp` | Mức nạp tối thiểu |
 
 Luồng: khách chọn VietQR → backend tạo đơn `pending` + trả ảnh QR (img.vietqr.io)
-với số tiền VND và nội dung `DGAI<userId><mã>` → khách quét và chuyển khoản.
+với số tiền VND và nội dung `DGAI<VQR + 8 ký tự>` → khách quét và chuyển khoản.
 
 ### Đối soát tự động
 
@@ -193,7 +193,15 @@ Cổng merchant của VietQR ghép base URL với base path, nên khai báo base
 `https://dgai.io.vn` và base path `vqr`. Hai route tương đương cũng có dưới
 `/api/user/vietqr/...` nếu portal của bạn dùng đường dẫn đầy đủ.
 
-Cấu hình `VietQRSyncUsername/Password/SecretKey` rồi khai báo URL này với VietQR.
+`VietQRSyncUsername/Password` là cặp Basic auth **mình tự đặt** rồi gửi cho
+VietQR; họ dùng nó gọi `token_generate`. `VietQRSyncSecretKey` là khoá HMAC ký
+bearer token (5 phút, chấp nhận cả cửa sổ trước để bù lệch giờ).
+
+QR tạo qua img.vietqr.io nên callback **không có `orderId`** — đối soát dựa vào
+nội dung chuyển khoản: bỏ ký tự không phải chữ/số, tìm `DGAI`, lấy đúng
+11 ký tự tiếp theo làm `trade_no`. Nhờ vậy ngân hàng thêm khoảng trắng, đổi
+hoa/thường hay khách ghi thêm đều khớp.
+
 Nếu chưa có hợp đồng merchant, để trống — quản trị viên xác nhận tay bằng
 `POST /api/user/topup/complete` với `trade_no` của đơn.
 
