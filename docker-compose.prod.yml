@@ -35,6 +35,10 @@ services:
       - ERROR_LOG_ENABLED=true
       - STREAMING_TIMEOUT=300
       - NODE_NAME=dgai-node-1
+      # The dashboard refreshes its session on every page load, so the shared
+      # critical bucket must cover normal browsing, not just login attempts.
+      - CRITICAL_RATE_LIMIT=120
+      - CRITICAL_RATE_LIMIT_DURATION=60
     deploy:
       resources:
         limits:
