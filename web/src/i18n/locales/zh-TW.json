@@ -7349,10 +7349,16 @@
     "Download config file": "下載設定檔",
     "Select a model to generate the configuration.": "請選擇模型以產生設定。",
     "This payment code has expired. Create a new top-up to get a fresh code.": "該付款碼已過期，請重新發起儲值以取得新的付款碼。",
+    "I have paid — check my payment": "我已完成付款 — 檢查支付",
     "Payment confirmed. Your balance has been credited.": "付款已確認，餘額已入帳。",
     "Top-up credited": "儲值已入帳",
     "We have not received your transfer yet. Wait a moment and check again.": "尚未收到您的轉帳，請稍後再檢查。",
-    "I have paid — check my payment": "我已完成付款 — 檢查支付",
-    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "閘道目前使用 VietQR 測試模式，無法自動驗證真實轉帳，管理員將手動入帳。"
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "閘道目前使用 VietQR 測試模式，無法自動驗證真實轉帳，管理員將手動入帳。",
+    "Top-up bonus (%)": "儲值贈送 (%)",
+    "Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.": "在已支付金額之外額外贈送的額度。5 表示支付 10 美元可獲得 10.50。",
+    "Minimum amount for the bonus": "獲得贈送的最低金額",
+    "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "低於此金額的儲值不贈送。將百分比設為 0 可關閉活動。",
+    "Signup bonus threshold": "註冊獎勵門檻",
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "發放新用戶獎勵前需要累計儲值的金額。0 表示註冊時立即發放。"
   }
 }

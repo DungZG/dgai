@@ -209,6 +209,19 @@ func GetTopUpByTradeNo(tradeNo string) *TopUp {
 	return topUp
 }
 
+// GetPendingVietQROrders returns the VietQR orders still waiting for payment,
+// created at or after since. The settlement poller walks them to credit the
+// ones the gateway reports as paid.
+func GetPendingVietQROrders(since int64) ([]*TopUp, error) {
+	var orders []*TopUp
+	err := DB.Where("payment_provider = ? AND status = ? AND create_time >= ?",
+		PaymentProviderVietQR, common.TopUpStatusPending, since).
+		Order("id asc").
+		Limit(100).
+		Find(&orders).Error
+	return orders, err
+}
+
 func UpdatePendingTopUpStatus(tradeNo string, expectedPaymentProvider string, targetStatus string) error {
 	if tradeNo == "" {
 		return errors.New("payment order number not provided")

@@ -7349,10 +7349,16 @@
     "Download config file": "Tải file cấu hình",
     "Select a model to generate the configuration.": "Chọn model để sinh cấu hình.",
     "This payment code has expired. Create a new top-up to get a fresh code.": "Mã thanh toán này đã hết hạn. Hãy tạo lần nạp mới để nhận mã mới.",
+    "I have paid — check my payment": "Tôi đã chuyển khoản — kiểm tra thanh toán",
     "Payment confirmed. Your balance has been credited.": "Đã xác nhận thanh toán. Số dư của bạn đã được cộng.",
     "Top-up credited": "Đã cộng tiền nạp",
     "We have not received your transfer yet. Wait a moment and check again.": "Chưa nhận được khoản chuyển của bạn. Vui lòng đợi một lát rồi kiểm tra lại.",
-    "I have paid — check my payment": "Tôi đã chuyển khoản — kiểm tra thanh toán",
-    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "Cổng thanh toán đang ở chế độ thử nghiệm VietQR nên không thể xác minh khoản chuyển thật tự động. Quản trị viên sẽ cộng tiền thủ công."
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "Cổng thanh toán đang ở chế độ thử nghiệm VietQR nên không thể xác minh khoản chuyển thật tự động. Quản trị viên sẽ cộng tiền thủ công.",
+    "Top-up bonus (%)": "Tặng thêm khi nạp (%)",
+    "Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.": "Credit cộng thêm ngoài số tiền đã trả. 5 nghĩa là nạp 10 đô sẽ nhận 10,50.",
+    "Minimum amount for the bonus": "Số tiền tối thiểu để được tặng",
+    "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Nạp dưới mức này không được tặng. Đặt phần trăm về 0 để tắt khuyến mãi.",
+    "Signup bonus threshold": "Ngưỡng nạp để nhận thưởng đăng ký",
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Tổng số tiền nạp cần đạt trước khi cộng thưởng người dùng mới. 0 là cộng ngay khi đăng ký."
   }
 }

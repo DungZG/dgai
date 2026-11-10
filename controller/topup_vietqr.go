@@ -198,6 +198,15 @@ func VietQRTokenGenerate(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "FAILED", "message": "sync credentials not configured"})
 		return
 	}
+	// The sync pair is what we issue to VietQR; the merchant pair is what they
+	// issue to us. Reusing one for both lets VietQR authenticate to our own
+	// token endpoint, so the merchant pair must never be accepted here.
+	if setting.VietQRUsername != "" &&
+		strings.EqualFold(setting.VietQRSyncUsername, setting.VietQRUsername) {
+		logger.LogError(c.Request.Context(), common.LogText("vietqr sync credentials collide with the merchant credentials; reconfigure VietQRSyncUsername"))
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "FAILED", "message": "sync credentials are misconfigured"})
+		return
+	}
 	username, password, ok := c.Request.BasicAuth()
 	if !ok ||
 		!hmac.Equal([]byte(username), []byte(setting.VietQRSyncUsername)) ||
@@ -522,4 +531,56 @@ func VietQRConfirmPayment(c *gin.Context) {
 		return
 	}
 	common.ApiSuccess(c, gin.H{"status": "success", "trade_no": topUp.TradeNo})
+}
+
+// StartVietQRSettlementWorker credits pending VietQR orders by polling the
+// gateway's own check-order API. It covers the window where VietQR's callback
+// is delayed or has not been configured on their side yet, which is exactly
+// when a customer has paid but their wallet is still empty.
+//
+// Sandbox is skipped: its check-order only knows QR codes minted in the test
+// system, so polling it would never settle a real transfer.
+func StartVietQRSettlementWorker(interval time.Duration) {
+	if interval <= 0 {
+		interval = 30 * time.Second
+	}
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for range ticker.C {
+		if setting.VietQRSandbox || setting.VietQRUsername == "" || setting.VietQRPassword == "" {
+			continue
+		}
+		settlePendingVietQROrders()
+	}
+}
+
+// settlePendingVietQROrders walks the pending orders that are still inside
+// their payment window and credits every one the gateway reports as paid.
+func settlePendingVietQROrders() {
+	now := time.Now().Unix()
+	orders, err := model.GetPendingVietQROrders(now - 2*3600)
+	if err != nil {
+		common.SysError(common.LogText("failed to list pending vietqr orders: %s", err.Error()))
+		return
+	}
+	for _, order := range orders {
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		status, err := vietqrCheckOrderStatus(ctx, order.TradeNo)
+		cancel()
+		if err != nil {
+			logger.LogError(context.Background(), common.LogText("vietqr poll check-order failed trade_no=%s error=%q", order.TradeNo, err.Error()))
+			continue
+		}
+		if status != 1 {
+			continue
+		}
+		LockOrder(order.TradeNo)
+		err = model.ManualCompleteTopUp(order.TradeNo, "vietqr-poller")
+		UnlockOrder(order.TradeNo)
+		if err != nil {
+			logger.LogError(context.Background(), common.LogText("vietqr poll credit failed trade_no=%s error=%q", order.TradeNo, err.Error()))
+			continue
+		}
+		common.SysLog(common.LogText("vietqr poll credited trade_no=%s user_id=%d", order.TradeNo, order.UserId))
+	}
 }

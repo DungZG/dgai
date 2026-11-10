@@ -7349,10 +7349,16 @@
     "Download config file": "Скачать файл конфигурации",
     "Select a model to generate the configuration.": "Выберите модель, чтобы создать конфигурацию.",
     "This payment code has expired. Create a new top-up to get a fresh code.": "Срок действия этого платёжного кода истёк. Создайте новое пополнение, чтобы получить новый код.",
+    "I have paid — check my payment": "Я оплатил — проверить платёж",
     "Payment confirmed. Your balance has been credited.": "Платёж подтверждён. Баланс пополнен.",
     "Top-up credited": "Пополнение зачислено",
     "We have not received your transfer yet. Wait a moment and check again.": "Перевод ещё не получен. Подождите немного и проверьте снова.",
-    "I have paid — check my payment": "Я оплатил — проверить платёж",
-    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "Шлюз работает с VietQR в тестовом режиме, поэтому реальный перевод нельзя проверить автоматически. Администратор зачислит средства вручную."
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "Шлюз работает с VietQR в тестовом режиме, поэтому реальный перевод нельзя проверить автоматически. Администратор зачислит средства вручную.",
+    "Top-up bonus (%)": "Бонус за пополнение (%)",
+    "Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.": "Дополнительный кредит сверх оплаченной суммы. 5 означает, что платёж в 10 долларов зачислит 10,50.",
+    "Minimum amount for the bonus": "Минимальная сумма для бонуса",
+    "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Пополнения ниже этой суммы не получают бонус. Установите процент в 0, чтобы отключить акцию.",
+    "Signup bonus threshold": "Порог бонуса за регистрацию",
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Суммарные пополнения, необходимые для начисления бонуса новому пользователю. 0 — начислять при регистрации."
   }
 }

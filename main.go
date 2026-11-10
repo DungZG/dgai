@@ -115,6 +115,9 @@ func main() {
 	go model.SyncOptions(common.SyncFrequency)
 	go controller.SyncTaskPlugins()
 
+	// Credit pending VietQR orders whose transfer the gateway already sees.
+	go controller.StartVietQRSettlementWorker(30 * time.Second)
+
 	// 周期性重载授权策略，保证多节点/多 master 部署下权限变更能传播到每个实例
 	go authz.StartPolicySync(common.SyncFrequency)
 

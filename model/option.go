@@ -252,6 +252,15 @@ func validateOptionValue(key string, value string) error {
 	if err := operation_setting.ValidateQuotaOption(key, value); err != nil {
 		return err
 	}
+	// The sync pair is what we hand to VietQR; the merchant pair is what they
+	// hand us. Sharing one value would let VietQR authenticate to our own token
+	// endpoint, so reject the collision when it is configured.
+	if key == "VietQRSyncUsername" && value != "" && strings.EqualFold(value, setting.VietQRUsername) {
+		return common.NewMessage("The VietQR sync username must differ from the merchant username")
+	}
+	if key == "VietQRUsername" && value != "" && strings.EqualFold(value, setting.VietQRSyncUsername) {
+		return common.NewMessage("The VietQR merchant username must differ from the sync username")
+	}
 	if key == "EmailProvider" || key == "ResendApiKey" || key == "ResendFrom" {
 		if key == "EmailProvider" && value != "smtp" && value != "resend" {
 			return common.NewMessage("Email sending method must be SMTP or Resend")

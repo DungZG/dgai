@@ -143,6 +143,15 @@ const BILLING_SECTIONS = [
           PayMethods: settings.PayMethods,
           AmountOptions: settings['payment_setting.amount_options'],
           AmountDiscount: settings['payment_setting.amount_discount'],
+          TopUpBonusPercent: Number(
+            settings['payment_setting.topup_bonus_percent'] || 0
+          ),
+          TopUpBonusMinAmount: Number(
+            settings['payment_setting.topup_bonus_min_amount'] || 0
+          ),
+          SignupBonusMinTopUp: Number(
+            settings['payment_setting.signup_bonus_min_top_up'] || 0
+          ),
           StripeApiSecret: settings.StripeApiSecret,
           StripeWebhookSecret: settings.StripeWebhookSecret,
           StripePriceId: settings.StripePriceId,

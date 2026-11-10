@@ -7353,6 +7353,12 @@
     "Payment confirmed. Your balance has been credited.": "Payment confirmed. Your balance has been credited.",
     "Top-up credited": "Top-up credited",
     "We have not received your transfer yet. Wait a moment and check again.": "We have not received your transfer yet. Wait a moment and check again.",
-    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually."
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.",
+    "Top-up bonus (%)": "Top-up bonus (%)",
+    "Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.": "Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.",
+    "Minimum amount for the bonus": "Minimum amount for the bonus",
+    "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.",
+    "Signup bonus threshold": "Signup bonus threshold",
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead."
   }
 }

@@ -130,6 +130,9 @@ const paymentSchema = z.object({
       })
     }
   }),
+  TopUpBonusPercent: z.coerce.number().min(0).max(100),
+  TopUpBonusMinAmount: z.coerce.number().min(0),
+  SignupBonusMinTopUp: z.coerce.number().min(0),
   AmountDiscount: z.string().superRefine((value, ctx) => {
     const error = getJsonError(
       value,
@@ -357,6 +360,9 @@ export function PaymentSettingsSection({
       PayMethods: formatJsonForEditor(initialFormValues.PayMethods),
       AmountOptions: formatJsonForEditor(initialFormValues.AmountOptions),
       AmountDiscount: formatJsonForEditor(initialFormValues.AmountDiscount),
+      TopUpBonusPercent: initialFormValues.TopUpBonusPercent,
+      TopUpBonusMinAmount: initialFormValues.TopUpBonusMinAmount,
+      SignupBonusMinTopUp: initialFormValues.SignupBonusMinTopUp,
       CreemProducts: formatJsonForEditor(initialFormValues.CreemProducts),
     },
   })
@@ -429,6 +435,9 @@ export function PaymentSettingsSection({
       PayMethods: values.PayMethods.trim(),
       AmountOptions: values.AmountOptions.trim(),
       AmountDiscount: values.AmountDiscount.trim(),
+      TopUpBonusPercent: values.TopUpBonusPercent,
+      TopUpBonusMinAmount: values.TopUpBonusMinAmount,
+      SignupBonusMinTopUp: values.SignupBonusMinTopUp,
       StripeApiSecret: values.StripeApiSecret.trim(),
       StripeWebhookSecret: values.StripeWebhookSecret.trim(),
       StripePriceId: values.StripePriceId.trim(),
@@ -473,6 +482,9 @@ export function PaymentSettingsSection({
       PayMethods: initialRef.current.PayMethods.trim(),
       AmountOptions: initialRef.current.AmountOptions.trim(),
       AmountDiscount: initialRef.current.AmountDiscount.trim(),
+      TopUpBonusPercent: initialRef.current.TopUpBonusPercent,
+      TopUpBonusMinAmount: initialRef.current.TopUpBonusMinAmount,
+      SignupBonusMinTopUp: initialRef.current.SignupBonusMinTopUp,
       StripeApiSecret: initialRef.current.StripeApiSecret.trim(),
       StripeWebhookSecret: initialRef.current.StripeWebhookSecret.trim(),
       StripePriceId: initialRef.current.StripePriceId.trim(),
@@ -561,6 +573,27 @@ export function PaymentSettingsSection({
       updates.push({
         key: 'payment_setting.amount_discount',
         value: sanitized.AmountDiscount,
+      })
+    }
+
+    if (sanitized.TopUpBonusPercent !== initial.TopUpBonusPercent) {
+      updates.push({
+        key: 'payment_setting.topup_bonus_percent',
+        value: String(sanitized.TopUpBonusPercent),
+      })
+    }
+
+    if (sanitized.TopUpBonusMinAmount !== initial.TopUpBonusMinAmount) {
+      updates.push({
+        key: 'payment_setting.topup_bonus_min_amount',
+        value: String(sanitized.TopUpBonusMinAmount),
+      })
+    }
+
+    if (sanitized.SignupBonusMinTopUp !== initial.SignupBonusMinTopUp) {
+      updates.push({
+        key: 'payment_setting.signup_bonus_min_top_up',
+        value: String(sanitized.SignupBonusMinTopUp),
       })
     }
 
@@ -1130,6 +1163,97 @@ export function PaymentSettingsSection({
                         </FormControl>
                         <FormDescription>
                           {t('Discount map by recharge amount (JSON object)')}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='TopUpBonusPercent'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Top-up bonus (%)')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            step='0.1'
+                            min='0'
+                            max='100'
+                            value={field.value}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='TopUpBonusMinAmount'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Minimum amount for the bonus')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            step='0.01'
+                            min='0'
+                            value={field.value}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='SignupBonusMinTopUp'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Signup bonus threshold')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            step='0.01'
+                            min='0'
+                            value={field.value}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.'
+                          )}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
