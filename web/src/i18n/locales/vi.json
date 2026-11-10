@@ -7352,6 +7352,7 @@
     "Payment confirmed. Your balance has been credited.": "Đã xác nhận thanh toán. Số dư của bạn đã được cộng.",
     "Top-up credited": "Đã cộng tiền nạp",
     "We have not received your transfer yet. Wait a moment and check again.": "Chưa nhận được khoản chuyển của bạn. Vui lòng đợi một lát rồi kiểm tra lại.",
-    "I have paid — check my payment": "Tôi đã chuyển khoản — kiểm tra thanh toán"
+    "I have paid — check my payment": "Tôi đã chuyển khoản — kiểm tra thanh toán",
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "Cổng thanh toán đang ở chế độ thử nghiệm VietQR nên không thể xác minh khoản chuyển thật tự động. Quản trị viên sẽ cộng tiền thủ công."
   }
 }

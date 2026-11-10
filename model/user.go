@@ -678,7 +678,9 @@ func (user *User) Insert(inviterId int) error {
 			if err := user.prepareForInsert(tx); err != nil {
 				return err
 			}
-			user.Quota = common.QuotaForNewUser
+			if operation_setting.GetPaymentSetting().SignupBonusMinTopUp <= 0 {
+				user.Quota = common.QuotaForNewUser
+			}
 			user.AffCode = common.GetRandomString(4)
 
 			// 初始化用户设置，包括默认的边栏配置
@@ -714,7 +716,7 @@ func (user *User) finishInsert(inviterId int) {
 		}
 	}
 
-	if common.QuotaForNewUser > 0 {
+	if common.QuotaForNewUser > 0 && operation_setting.GetPaymentSetting().SignupBonusMinTopUp <= 0 {
 		RecordLog(user.Id, LogTypeSystem, common.NewMessage("New user sign-up bonus {{quota}}", map[string]any{"quota": logger.FormatQuota(common.QuotaForNewUser)}))
 	}
 	if inviterId != 0 && operation_setting.IsPaymentComplianceConfirmed() {
@@ -742,7 +744,9 @@ func (user *User) InsertWithTx(tx *gorm.DB, inviterId int) error {
 		if err := user.prepareForInsert(tx); err != nil {
 			return err
 		}
-		user.Quota = common.QuotaForNewUser
+		if operation_setting.GetPaymentSetting().SignupBonusMinTopUp <= 0 {
+			user.Quota = common.QuotaForNewUser
+		}
 		user.AffCode = common.GetRandomString(4)
 
 		// 初始化用户设置
@@ -771,7 +775,7 @@ func (user *User) FinalizeOAuthUserCreation(inviterId int) {
 		}
 	}
 
-	if common.QuotaForNewUser > 0 {
+	if common.QuotaForNewUser > 0 && operation_setting.GetPaymentSetting().SignupBonusMinTopUp <= 0 {
 		RecordLog(user.Id, LogTypeSystem, common.NewMessage("New user sign-up bonus {{quota}}", map[string]any{"quota": logger.FormatQuota(common.QuotaForNewUser)}))
 	}
 	if inviterId != 0 && operation_setting.IsPaymentComplianceConfirmed() {

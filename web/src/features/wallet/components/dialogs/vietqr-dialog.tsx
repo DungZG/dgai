@@ -198,6 +198,12 @@ export function VietQRDialog(props: VietQRDialogProps) {
                       setPaid(true)
                       toast.success(t('Top-up credited'))
                       props.onPaid?.()
+                    } else if (result.reason === 'sandbox') {
+                      toast.warning(
+                        t(
+                          'This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.'
+                        )
+                      )
                     } else {
                       toast.info(
                         t(

@@ -498,6 +498,17 @@ func VietQRConfirmPayment(c *gin.Context) {
 		return
 	}
 	if status != 1 {
+		// Sandbox only sees transactions minted in the test system, so a real
+		// bank transfer can never be confirmed there. Say so instead of telling
+		// the customer to keep waiting.
+		if setting.VietQRSandbox {
+			common.ApiSuccess(c, gin.H{
+				"status":  "pending",
+				"trade_no": topUp.TradeNo,
+				"reason":  "sandbox",
+			})
+			return
+		}
 		// Still waiting for the bank, or no transaction yet.
 		common.ApiSuccess(c, gin.H{"status": "pending", "trade_no": topUp.TradeNo})
 		return

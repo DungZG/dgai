@@ -7352,6 +7352,7 @@
     "Payment confirmed. Your balance has been credited.": "Paiement confirmé. Votre solde a été crédité.",
     "Top-up credited": "Rechargement crédité",
     "We have not received your transfer yet. Wait a moment and check again.": "Nous n'avons pas encore reçu votre virement. Patientez un instant et vérifiez à nouveau.",
-    "I have paid — check my payment": "J'ai payé — vérifier mon paiement"
+    "I have paid — check my payment": "J'ai payé — vérifier mon paiement",
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "La passerelle utilise VietQR en mode test : un virement réel ne peut pas être vérifié automatiquement. Un administrateur créditera manuellement."
   }
 }

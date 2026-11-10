@@ -7352,6 +7352,7 @@
     "Payment confirmed. Your balance has been credited.": "Платёж подтверждён. Баланс пополнен.",
     "Top-up credited": "Пополнение зачислено",
     "We have not received your transfer yet. Wait a moment and check again.": "Перевод ещё не получен. Подождите немного и проверьте снова.",
-    "I have paid — check my payment": "Я оплатил — проверить платёж"
+    "I have paid — check my payment": "Я оплатил — проверить платёж",
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "Шлюз работает с VietQR в тестовом режиме, поэтому реальный перевод нельзя проверить автоматически. Администратор зачислит средства вручную."
   }
 }

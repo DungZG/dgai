@@ -15,6 +15,10 @@ type PaymentSetting struct {
 	TopUpBonusPercent   float64 `json:"topup_bonus_percent"`
 	TopUpBonusMinAmount int     `json:"topup_bonus_min_amount"`
 
+	// SignupBonusMinTopUp defers the new-user bonus until the customer has paid
+	// this much in successful top-ups. Zero grants it at registration instead.
+	SignupBonusMinTopUp float64 `json:"signup_bonus_min_top_up"`
+
 	ComplianceConfirmed    bool   `json:"compliance_confirmed"`
 	ComplianceTermsVersion string `json:"compliance_terms_version"`
 	ComplianceConfirmedAt  int64  `json:"compliance_confirmed_at"`

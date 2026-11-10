@@ -7352,6 +7352,7 @@
     "I have paid — check my payment": "I have paid — check my payment",
     "Payment confirmed. Your balance has been credited.": "Payment confirmed. Your balance has been credited.",
     "Top-up credited": "Top-up credited",
-    "We have not received your transfer yet. Wait a moment and check again.": "We have not received your transfer yet. Wait a moment and check again."
+    "We have not received your transfer yet. Wait a moment and check again.": "We have not received your transfer yet. Wait a moment and check again.",
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually."
   }
 }

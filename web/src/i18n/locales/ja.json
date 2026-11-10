@@ -7352,6 +7352,7 @@
     "Payment confirmed. Your balance has been credited.": "支払いが確認されました。残高に反映されました。",
     "Top-up credited": "チャージが反映されました",
     "We have not received your transfer yet. Wait a moment and check again.": "まだ振り込みが確認できません。しばらく待ってから再度ご確認ください。",
-    "I have paid — check my payment": "支払いました — 支払いを確認する"
+    "I have paid — check my payment": "支払いました — 支払いを確認する",
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "ゲートウェイは VietQR のテストモードのため、実際の振り込みを自動確認できません。管理者が手動で入金します。"
   }
 }

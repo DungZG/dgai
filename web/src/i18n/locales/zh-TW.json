@@ -7352,6 +7352,7 @@
     "Payment confirmed. Your balance has been credited.": "付款已確認，餘額已入帳。",
     "Top-up credited": "儲值已入帳",
     "We have not received your transfer yet. Wait a moment and check again.": "尚未收到您的轉帳，請稍後再檢查。",
-    "I have paid — check my payment": "我已完成付款 — 檢查支付"
+    "I have paid — check my payment": "我已完成付款 — 檢查支付",
+    "This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.": "閘道目前使用 VietQR 測試模式，無法自動驗證真實轉帳，管理員將手動入帳。"
   }
 }
