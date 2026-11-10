@@ -273,7 +273,13 @@ func vietqrCheckOrderStatus(ctx context.Context, orderId string) (int, error) {
 		return 0, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("vietqr check-order returned %d: %s", res.StatusCode, strings.TrimSpace(string(body)))
+		bodyText := strings.TrimSpace(string(body))
+		// E96 is "transaction not found": the customer has not transferred yet,
+		// which is a pending state rather than a failure.
+		if strings.Contains(bodyText, "E96") {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("vietqr check-order returned %d: %s", res.StatusCode, bodyText)
 	}
 	var orders []struct {
 		Status int `json:"status"`
