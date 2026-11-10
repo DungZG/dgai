@@ -7347,6 +7347,7 @@
     "Pick a client, choose the models it should use, then copy the configuration.": "Выберите клиент и модели, затем скопируйте конфигурацию.",
     "Connect a CLI": "Подключить CLI",
     "Download config file": "Скачать файл конфигурации",
-    "Select a model to generate the configuration.": "Выберите модель, чтобы создать конфигурацию."
+    "Select a model to generate the configuration.": "Выберите модель, чтобы создать конфигурацию.",
+    "This payment code has expired. Create a new top-up to get a fresh code.": "Срок действия этого платёжного кода истёк. Создайте новое пополнение, чтобы получить новый код."
   }
 }

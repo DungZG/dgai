@@ -7347,6 +7347,7 @@
     "Pick a client, choose the models it should use, then copy the configuration.": "Choisissez un client et ses modèles, puis copiez la configuration.",
     "Connect a CLI": "Connecter un CLI",
     "Download config file": "Télécharger le fichier de configuration",
-    "Select a model to generate the configuration.": "Sélectionnez un modèle pour générer la configuration."
+    "Select a model to generate the configuration.": "Sélectionnez un modèle pour générer la configuration.",
+    "This payment code has expired. Create a new top-up to get a fresh code.": "Ce code de paiement a expiré. Créez un nouveau rechargement pour obtenir un nouveau code."
   }
 }

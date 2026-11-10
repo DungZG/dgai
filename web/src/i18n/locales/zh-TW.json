@@ -7347,6 +7347,7 @@
     "Pick a client, choose the models it should use, then copy the configuration.": "選擇用戶端與對應模型，然後複製設定。",
     "Connect a CLI": "連接 CLI",
     "Download config file": "下載設定檔",
-    "Select a model to generate the configuration.": "請選擇模型以產生設定。"
+    "Select a model to generate the configuration.": "請選擇模型以產生設定。",
+    "This payment code has expired. Create a new top-up to get a fresh code.": "該付款碼已過期，請重新發起儲值以取得新的付款碼。"
   }
 }
