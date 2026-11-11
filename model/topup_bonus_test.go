@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
@@ -100,4 +101,59 @@ func signupBonusLogCount(t *testing.T, db *gorm.DB, userId int) int64 {
 		Where("user_id = ? AND type = ? AND content LIKE ?", userId, LogTypeSystem, "%New user sign-up bonus%").
 		Count(&count).Error)
 	return count
+}
+
+// A referred customer's payment pays the inviter a share of the base credit,
+// never of the promotional bonus, and only when the rate is enabled.
+func TestReferralCommissionOnTopUp(t *testing.T) {
+	db := useTopUpBonusDB(t)
+	setSignupBonus(t, 0, 0)
+
+	previousPercent := setting.ReferralCommissionPercent
+	previousRate := common.QuotaPerUnit
+	t.Cleanup(func() {
+		setting.ReferralCommissionPercent = previousPercent
+		common.QuotaPerUnit = previousRate
+	})
+	common.QuotaPerUnit = 500000
+
+	inviter := &User{Username: "inviter", AffCode: "inv001"}
+	require.NoError(t, inviter.Insert(0))
+	invitee := &User{Username: "invitee", AffCode: "inv002", InviterId: inviter.Id}
+	require.NoError(t, invitee.Insert(inviter.Id))
+
+	order := &TopUp{
+		UserId: invitee.Id, Amount: 10, Money: 10, TradeNo: "VQRCOMM0001",
+		PaymentProvider: PaymentProviderVietQR, Status: common.TopUpStatusPending,
+		CreateTime: common.GetTimestamp(),
+	}
+	require.NoError(t, db.Create(order).Error)
+
+	// Disabled by default: no commission.
+	setting.ReferralCommissionPercent = 0
+	require.NoError(t, ManualCompleteTopUp(order.TradeNo, "127.0.0.1"))
+	var afterDisabled User
+	require.NoError(t, db.First(&afterDisabled, inviter.Id).Error)
+	require.Zero(t, afterDisabled.AffQuota)
+
+	// 10% of a 10 USD top-up is 1 USD of quota.
+	setting.ReferralCommissionPercent = 10
+	second := &TopUp{
+		UserId: invitee.Id, Amount: 10, Money: 10, TradeNo: "VQRCOMM0002",
+		PaymentProvider: PaymentProviderVietQR, Status: common.TopUpStatusPending,
+		CreateTime: common.GetTimestamp(),
+	}
+	require.NoError(t, db.Create(second).Error)
+	require.NoError(t, ManualCompleteTopUp(second.TradeNo, "127.0.0.1"))
+
+	var afterEnabled User
+	require.NoError(t, db.First(&afterEnabled, inviter.Id).Error)
+	require.EqualValues(t, common.QuotaPerUnit, afterEnabled.AffQuota)
+	require.EqualValues(t, common.QuotaPerUnit, afterEnabled.AffHistoryQuota)
+
+	var logCount int64
+	require.NoError(t, db.Model(&Log{}).
+		Where("user_id = ? AND type = ? AND content LIKE ?", inviter.Id, LogTypeSystem, "%commission%").
+		Count(&logCount).Error)
+	require.EqualValues(t, 1, logCount, "the inviter gets one reward event per paid top-up")
 }

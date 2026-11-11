@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "Activer le rapprochement SePay",
     "Secret key": "Clé secrète",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Déclarez {{url}} comme URL de webhook dans SePay et choisissez l'authentification HMAC-SHA256 avec la même clé secrète.",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Le virement est rapproché automatiquement. Si votre solde est toujours vide après une minute, un administrateur vérifiera la transaction."
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Le virement est rapproché automatiquement. Si votre solde est toujours vide après une minute, un administrateur vérifiera la transaction.",
+    "Rewards": "Récompenses",
+    "Recent reward events": "Événements de récompense récents",
+    "Referral rewards and top-up commissions": "Récompenses de parrainage et commissions de recharge",
+    "No reward events yet": "Aucun événement de récompense",
+    "Invite someone or top up to start earning": "Invitez quelqu'un ou rechargez pour commencer à gagner",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Gagnez {{percent}} % de chaque recharge effectuée par vos invités. Transférez les récompenses accumulées vers votre solde à tout moment.",
+    "Referral top-up commission {{quota}} from {{username}}": "Commission de recharge {{quota}} de {{username}}",
+    "Referral commission (%)": "Commission de parrainage (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Pourcentage de chaque recharge d'un filleul versé à son parrain. 0 désactive."
   }
 }

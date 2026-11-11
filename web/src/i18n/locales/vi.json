@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "Bật đối soát SePay",
     "Secret key": "Khoá bí mật",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Khai báo {{url}} làm webhook URL trong SePay và chọn xác thực HMAC-SHA256 với cùng khoá bí mật.",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Khoản chuyển khoản được đối soát tự động. Nếu sau một phút số dư vẫn chưa cập nhật, quản trị viên sẽ kiểm tra giao dịch."
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Khoản chuyển khoản được đối soát tự động. Nếu sau một phút số dư vẫn chưa cập nhật, quản trị viên sẽ kiểm tra giao dịch.",
+    "Rewards": "Hoa hồng",
+    "Recent reward events": "Sự kiện hoa hồng gần đây",
+    "Referral rewards and top-up commissions": "Hoa hồng giới thiệu và hoa hồng nạp",
+    "No reward events yet": "Chưa có sự kiện hoa hồng",
+    "Invite someone or top up to start earning": "Mời bạn bè hoặc nạp tiền để bắt đầu nhận hoa hồng",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Nhận {{percent}}% mỗi lần người bạn mời nạp tiền. Chuyển hoa hồng đã tích lũy vào số dư bất cứ lúc nào.",
+    "Referral top-up commission {{quota}} from {{username}}": "Hoa hồng nạp {{quota}} từ {{username}}",
+    "Referral commission (%)": "Hoa hồng giới thiệu (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Phần trăm mỗi lần nạp của người được giới thiệu trả cho người mời. 0 là tắt."
   }
 }

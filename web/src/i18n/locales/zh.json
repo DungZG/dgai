@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "启用 SePay 对账",
     "Secret key": "密钥",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "在 SePay 中将 {{url}} 配置为 Webhook 地址，并选择使用同一密钥的 HMAC-SHA256 验证。",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "银行转账会自动对账。若一分钟后余额仍未到账，管理员将核查该笔交易。"
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "银行转账会自动对账。若一分钟后余额仍未到账，管理员将核查该笔交易。",
+    "Rewards": "奖励",
+    "Recent reward events": "最近奖励事件",
+    "Referral rewards and top-up commissions": "推荐奖励与充值佣金",
+    "No reward events yet": "暂无奖励事件",
+    "Invite someone or top up to start earning": "邀请好友或充值即可开始获得奖励",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "您邀请的用户每次充值，您可获得 {{percent}}%。累积奖励可随时转入余额。",
+    "Referral top-up commission {{quota}} from {{username}}": "来自 {{username}} 的充值佣金 {{quota}}",
+    "Referral commission (%)": "推荐佣金 (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "推荐用户每次充值的百分比支付给邀请人。0 表示关闭。"
   }
 }

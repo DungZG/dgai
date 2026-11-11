@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "Enable SePay reconciliation",
     "Secret key": "Secret key",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction."
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.",
+    "Rewards": "Rewards",
+    "Recent reward events": "Recent reward events",
+    "Referral rewards and top-up commissions": "Referral rewards and top-up commissions",
+    "No reward events yet": "No reward events yet",
+    "Invite someone or top up to start earning": "Invite someone or top up to start earning",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.",
+    "Referral top-up commission {{quota}} from {{username}}": "Referral top-up commission {{quota}} from {{username}}",
+    "Referral commission (%)": "Referral commission (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Percentage of each referred customer's top-up paid to their inviter. 0 disables it."
   }
 }

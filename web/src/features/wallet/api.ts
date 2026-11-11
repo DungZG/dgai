@@ -32,6 +32,7 @@ import type {
   StripePaymentResponse,
   AffiliateCodeResponse,
   AffiliateTransferResponse,
+  ReferralInfoResponse,
   BillingHistoryResponse,
   CompleteOrderRequest,
   CreemPaymentRequest,
@@ -214,6 +215,14 @@ export async function requestWaffoPancakePayment(
  */
 export async function getAffiliateCode(): Promise<AffiliateCodeResponse> {
   const res = await api.get('/api/user/aff')
+  return res.data
+}
+
+/**
+ * Referral totals, commission rate and recent reward events for the current user
+ */
+export async function getReferralInfo(): Promise<ReferralInfoResponse> {
+  const res = await api.get('/api/user/referral')
   return res.data
 }
 

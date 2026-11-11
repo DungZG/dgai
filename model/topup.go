@@ -140,7 +140,15 @@ func creditTopUpWithBonus(tx *gorm.DB, userId int, baseQuota int, paidUSD float6
 	if err != nil {
 		return 0, 0, err
 	}
-	return bonus, signupBonus, creditTopUpQuota(tx, userId, baseQuota+bonus+signupBonus, updates)
+	if err := creditTopUpQuota(tx, userId, baseQuota+bonus+signupBonus, updates); err != nil {
+		return 0, 0, err
+	}
+	// Only the real payment earns a commission; the promotional bonus above is
+	// not money the customer paid, so the inviter must not take a share of it.
+	if _, err := CreditReferralCommission(tx, userId, baseQuota); err != nil {
+		return 0, 0, err
+	}
+	return bonus, signupBonus, nil
 }
 
 // claimDeferredSignupBonus grants the signup reward once, when the customer's

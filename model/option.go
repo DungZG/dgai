@@ -141,6 +141,7 @@ func InitOptionMap() {
 	common.OptionMap["VietQRVNDRate"] = strconv.FormatFloat(setting.VietQRVNDRate, 'f', -1, 64)
 	common.OptionMap["VietQRMinTopUp"] = strconv.Itoa(setting.VietQRMinTopUp)
 	common.OptionMap["VietQRAPIBaseURL"] = setting.VietQRAPIBaseURL
+	common.OptionMap["ReferralCommissionPercent"] = strconv.FormatFloat(setting.ReferralCommissionPercent, 'f', -1, 64)
 	common.OptionMap["SePayEnabled"] = strconv.FormatBool(setting.SePayEnabled)
 	common.OptionMap["SePayMerchantID"] = setting.SePayMerchantID
 	common.OptionMap["SePaySecretKey"] = setting.SePaySecretKey
@@ -605,6 +606,12 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.VietQRMinTopUp, _ = strconv.Atoi(value)
 	case "VietQRAPIBaseURL":
 		setting.VietQRAPIBaseURL = strings.TrimRight(value, "/")
+	case "ReferralCommissionPercent":
+		percent, err := strconv.ParseFloat(value, 64)
+		if err != nil || percent < 0 || percent > 100 {
+			return common.NewMessage("Referral commission must be between 0 and 100")
+		}
+		setting.ReferralCommissionPercent = percent
 	case "SePayEnabled":
 		setting.SePayEnabled = value == "true"
 	case "SePayMerchantID":

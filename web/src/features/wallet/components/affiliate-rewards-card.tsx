@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { Share2 } from 'lucide-react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import { CopyButton } from '@/components/copy-button'
@@ -26,12 +27,14 @@ import { IconBadge } from '@/components/ui/icon-badge'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatQuota } from '@/lib/format'
+import { formatDateTimeObject } from '@/lib/time'
 
-import type { UserWalletData } from '../types'
+import type { ReferralEvent, ReferralInfo, UserWalletData } from '../types'
 
 interface AffiliateRewardsCardProps {
   user: UserWalletData | null
   affiliateLink: string
+  referral?: ReferralInfo | null
   onTransfer: () => void
   complianceConfirmed?: boolean
   loading?: boolean
@@ -40,6 +43,7 @@ interface AffiliateRewardsCardProps {
 export function AffiliateRewardsCard({
   user,
   affiliateLink,
+  referral,
   onTransfer,
   complianceConfirmed = true,
   loading,
@@ -61,6 +65,8 @@ export function AffiliateRewardsCard({
   }
 
   const hasRewards = (user?.aff_quota ?? 0) > 0
+  const commissionPercent = referral?.commission_percent ?? 0
+  const recentEvents = (referral?.events ?? []).slice(0, 3)
 
   return (
     <Card data-card-hover='false' className='bg-muted/20 py-0'>
@@ -74,9 +80,14 @@ export function AffiliateRewardsCard({
               {t('Referral Program')}
             </h3>
             <p className='text-muted-foreground line-clamp-1 text-xs'>
-              {t(
-                'Earn rewards when users join through your referral link. Transfer accumulated rewards to your balance anytime.'
-              )}
+              {commissionPercent > 0
+                ? t(
+                    'Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.',
+                    { percent: commissionPercent }
+                  )
+                : t(
+                    'Earn rewards when users join through your referral link. Transfer accumulated rewards to your balance anytime.'
+                  )}
             </p>
           </div>
         </div>
@@ -130,7 +141,36 @@ export function AffiliateRewardsCard({
             )}
           </p>
         ) : null}
+
+        {recentEvents.length > 0 ? (
+          <div className='border-border/60 space-y-1.5 border-t pt-3 lg:col-span-3'>
+            <div className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
+              {t('Recent reward events')}
+            </div>
+            {recentEvents.map((event) => (
+              <div
+                key={event.id}
+                className='flex items-start justify-between gap-3 text-xs'
+              >
+                <span className='min-w-0 flex-1'>{eventText(event, t)}</span>
+                <span className='text-muted-foreground shrink-0 tabular-nums'>
+                  {formatDateTimeObject(new Date(event.created_at * 1000))}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )
+}
+
+// The backend stores reward events as English source keys plus params so the
+// text follows the viewer's language; older rows fall back to the plain text.
+function eventText(event: ReferralEvent, t: TFunction): string {
+  const parts = event.other?.content_parts
+  if (!Array.isArray(parts) || parts.length === 0) {
+    return event.content
+  }
+  return parts.map((part) => t(part.key, part.params)).join(', ')
 }

@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "啟用 SePay 對帳",
     "Secret key": "金鑰",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "在 SePay 中將 {{url}} 設為 Webhook 網址，並選擇使用同一金鑰的 HMAC-SHA256 驗證。",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "銀行轉帳會自動對帳。若一分鐘後餘額仍未入帳，管理員將核查該筆交易。"
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "銀行轉帳會自動對帳。若一分鐘後餘額仍未入帳，管理員將核查該筆交易。",
+    "Rewards": "獎勵",
+    "Recent reward events": "最近獎勵事件",
+    "Referral rewards and top-up commissions": "推薦獎勵與儲值佣金",
+    "No reward events yet": "尚無獎勵事件",
+    "Invite someone or top up to start earning": "邀請好友或儲值即可開始獲得獎勵",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "您邀請的使用者每次儲值，您可獲得 {{percent}}%。累積獎勵可隨時轉入餘額。",
+    "Referral top-up commission {{quota}} from {{username}}": "來自 {{username}} 的儲值佣金 {{quota}}",
+    "Referral commission (%)": "推薦佣金 (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "推薦使用者每次儲值的百分比支付給邀請人。0 表示關閉。"
   }
 }

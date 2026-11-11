@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "SePay 照合を有効化",
     "Secret key": "シークレットキー",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "SePay で {{url}} を Webhook URL として登録し、同じシークレットキーで HMAC-SHA256 認証を選択してください。",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "銀行振込は自動で照合されます。1 分経っても残高が反映されない場合、管理者が取引を確認します。"
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "銀行振込は自動で照合されます。1 分経っても残高が反映されない場合、管理者が取引を確認します。",
+    "Rewards": "特典",
+    "Recent reward events": "最近の特典イベント",
+    "Referral rewards and top-up commissions": "紹介報酬とチャージ手数料",
+    "No reward events yet": "特典イベントはまだありません",
+    "Invite someone or top up to start earning": "友達を招待するかチャージして獲得を始めましょう",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "招待した人がチャージするたびに {{percent}}% を獲得できます。貯まった特典はいつでも残高に移せます。",
+    "Referral top-up commission {{quota}} from {{username}}": "{{username}} のチャージによる紹介報酬 {{quota}}",
+    "Referral commission (%)": "紹介報酬 (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "招待された利用者のチャージ額のうち紹介者に支払う割合。0 で無効。"
   }
 }

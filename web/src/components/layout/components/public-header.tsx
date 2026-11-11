@@ -298,6 +298,7 @@ export function PublicHeader(props: PublicHeaderProps) {
                   onTabChange={notifications.setActiveTab}
                   notice={notifications.notice}
                   announcements={notifications.announcements}
+              events={notifications.events}
                   loading={notifications.loading}
                 />
               )}

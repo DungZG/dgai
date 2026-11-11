@@ -70,6 +70,7 @@ const defaultBillingSettings: BillingSettings = {
   'payment_setting.amount_options': '',
   'payment_setting.amount_discount': '',
   'payment_setting.topup_bonus_percent': '0',
+  ReferralCommissionPercent: 0,
   'payment_setting.topup_bonus_min_amount': '0',
   'payment_setting.signup_bonus_min_top_up': '0',
   'payment_setting.compliance_confirmed': false,

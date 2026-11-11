@@ -41,6 +41,27 @@ export type PaymentResponse = ApiResponse<Record<string, unknown>> & {
 export type StripePaymentResponse = ApiResponse<{ pay_link: string }>
 export type AffiliateCodeResponse = ApiResponse<string>
 export type AffiliateTransferResponse = ApiResponse
+
+/** One reward event shown in the referral card and the notification bell. */
+export interface ReferralEvent {
+  id: number
+  created_at: number
+  content: string
+  other?: {
+    content_parts?: { key: string; params?: Record<string, unknown> }[]
+  }
+}
+
+export interface ReferralInfo {
+  aff_code: string
+  aff_count: number
+  aff_quota: number
+  aff_history_quota: number
+  commission_percent: number
+  events: ReferralEvent[]
+}
+
+export type ReferralInfoResponse = ApiResponse<ReferralInfo>
 export type CreemPaymentResponse = ApiResponse<{ checkout_url: string }>
 export type WaffoPaymentResponse = ApiResponse<
   { payment_url?: string } | string

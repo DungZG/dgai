@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import type { TFunction } from 'i18next'
-import { Bell, Megaphone } from 'lucide-react'
+import { Bell, Gift, Megaphone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { RichContent } from '@/components/rich-content'
@@ -42,6 +42,7 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getAnnouncementColorClass } from '@/lib/colors'
 import { formatDateTimeObject } from '@/lib/time'
+import type { ReferralEvent } from '@/features/wallet/types'
 import { cn } from '@/lib/utils'
 
 interface AnnouncementItem {
@@ -52,14 +53,17 @@ interface AnnouncementItem {
   publishDate?: string | Date
 }
 
+type NotificationTab = 'notice' | 'announcements' | 'events'
+
 interface NotificationPopoverProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   unreadCount: number
-  activeTab: 'notice' | 'announcements'
-  onTabChange: (tab: 'notice' | 'announcements') => void
+  activeTab: NotificationTab
+  onTabChange: (tab: NotificationTab) => void
   notice: string
   announcements: AnnouncementItem[]
+  events?: ReferralEvent[]
   loading: boolean
   className?: string
 }
@@ -288,6 +292,71 @@ function AnnouncementsContent({
 }
 
 /**
+ * Reward events tab content: referral commissions and invite bonuses.
+ */
+function EventsContent({
+  events,
+  loading,
+  t,
+}: {
+  events: ReferralEvent[]
+  loading: boolean
+  t: TFunction
+}) {
+  if (loading) {
+    return (
+      <EmptyState
+        icon={<Bell />}
+        title={t('Loading...')}
+        description={t('Referral rewards and top-up commissions')}
+      />
+    )
+  }
+
+  if (events.length === 0) {
+    return (
+      <EmptyState
+        icon={<Bell />}
+        title={t('No reward events yet')}
+        description={t('Invite someone or top up to start earning')}
+      />
+    )
+  }
+
+  return (
+    <ScrollArea className='h-[min(52vh,28rem)] pr-3'>
+      <div className='flex flex-col'>
+        {events.map((event, idx) => {
+          const parts = event.other?.content_parts
+          const text =
+            Array.isArray(parts) && parts.length > 0
+              ? parts.map((part) => t(part.key, part.params)).join(', ')
+              : event.content
+          const createdAt = new Date(event.created_at * 1000)
+
+          return (
+            <div key={event.id}>
+              <div className='py-3'>
+                <div className='flex items-start gap-3'>
+                  <span className='bg-primary mt-1.5 inline-block size-2 shrink-0 rounded-full' />
+                  <div className='flex min-w-0 flex-1 flex-col gap-1'>
+                    <div className='text-sm'>{text}</div>
+                    <div className='text-muted-foreground text-xs'>
+                      {formatDateTimeObject(createdAt)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {idx < events.length - 1 ? <Separator /> : null}
+            </div>
+          )
+        })}
+      </div>
+    </ScrollArea>
+  )
+}
+
+/**
  * Notification popover with Notice and Announcements tabs
  */
 export function NotificationPopover({
@@ -298,6 +367,7 @@ export function NotificationPopover({
   onTabChange,
   notice,
   announcements,
+  events = [],
   loading,
   className,
 }: NotificationPopoverProps) {
@@ -341,7 +411,7 @@ export function NotificationPopover({
           value={activeTab}
           onValueChange={onTabChange as (value: string) => void}
         >
-          <TabsList className='grid w-full grid-cols-2'>
+          <TabsList className='grid w-full grid-cols-3'>
             <TabsTrigger value='notice' className='gap-1.5'>
               <Bell className='size-3.5' />
               {t('Notice')}
@@ -349,6 +419,10 @@ export function NotificationPopover({
             <TabsTrigger value='announcements' className='gap-1.5'>
               <Megaphone className='size-3.5' />
               {t('Timeline')}
+            </TabsTrigger>
+            <TabsTrigger value='events' className='gap-1.5'>
+              <Gift className='size-3.5' />
+              {t('Rewards')}
             </TabsTrigger>
           </TabsList>
 
@@ -362,6 +436,10 @@ export function NotificationPopover({
               loading={loading}
               t={t}
             />
+          </TabsContent>
+
+          <TabsContent value='events' className='mt-2'>
+            <EventsContent events={events} loading={loading} t={t} />
           </TabsContent>
         </Tabs>
 

@@ -152,6 +152,9 @@ const BILLING_SECTIONS = [
           SignupBonusMinTopUp: Number(
             settings['payment_setting.signup_bonus_min_top_up'] || 0
           ),
+          ReferralCommissionPercent: Number(
+            settings.ReferralCommissionPercent || 0
+          ),
           StripeApiSecret: settings.StripeApiSecret,
           StripeWebhookSecret: settings.StripeWebhookSecret,
           StripePriceId: settings.StripePriceId,

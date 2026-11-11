@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState, useMemo } from 'react'
 
 import { useStatus } from '@/hooks/use-status'
+import { useReferralInfo } from '@/features/wallet/hooks/use-referral-info'
 import { getNotice } from '@/lib/api'
 import { requireServerSuccess } from '@/lib/server-error-message'
 import { useNotificationStore } from '@/stores/notification-store'
@@ -65,9 +66,14 @@ function getAnnouncementKey(item: Record<string, unknown>): string {
  */
 export function useNotifications() {
   const [popoverOpen, setPopoverOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'notice' | 'announcements'>(
-    'notice'
-  )
+  const [activeTab, setActiveTab] = useState<
+    'notice' | 'announcements' | 'events'
+  >('notice')
+
+  // Reward events (referral commission and signup bonuses) share one cache
+  // entry with the wallet card.
+  const { data: referral, isLoading: referralLoading } = useReferralInfo()
+  const events = useMemo(() => referral?.events ?? [], [referral])
 
   // Fetch Notice from API
   const {
@@ -96,7 +102,9 @@ export function useNotifications() {
     lastReadNotice,
     markNoticeRead,
     markAnnouncementsRead,
+    markEventsRead,
     isAnnouncementRead,
+    lastReadEventAt,
   } = useNotificationStore()
 
   // Extract notice content
@@ -116,12 +124,24 @@ export function useNotifications() {
       }
     ).length
 
+    const eventsUnread = events.filter(
+      (event) => event.created_at > lastReadEventAt
+    ).length
+
     return {
       notice: noticeUnread,
       announcements: announcementsUnread,
-      total: noticeUnread + announcementsUnread,
+      events: eventsUnread,
+      total: noticeUnread + announcementsUnread + eventsUnread,
     }
-  }, [noticeContent, lastReadNotice, announcements, isAnnouncementRead])
+  }, [
+    noticeContent,
+    lastReadNotice,
+    announcements,
+    isAnnouncementRead,
+    events,
+    lastReadEventAt,
+  ])
 
   const markAnnouncementsAsRead = () => {
     if (announcements.length > 0) {
@@ -133,7 +153,19 @@ export function useNotifications() {
   }
 
   // Handle popover open
-  const handleOpenPopover = (tab?: 'notice' | 'announcements') => {
+  const markEventsAsRead = () => {
+    const newest = events.reduce(
+      (latest, event) => Math.max(latest, event.created_at),
+      0
+    )
+    if (newest > 0) {
+      markEventsRead(newest)
+    }
+  }
+
+  const handleOpenPopover = (
+    tab?: 'notice' | 'announcements' | 'events'
+  ) => {
     const nextTab = tab || activeTab
 
     // Mark currently visible content as read when opening the notification center
@@ -142,6 +174,9 @@ export function useNotifications() {
     }
     if (nextTab === 'announcements') {
       markAnnouncementsAsRead()
+    }
+    if (nextTab === 'events') {
+      markEventsAsRead()
     }
 
     setActiveTab(nextTab)
@@ -158,11 +193,14 @@ export function useNotifications() {
   }
 
   // Handle tab change - mark announcements as read when switching to that tab
-  const handleTabChange = (tab: 'notice' | 'announcements') => {
+  const handleTabChange = (tab: 'notice' | 'announcements' | 'events') => {
     setActiveTab(tab)
 
     if (tab === 'announcements') {
       markAnnouncementsAsRead()
+    }
+    if (tab === 'events') {
+      markEventsAsRead()
     }
   }
 
@@ -170,12 +208,14 @@ export function useNotifications() {
     // Data
     notice: noticeContent,
     announcements,
-    loading: noticeLoading || statusLoading,
+    events,
+    loading: noticeLoading || statusLoading || referralLoading,
 
     // Unread counts
     unreadCount: unreadCounts.total,
     unreadNoticeCount: unreadCounts.notice,
     unreadAnnouncementsCount: unreadCounts.announcements,
+    unreadEventsCount: unreadCounts.events,
 
     // Popover state
     popoverOpen,

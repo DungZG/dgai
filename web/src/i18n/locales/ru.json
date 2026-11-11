@@ -7383,6 +7383,15 @@
     "Enable SePay reconciliation": "Включить сверку SePay",
     "Secret key": "Секретный ключ",
     "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Укажите {{url}} как URL вебхука в SePay и выберите аутентификацию HMAC-SHA256 с тем же секретным ключом.",
-    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Банковский перевод сверяется автоматически. Если через минуту баланс не пополнен, администратор проверит транзакцию."
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Банковский перевод сверяется автоматически. Если через минуту баланс не пополнен, администратор проверит транзакцию.",
+    "Rewards": "Награды",
+    "Recent reward events": "Последние события наград",
+    "Referral rewards and top-up commissions": "Награды за приглашения и комиссия с пополнений",
+    "No reward events yet": "Событий наград пока нет",
+    "Invite someone or top up to start earning": "Пригласите друга или пополните баланс, чтобы начать зарабатывать",
+    "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Получайте {{percent}}% с каждого пополнения приглашённых вами людей. Накопленные награды можно в любой момент перевести на баланс.",
+    "Referral top-up commission {{quota}} from {{username}}": "Комиссия с пополнения {{quota}} от {{username}}",
+    "Referral commission (%)": "Комиссия за приглашения (%)",
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Процент с каждого пополнения приглашённого пользователя, выплачиваемый пригласившему. 0 отключает."
   }
 }

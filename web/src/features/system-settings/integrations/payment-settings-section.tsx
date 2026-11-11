@@ -135,6 +135,7 @@ const paymentSchema = z.object({
     }
   }),
   TopUpBonusPercent: z.coerce.number().min(0).max(100),
+  ReferralCommissionPercent: z.coerce.number().min(0).max(100),
   TopUpBonusMinAmount: z.coerce.number().min(0),
   SignupBonusMinTopUp: z.coerce.number().min(0),
   AmountDiscount: z.string().superRefine((value, ctx) => {
@@ -391,6 +392,8 @@ export function PaymentSettingsSection({
       AmountOptions: formatJsonForEditor(initialFormValues.AmountOptions),
       AmountDiscount: formatJsonForEditor(initialFormValues.AmountDiscount),
       TopUpBonusPercent: initialFormValues.TopUpBonusPercent,
+      ReferralCommissionPercent:
+        initialFormValues.ReferralCommissionPercent,
       TopUpBonusMinAmount: initialFormValues.TopUpBonusMinAmount,
       SignupBonusMinTopUp: initialFormValues.SignupBonusMinTopUp,
       CreemProducts: formatJsonForEditor(initialFormValues.CreemProducts),
@@ -479,6 +482,7 @@ export function PaymentSettingsSection({
       AmountOptions: values.AmountOptions.trim(),
       AmountDiscount: values.AmountDiscount.trim(),
       TopUpBonusPercent: values.TopUpBonusPercent,
+      ReferralCommissionPercent: values.ReferralCommissionPercent,
       TopUpBonusMinAmount: values.TopUpBonusMinAmount,
       SignupBonusMinTopUp: values.SignupBonusMinTopUp,
       StripeApiSecret: values.StripeApiSecret.trim(),
@@ -542,6 +546,8 @@ export function PaymentSettingsSection({
       AmountOptions: initialRef.current.AmountOptions.trim(),
       AmountDiscount: initialRef.current.AmountDiscount.trim(),
       TopUpBonusPercent: initialRef.current.TopUpBonusPercent,
+      ReferralCommissionPercent:
+        initialRef.current.ReferralCommissionPercent,
       TopUpBonusMinAmount: initialRef.current.TopUpBonusMinAmount,
       SignupBonusMinTopUp: initialRef.current.SignupBonusMinTopUp,
       StripeApiSecret: initialRef.current.StripeApiSecret.trim(),
@@ -657,6 +663,16 @@ export function PaymentSettingsSection({
       updates.push({
         key: 'payment_setting.topup_bonus_percent',
         value: String(sanitized.TopUpBonusPercent),
+      })
+    }
+
+    if (
+      sanitized.ReferralCommissionPercent !==
+      initial.ReferralCommissionPercent
+    ) {
+      updates.push({
+        key: 'ReferralCommissionPercent',
+        value: String(sanitized.ReferralCommissionPercent),
       })
     }
 
@@ -1374,6 +1390,37 @@ export function PaymentSettingsSection({
                         <FormDescription>
                           {t(
                             'Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='ReferralCommissionPercent'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Referral commission (%)')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            step='0.1'
+                            min='0'
+                            max='100'
+                            value={field.value}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            "Percentage of each referred customer's top-up paid to their inviter. 0 disables it."
                           )}
                         </FormDescription>
                         <FormMessage />
