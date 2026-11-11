@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
@@ -12,6 +15,7 @@ import (
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/setting"
 
+	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -64,16 +68,22 @@ func TestSePaySignatureValid(t *testing.T) {
 
 func useSePayTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
-	previousDB := model.DB
+	previousDB, previousLogDB := model.DB, model.LOG_DB
 	previousType := common.MainDatabaseType()
+	previousRedis, previousMemory := common.RedisEnabled, common.MemoryCacheEnabled
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
-	require.NoError(t, db.AutoMigrate(&model.TopUp{}))
+	require.NoError(t, db.AutoMigrate(&model.TopUp{}, &model.User{}, &model.Log{}))
 	model.DB = db
+	// The credit path writes a top-up log; make it share the same handle.
+	model.LOG_DB = db
 	common.SetMainDatabaseType(common.DatabaseTypeSQLite)
+	common.RedisEnabled, common.MemoryCacheEnabled = false, false
 	t.Cleanup(func() {
 		model.DB = previousDB
+		model.LOG_DB = previousLogDB
 		common.SetMainDatabaseType(previousType)
+		common.RedisEnabled, common.MemoryCacheEnabled = previousRedis, previousMemory
 	})
 	return db
 }
@@ -132,4 +142,67 @@ func TestMatchSePayTopUp(t *testing.T) {
 			require.Equal(t, tc.want, topUp.TradeNo)
 		})
 	}
+}
+
+// TestSePayWebhookCreditsMatchingTransfer exercises the full handler: a signed
+// bank notification must credit the pending order exactly once, and a replayed
+// delivery must not credit it twice.
+func TestSePayWebhookCreditsMatchingTransfer(t *testing.T) {
+	db := useSePayTestDB(t)
+
+	previousEnabled := setting.SePayEnabled
+	previousSecret := setting.SePaySecretKey
+	previousRate := setting.VietQRVNDRate
+	previousQuotaPerUnit := common.QuotaPerUnit
+	t.Cleanup(func() {
+		setting.SePayEnabled = previousEnabled
+		setting.SePaySecretKey = previousSecret
+		setting.VietQRVNDRate = previousRate
+		common.QuotaPerUnit = previousQuotaPerUnit
+	})
+	setting.SePayEnabled = true
+	setting.SePaySecretKey = "spsk_live_test"
+	setting.VietQRVNDRate = 25000
+	common.QuotaPerUnit = 500000
+
+	user := &model.User{Username: "sepay", AffCode: "sepay001"}
+	require.NoError(t, user.Insert(0))
+	order := &model.TopUp{
+		UserId:          user.Id,
+		Amount:          5,
+		Money:           5,
+		TradeNo:         "VQRPAID0001",
+		PaymentMethod:   model.PaymentMethodVietQR,
+		PaymentProvider: model.PaymentProviderVietQR,
+		CreateTime:      common.GetTimestamp(),
+		Status:          common.TopUpStatusPending,
+	}
+	require.NoError(t, db.Create(order).Error)
+
+	body := []byte(`{"id":42,"gateway":"TPBank","transactionDate":"2026-11-12 10:00:00","accountNumber":"10006460824","subAccount":"","code":null,"content":"DGAI VQRPAID0001 chuyen tien","transferType":"in","description":"NGUYEN VAN A","transferAmount":125000,"accumulated":0,"referenceCode":"FT1"}`)
+
+	deliver := func() *httptest.ResponseRecorder {
+		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+		recorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(recorder)
+		ctx.Request = httptest.NewRequest(http.MethodPost, "/api/sepay/webhook", bytes.NewReader(body))
+		ctx.Request.Header.Set("X-SePay-Timestamp", timestamp)
+		ctx.Request.Header.Set("X-SePay-Signature", signSePay("spsk_live_test", timestamp, body))
+		SePayWebhook(ctx)
+		return recorder
+	}
+
+	first := deliver()
+	require.Equal(t, http.StatusOK, first.Code)
+	require.JSONEq(t, `{"success":true}`, first.Body.String())
+
+	var credited model.User
+	require.NoError(t, db.First(&credited, user.Id).Error)
+	require.EqualValues(t, 5*common.QuotaPerUnit, credited.Quota, "the order amount is credited once")
+
+	// SePay retries the same transaction; the order is already settled.
+	second := deliver()
+	require.Equal(t, http.StatusOK, second.Code)
+	require.NoError(t, db.First(&credited, user.Id).Error)
+	require.EqualValues(t, 5*common.QuotaPerUnit, credited.Quota, "a replay must not credit twice")
 }
