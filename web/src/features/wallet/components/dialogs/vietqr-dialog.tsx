@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { CheckCircle2, Clock, Loader2 } from 'lucide-react'
+import { Clock, Loader2 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -48,7 +48,6 @@ interface VietQRDialogProps {
 export function VietQRDialog(props: VietQRDialogProps) {
   const { t } = useTranslation()
   const [confirming, setConfirming] = useState(false)
-  const [paid, setPaid] = useState(false)
   const expiresAt = props.details?.expires_at ?? 0
   const secondsLeft = useSecondsLeft(expiresAt, props.open)
   const expired = expiresAt > 0 && secondsLeft === 0
@@ -178,56 +177,51 @@ export function VietQRDialog(props: VietQRDialogProps) {
                   )}
             </p>
 
-            {paid ? (
-              <div className='flex items-center justify-center gap-2 rounded-lg border border-green-600/40 bg-green-600/5 px-3 py-2 text-sm text-green-700 dark:text-green-500'>
-                <CheckCircle2 className='size-4' aria-hidden='true' />
-                {t('Payment confirmed. Your balance has been credited.')}
-              </div>
-            ) : (
-              <Button
-                className='w-full'
-                disabled={confirming}
-                onClick={async () => {
-                  if (!props.details) return
-                  setConfirming(true)
-                  try {
-                    const result = await confirmVietQRPayment(
-                      props.details.trade_no
+            <Button
+              className='w-full'
+              disabled={confirming}
+              onClick={async () => {
+                if (!props.details) return
+                setConfirming(true)
+                try {
+                  const result = await confirmVietQRPayment(
+                    props.details.trade_no
+                  )
+                  if (result.status === 'success') {
+                    // The transfer is in: close the dialog so the customer
+                    // returns to a refreshed balance instead of a dead panel.
+                    toast.success(t('Top-up credited'))
+                    props.onPaid?.()
+                    props.onOpenChange(false)
+                  } else if (result.reason === 'sandbox') {
+                    toast.warning(
+                      t(
+                        'This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.'
+                      )
                     )
-                    if (result.status === 'success') {
-                      setPaid(true)
-                      toast.success(t('Top-up credited'))
-                      props.onPaid?.()
-                    } else if (result.reason === 'sandbox') {
-                      toast.warning(
-                        t(
-                          'This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.'
-                        )
+                  } else if (result.reason === 'manual') {
+                    toast.info(
+                      t(
+                        'The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.'
                       )
-                    } else if (result.reason === 'manual') {
-                      toast.info(
-                        t(
-                          'The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.'
-                        )
+                    )
+                  } else {
+                    toast.info(
+                      t(
+                        'We have not received your transfer yet. Wait a moment and check again.'
                       )
-                    } else {
-                      toast.info(
-                        t(
-                          'We have not received your transfer yet. Wait a moment and check again.'
-                        )
-                      )
-                    }
-                  } catch (error) {
-                    handleServerError(error)
-                  } finally {
-                    setConfirming(false)
+                    )
                   }
-                }}
-              >
-                {confirming && <Loader2 className='me-2 size-4 animate-spin' />}
-                {t('I have paid — check my payment')}
-              </Button>
-            )}
+                } catch (error) {
+                  handleServerError(error)
+                } finally {
+                  setConfirming(false)
+                }
+              }}
+            >
+              {confirming && <Loader2 className='me-2 size-4 animate-spin' />}
+              {t('I have paid — check my payment')}
+            </Button>
           </div>
         )}
       </DialogContent>

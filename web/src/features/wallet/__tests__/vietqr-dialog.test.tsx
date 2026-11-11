@@ -116,19 +116,20 @@ it('hides the countdown when the order carries no deadline', () => {
   expect(screen.queryByRole('timer')).not.toBeInTheDocument()
 })
 
-it('credits the order when the customer confirms a completed transfer', async () => {
+it('closes the dialog once the transfer is confirmed', async () => {
   const api = await import('@/lib/api')
   const post = vi
     .spyOn(api.api, 'post')
     .mockResolvedValue({ data: { success: true, data: { status: 'success' } } })
   const onPaid = vi.fn()
+  const onOpenChange = vi.fn()
   const now = Math.floor(Date.now() / 1000)
 
   render(
     <I18nextProvider i18n={i18n}>
       <VietQRDialog
         open
-        onOpenChange={vi.fn()}
+        onOpenChange={onOpenChange}
         details={{ ...details, expires_at: now + 600 }}
         onPaid={onPaid}
       />
@@ -145,9 +146,7 @@ it('credits the order when the customer confirms a completed transfer', async ()
     expect.anything()
   )
   expect(onPaid).toHaveBeenCalledTimes(1)
-  expect(
-    screen.getByText('Đã xác nhận thanh toán. Số dư của bạn đã được cộng.')
-  ).toBeVisible()
+  expect(onOpenChange).toHaveBeenCalledWith(false)
 })
 
 it('keeps the button when the bank has not reported the transfer yet', async () => {
