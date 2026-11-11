@@ -81,7 +81,7 @@ func isVietQRTopUpEnabled() bool {
 	}
 	// SePay reconciles the same QR order, so a bank-transfer top-up is usable
 	// when either channel is on.
-	return (setting.VietQREnabled || setting.SePayEnabled) &&
+	return (setting.VietQREnabled || isSePayEnabled()) &&
 		strings.TrimSpace(setting.VietQRBankCode) != "" &&
 		strings.TrimSpace(setting.VietQRBankAccount) != ""
 }
