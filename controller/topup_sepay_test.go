@@ -8,7 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/setting"
+
+	"github.com/glebarez/sqlite"
+	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func signSePay(secret string, timestamp string, body []byte) string {
@@ -52,6 +58,78 @@ func TestSePaySignatureValid(t *testing.T) {
 			if got := sePaySignatureValid(tc.timestamp, tc.signature, tc.body); got != tc.want {
 				t.Fatalf("sePaySignatureValid() = %v, want %v", got, tc.want)
 			}
+		})
+	}
+}
+
+func useSePayTestDB(t *testing.T) *gorm.DB {
+	t.Helper()
+	previousDB := model.DB
+	previousType := common.MainDatabaseType()
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(&model.TopUp{}))
+	model.DB = db
+	common.SetMainDatabaseType(common.DatabaseTypeSQLite)
+	t.Cleanup(func() {
+		model.DB = previousDB
+		common.SetMainDatabaseType(previousType)
+	})
+	return db
+}
+
+func TestMatchSePayTopUp(t *testing.T) {
+	db := useSePayTestDB(t)
+	order := &model.TopUp{
+		UserId:          1,
+		Amount:          5,
+		Money:           5,
+		TradeNo:         "VQRABCD1234",
+		PaymentMethod:   model.PaymentMethodVietQR,
+		PaymentProvider: model.PaymentProviderVietQR,
+		CreateTime:      time.Now().Unix(),
+		Status:          common.TopUpStatusPending,
+	}
+	require.NoError(t, db.Create(order).Error)
+
+	code := "VQRABCD1234"
+	cases := []struct {
+		name string
+		req  sePayWebhookRequest
+		want string
+	}{
+		{
+			name: "matches the payment code",
+			req:  sePayWebhookRequest{Code: &code},
+			want: order.TradeNo,
+		},
+		{
+			name: "matches the memo when the bank adds spaces and case",
+			req:  sePayWebhookRequest{Content: "dgai vqr abcd 1234 chuyen tien"},
+			want: order.TradeNo,
+		},
+		{
+			name: "ignores a transfer with no matching memo",
+			req:  sePayWebhookRequest{Content: "thanh toan tien hang"},
+			want: "",
+		},
+		{
+			name: "ignores a memo for an unknown order",
+			req:  sePayWebhookRequest{Content: "DGAI VQRZZZZ9999"},
+			want: "",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			topUp := matchSePayTopUp(tc.req)
+			if tc.want == "" {
+				if topUp != nil {
+					t.Fatalf("matchSePayTopUp() = %q, want no match", topUp.TradeNo)
+				}
+				return
+			}
+			require.NotNil(t, topUp)
+			require.Equal(t, tc.want, topUp.TradeNo)
 		})
 	}
 }
