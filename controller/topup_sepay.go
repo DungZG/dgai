@@ -35,10 +35,11 @@ type sePayWebhookRequest struct {
 	ReferenceCode  string  `json:"referenceCode"`
 }
 
+// isSePayEnabled gates the webhook. Only the secret key matters: it is what
+// verifies the signature, while the merchant ID belongs to SePay's checkout
+// gateway and is stored for reference only.
 func isSePayEnabled() bool {
-	return setting.SePayEnabled &&
-		strings.TrimSpace(setting.SePaySecretKey) != "" &&
-		strings.TrimSpace(setting.SePayMerchantID) != ""
+	return setting.SePayEnabled && strings.TrimSpace(setting.SePaySecretKey) != ""
 }
 
 // sePaySignatureValid verifies SePay's HMAC-SHA256 signature over
