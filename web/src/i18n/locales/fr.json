@@ -7377,6 +7377,12 @@
     "Sync username": "Identifiant de synchronisation",
     "Sync password": "Mot de passe de synchronisation",
     "Sync secret key": "Clé secrète de synchronisation",
-    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Les identifiants de synchronisation sont le couple Basic auth fourni à VietQR pour obtenir un jeton et pousser les transactions ; ils doivent différer de l'identifiant et du mot de passe marchand."
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Les identifiants de synchronisation sont le couple Basic auth fourni à VietQR pour obtenir un jeton et pousser les transactions ; ils doivent différer de l'identifiant et du mot de passe marchand.",
+    "SePay reconciliation": "Rapprochement SePay",
+    "SePay watches the receiving account and credits each matching transfer, including banks VietQR cannot link such as TPBank.": "SePay surveille le compte de réception et crédite chaque virement correspondant, y compris les banques que VietQR ne peut pas relier, comme TPBank.",
+    "Enable SePay reconciliation": "Activer le rapprochement SePay",
+    "Secret key": "Clé secrète",
+    "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Déclarez {{url}} comme URL de webhook dans SePay et choisissez l'authentification HMAC-SHA256 avec la même clé secrète.",
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Le virement est rapproché automatiquement. Si votre solde est toujours vide après une minute, un administrateur vérifiera la transaction."
   }
 }

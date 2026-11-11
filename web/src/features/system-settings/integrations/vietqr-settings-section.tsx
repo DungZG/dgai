@@ -38,6 +38,9 @@ export interface VietQRSettingsValues {
   VietQRVNDRate: number
   VietQRMinTopUp: number
   VietQRAPIBaseURL: string
+  SePayEnabled: boolean
+  SePayMerchantID: string
+  SePaySecretKey: string
 }
 
 interface Props {
@@ -233,6 +236,59 @@ export function VietQRSettingsSection({ values, onValueChange }: Props) {
           )}
         </AlertDescription>
       </Alert>
+
+      <div className='border-border/60 space-y-4 border-t pt-4'>
+        <div>
+          <h3 className='text-lg font-medium'>{t('SePay reconciliation')}</h3>
+          <p className='text-muted-foreground text-sm'>
+            {t(
+              'SePay watches the receiving account and credits each matching transfer, including banks VietQR cannot link such as TPBank.'
+            )}
+          </p>
+        </div>
+
+        <SettingsSwitchField
+          controlId='sepay-enabled'
+          checked={values.SePayEnabled}
+          onCheckedChange={(v) => onValueChange('SePayEnabled', v)}
+          label={t('Enable SePay reconciliation')}
+          className='py-0'
+        />
+
+        <div className='grid grid-cols-2 gap-4'>
+          <div className='grid gap-1.5'>
+            <Label htmlFor='sepay-merchant-id'>{t('Merchant ID')}</Label>
+            <Input
+              id='sepay-merchant-id'
+              value={values.SePayMerchantID}
+              placeholder='SP-LIVE-XXXXXXXX'
+              onChange={(event) =>
+                onValueChange('SePayMerchantID', event.target.value.trim())
+              }
+            />
+          </div>
+          <div className='grid gap-1.5'>
+            <Label htmlFor='sepay-secret-key'>{t('Secret key')}</Label>
+            <Input
+              id='sepay-secret-key'
+              type='password'
+              value={values.SePaySecretKey}
+              onChange={(event) =>
+                onValueChange('SePaySecretKey', event.target.value)
+              }
+            />
+          </div>
+        </div>
+
+        <Alert>
+          <AlertDescription className='text-xs break-all'>
+            {t(
+              'Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.',
+              { url: `${window.location.origin}/api/sepay/webhook` }
+            )}
+          </AlertDescription>
+        </Alert>
+      </div>
     </div>
   )
 }

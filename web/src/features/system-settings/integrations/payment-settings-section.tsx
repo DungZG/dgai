@@ -198,6 +198,9 @@ const paymentSchema = z.object({
   VietQRVNDRate: z.coerce.number().min(0),
   VietQRMinTopUp: z.coerce.number().min(1),
   VietQRAPIBaseURL: z.string(),
+  SePayEnabled: z.boolean(),
+  SePayMerchantID: z.string(),
+  SePaySecretKey: z.string(),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
@@ -521,6 +524,9 @@ export function PaymentSettingsSection({
       VietQRVNDRate: values.VietQRVNDRate,
       VietQRMinTopUp: values.VietQRMinTopUp,
       VietQRAPIBaseURL: removeTrailingSlash(values.VietQRAPIBaseURL.trim()),
+      SePayEnabled: values.SePayEnabled,
+      SePayMerchantID: values.SePayMerchantID.trim(),
+      SePaySecretKey: values.SePaySecretKey,
     }
 
     const initial = {
@@ -586,6 +592,9 @@ export function PaymentSettingsSection({
       VietQRAPIBaseURL: removeTrailingSlash(
         initialRef.current.VietQRAPIBaseURL.trim()
       ),
+      SePayEnabled: initialRef.current.SePayEnabled,
+      SePayMerchantID: initialRef.current.SePayMerchantID.trim(),
+      SePaySecretKey: initialRef.current.SePaySecretKey,
     }
 
     const updates: Array<{ key: string; value: string | number | boolean }> = []
@@ -874,6 +883,21 @@ export function PaymentSettingsSection({
       })
     }
 
+    if (sanitized.SePayEnabled !== initial.SePayEnabled) {
+      updates.push({ key: 'SePayEnabled', value: sanitized.SePayEnabled })
+    }
+
+    if (sanitized.SePayMerchantID !== initial.SePayMerchantID) {
+      updates.push({
+        key: 'SePayMerchantID',
+        value: sanitized.SePayMerchantID,
+      })
+    }
+
+    if (sanitized.SePaySecretKey) {
+      updates.push({ key: 'SePaySecretKey', value: sanitized.SePaySecretKey })
+    }
+
     const hasWaffoPancakeChanges =
       sanitized.WaffoPancakeMerchantID !== initial.WaffoPancakeMerchantID ||
       sanitized.WaffoPancakePrivateKey.length > 0 ||
@@ -985,6 +1009,9 @@ export function PaymentSettingsSection({
     VietQRVNDRate: currentFormValues.VietQRVNDRate,
     VietQRMinTopUp: currentFormValues.VietQRMinTopUp,
     VietQRAPIBaseURL: currentFormValues.VietQRAPIBaseURL,
+    SePayEnabled: currentFormValues.SePayEnabled,
+    SePayMerchantID: currentFormValues.SePayMerchantID,
+    SePaySecretKey: currentFormValues.SePaySecretKey,
   }
 
   return (

@@ -79,7 +79,9 @@ func isVietQRTopUpEnabled() bool {
 	if !isPaymentComplianceConfirmed() {
 		return false
 	}
-	return setting.VietQREnabled &&
+	// SePay reconciles the same QR order, so a bank-transfer top-up is usable
+	// when either channel is on.
+	return (setting.VietQREnabled || setting.SePayEnabled) &&
 		strings.TrimSpace(setting.VietQRBankCode) != "" &&
 		strings.TrimSpace(setting.VietQRBankAccount) != ""
 }
@@ -500,6 +502,19 @@ func VietQRConfirmPayment(c *gin.Context) {
 		return
 	}
 
+	// SePay reconciles the bank account directly, so a paid transfer is credited
+	// by its webhook within seconds. VietQR's own check-order only knows QR codes
+	// it minted on a linked account, which excludes most banks, so polling it
+	// here would only tell a paying customer to keep waiting.
+	if isSePayEnabled() {
+		common.ApiSuccess(c, gin.H{
+			"status":   "pending",
+			"trade_no": topUp.TradeNo,
+			"reason":   "manual",
+		})
+		return
+	}
+
 	status, err := vietqrCheckOrderStatus(c.Request.Context(), topUp.TradeNo)
 	if err != nil {
 		logger.LogError(c.Request.Context(), common.LogText("vietqr check-order failed trade_no=%s error=%q", tradeNo, err.Error()))
@@ -512,9 +527,9 @@ func VietQRConfirmPayment(c *gin.Context) {
 		// the customer to keep waiting.
 		if setting.VietQRSandbox {
 			common.ApiSuccess(c, gin.H{
-				"status":  "pending",
+				"status":   "pending",
 				"trade_no": topUp.TradeNo,
-				"reason":  "sandbox",
+				"reason":   "sandbox",
 			})
 			return
 		}
@@ -548,6 +563,11 @@ func StartVietQRSettlementWorker(interval time.Duration) {
 	defer ticker.Stop()
 	for range ticker.C {
 		if setting.VietQRSandbox || setting.VietQRUsername == "" || setting.VietQRPassword == "" {
+			continue
+		}
+		// SePay pushes every bank transaction itself; polling VietQR would only
+		// re-ask an account it does not track.
+		if isSePayEnabled() {
 			continue
 		}
 		settlePendingVietQROrders()

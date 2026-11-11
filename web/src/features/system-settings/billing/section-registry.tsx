@@ -201,6 +201,9 @@ const BILLING_SECTIONS = [
           VietQRVNDRate: settings.VietQRVNDRate,
           VietQRMinTopUp: settings.VietQRMinTopUp,
           VietQRAPIBaseURL: settings.VietQRAPIBaseURL,
+          SePayEnabled: settings.SePayEnabled,
+          SePayMerchantID: settings.SePayMerchantID,
+          SePaySecretKey: settings.SePaySecretKey,
         }}
         complianceDefaults={{
           confirmed: settings['payment_setting.compliance_confirmed'] ?? false,

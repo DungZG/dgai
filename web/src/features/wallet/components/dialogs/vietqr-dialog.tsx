@@ -204,6 +204,12 @@ export function VietQRDialog(props: VietQRDialogProps) {
                           'This gateway is running VietQR in test mode, so a real transfer cannot be verified automatically. An administrator will credit it manually.'
                         )
                       )
+                    } else if (result.reason === 'manual') {
+                      toast.info(
+                        t(
+                          'The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.'
+                        )
+                      )
                     } else {
                       toast.info(
                         t(

@@ -7377,6 +7377,12 @@
     "Sync username": "同步使用者名稱",
     "Sync password": "同步密碼",
     "Sync secret key": "同步金鑰",
-    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "同步憑證是你提供給 VietQR 的 Basic auth 組合，用於取得權杖並推送交易，必須與商戶使用者名稱和密碼不同。"
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "同步憑證是你提供給 VietQR 的 Basic auth 組合，用於取得權杖並推送交易，必須與商戶使用者名稱和密碼不同。",
+    "SePay reconciliation": "SePay 對帳",
+    "SePay watches the receiving account and credits each matching transfer, including banks VietQR cannot link such as TPBank.": "SePay 監控收款帳戶，為每筆符合的轉帳入帳，包括 VietQR 無法連結的銀行（如 TPBank）。",
+    "Enable SePay reconciliation": "啟用 SePay 對帳",
+    "Secret key": "金鑰",
+    "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "在 SePay 中將 {{url}} 設為 Webhook 網址，並選擇使用同一金鑰的 HMAC-SHA256 驗證。",
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "銀行轉帳會自動對帳。若一分鐘後餘額仍未入帳，管理員將核查該筆交易。"
   }
 }

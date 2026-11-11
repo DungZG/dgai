@@ -40,6 +40,9 @@ const initial: VietQRSettingsValues = {
   VietQRVNDRate: 26500,
   VietQRMinTopUp: 1,
   VietQRAPIBaseURL: 'https://dev.vietqr.org',
+  SePayEnabled: false,
+  SePayMerchantID: '',
+  SePaySecretKey: '',
 }
 
 function Fixture(props: { onChange: (values: VietQRSettingsValues) => void }) {

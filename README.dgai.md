@@ -208,6 +208,33 @@ Nếu chưa có hợp đồng merchant, để trống — quản trị viên xá
 Đối soát an toàn: replay cùng giao dịch không cộng hai lần; chuyển thiếu tiền bị
 từ chối (`AMOUNT_MISMATCH`); giao dịch ghi nợ (D) bị bỏ qua.
 
+### Đối soát qua SePay (khuyến nghị cho TPBank)
+
+VietQR chỉ liên kết được MB Bank và BIDV. Với ngân hàng khác, bật **SePay** —
+nó theo dõi thẳng tài khoản nhận tiền và đẩy webhook về mỗi khi có tiền vào.
+
+Khai báo webhook trong SePay:
+
+| Trường | Giá trị |
+| --- | --- |
+| URL | `https://<domain>/api/sepay/webhook` |
+| Xác thực | HMAC-SHA256 |
+| Secret Key | cùng giá trị `SePaySecretKey` |
+
+Trong **Cài đặt → Payment Gateway → VietQR**, bật *Enable SePay reconciliation*
+và điền `SePayMerchantID` + `SePaySecretKey`. Không cần bật `VietQREnabled`;
+bật SePay là đủ để QR xuất hiện ở trang nạp tiền.
+
+`POST /api/sepay/webhook` kiểm tra chữ ký trên raw body với chuỗi
+`{timestamp}.{body}`, chấp nhận lệch giờ ±300 giây. Payload khớp đơn qua `code`
+(SePay tách theo *Cấu trúc mã thanh toán*) hoặc qua nội dung `DGAI<trade_no>`.
+Trả `{"success": true}` cho mọi trường hợp không phải lỗi cộng tiền, để SePay
+không retry vô hạn; chỉ trả 500 khi cộng hạn mức thất bại.
+
+Khi SePay bật, nút "Tôi đã thanh toán" trả `reason: "manual"` thay vì hỏi
+VietQR, và worker poll `check-order` tự tắt — tránh báo sai "chưa nhận được"
+cho khách đã chuyển tiền.
+
 ## Đăng nhập Google
 
 Tạo OAuth client trong Google Cloud Console rồi khai báo ở **Cài đặt → Auth →

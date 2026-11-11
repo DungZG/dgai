@@ -141,6 +141,9 @@ func InitOptionMap() {
 	common.OptionMap["VietQRVNDRate"] = strconv.FormatFloat(setting.VietQRVNDRate, 'f', -1, 64)
 	common.OptionMap["VietQRMinTopUp"] = strconv.Itoa(setting.VietQRMinTopUp)
 	common.OptionMap["VietQRAPIBaseURL"] = setting.VietQRAPIBaseURL
+	common.OptionMap["SePayEnabled"] = strconv.FormatBool(setting.SePayEnabled)
+	common.OptionMap["SePayMerchantID"] = setting.SePayMerchantID
+	common.OptionMap["SePaySecretKey"] = setting.SePaySecretKey
 	common.OptionMap["WaffoPancakeProductID"] = setting.WaffoPancakeProductID
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
@@ -602,6 +605,12 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.VietQRMinTopUp, _ = strconv.Atoi(value)
 	case "VietQRAPIBaseURL":
 		setting.VietQRAPIBaseURL = strings.TrimRight(value, "/")
+	case "SePayEnabled":
+		setting.SePayEnabled = value == "true"
+	case "SePayMerchantID":
+		setting.SePayMerchantID = strings.TrimSpace(value)
+	case "SePaySecretKey":
+		setting.SePaySecretKey = strings.TrimSpace(value)
 	case "CreemApiKey":
 		setting.CreemApiKey = value
 	case "CreemProducts":

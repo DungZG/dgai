@@ -7377,6 +7377,12 @@
     "Sync username": "Имя пользователя синхронизации",
     "Sync password": "Пароль синхронизации",
     "Sync secret key": "Секретный ключ синхронизации",
-    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Учётные данные синхронизации — это пара Basic auth, которую вы передаёте VietQR для получения токена и отправки транзакций; они должны отличаться от имени и пароля мерчанта."
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Учётные данные синхронизации — это пара Basic auth, которую вы передаёте VietQR для получения токена и отправки транзакций; они должны отличаться от имени и пароля мерчанта.",
+    "SePay reconciliation": "Сверка SePay",
+    "SePay watches the receiving account and credits each matching transfer, including banks VietQR cannot link such as TPBank.": "SePay отслеживает счёт получения и зачисляет каждый подходящий перевод, включая банки, которые VietQR не поддерживает, например TPBank.",
+    "Enable SePay reconciliation": "Включить сверку SePay",
+    "Secret key": "Секретный ключ",
+    "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Укажите {{url}} как URL вебхука в SePay и выберите аутентификацию HMAC-SHA256 с тем же секретным ключом.",
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Банковский перевод сверяется автоматически. Если через минуту баланс не пополнен, администратор проверит транзакцию."
   }
 }

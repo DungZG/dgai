@@ -140,7 +140,7 @@ export async function requestVietQRPayment(
  */
 export async function confirmVietQRPayment(
   tradeNo: string
-): Promise<{ status: 'success' | 'pending'; reason?: 'sandbox' }> {
+): Promise<{ status: 'success' | 'pending'; reason?: 'sandbox' | 'manual' }> {
   const res = await api.post(
     '/api/user/vietqr/confirm',
     { trade_no: tradeNo },

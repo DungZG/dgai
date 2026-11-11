@@ -7377,6 +7377,12 @@
     "Sync username": "同期ユーザー名",
     "Sync password": "同期パスワード",
     "Sync secret key": "同期シークレットキー",
-    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "同期認証情報は、VietQR がトークンを取得して取引を送信するために渡す Basic 認証の組です。マーチャントのユーザー名とパスワードとは別の値にする必要があります。"
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "同期認証情報は、VietQR がトークンを取得して取引を送信するために渡す Basic 認証の組です。マーチャントのユーザー名とパスワードとは別の値にする必要があります。",
+    "SePay reconciliation": "SePay 照合",
+    "SePay watches the receiving account and credits each matching transfer, including banks VietQR cannot link such as TPBank.": "SePay は入金口座を監視し、一致する振込をすべて入金します。TPBank など VietQR が連携できない銀行も対象です。",
+    "Enable SePay reconciliation": "SePay 照合を有効化",
+    "Secret key": "シークレットキー",
+    "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "SePay で {{url}} を Webhook URL として登録し、同じシークレットキーで HMAC-SHA256 認証を選択してください。",
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "銀行振込は自動で照合されます。1 分経っても残高が反映されない場合、管理者が取引を確認します。"
   }
 }

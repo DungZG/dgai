@@ -368,6 +368,9 @@ export type BillingSettings = {
   VietQRVNDRate: number
   VietQRMinTopUp: number
   VietQRAPIBaseURL: string
+  SePayEnabled: boolean
+  SePayMerchantID: string
+  SePaySecretKey: string
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number

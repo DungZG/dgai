@@ -7377,6 +7377,12 @@
     "Sync username": "Tên đăng nhập đồng bộ",
     "Sync password": "Mật khẩu đồng bộ",
     "Sync secret key": "Khoá bí mật đồng bộ",
-    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Thông tin đồng bộ là cặp Basic auth bạn cấp cho VietQR để họ lấy token và đẩy giao dịch; phải khác tên đăng nhập và mật khẩu merchant."
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Thông tin đồng bộ là cặp Basic auth bạn cấp cho VietQR để họ lấy token và đẩy giao dịch; phải khác tên đăng nhập và mật khẩu merchant.",
+    "SePay reconciliation": "Đối soát qua SePay",
+    "SePay watches the receiving account and credits each matching transfer, including banks VietQR cannot link such as TPBank.": "SePay theo dõi tài khoản nhận tiền và cộng hạn mức cho từng khoản chuyển khớp, kể cả ngân hàng VietQR không liên kết được như TPBank.",
+    "Enable SePay reconciliation": "Bật đối soát SePay",
+    "Secret key": "Khoá bí mật",
+    "Register {{url}} as the webhook URL in SePay and pick HMAC-SHA256 authentication with the same secret key.": "Khai báo {{url}} làm webhook URL trong SePay và chọn xác thực HMAC-SHA256 với cùng khoá bí mật.",
+    "The bank transfer is reconciled automatically. If your balance is still empty after a minute, an administrator will check the transaction.": "Khoản chuyển khoản được đối soát tự động. Nếu sau một phút số dư vẫn chưa cập nhật, quản trị viên sẽ kiểm tra giao dịch."
   }
 }
