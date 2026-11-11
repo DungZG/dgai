@@ -7359,6 +7359,24 @@
     "Minimum amount for the bonus": "Минимальная сумма для бонуса",
     "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Пополнения ниже этой суммы не получают бонус. Установите процент в 0, чтобы отключить акцию.",
     "Signup bonus threshold": "Порог бонуса за регистрацию",
-    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Суммарные пополнения, необходимые для начисления бонуса новому пользователю. 0 — начислять при регистрации."
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Суммарные пополнения, необходимые для начисления бонуса новому пользователю. 0 — начислять при регистрации.",
+    "VietQR": "VietQR",
+    "VietQR Bank Transfer": "Банковский перевод VietQR",
+    "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.": "Клиенты сканируют код VietQR и переводят точную сумму. Без учётных данных мерчанта выдаётся только изображение QR, и каждое пополнение подтверждает администратор.",
+    "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.": "Автоматическая сверка требует подключения мерчанта VietQR. Сейчас VietQR поддерживает только счета MB Bank и BIDV; для других банков доступно ручное подтверждение.",
+    "Enable VietQR top-up": "Включить пополнение VietQR",
+    "Sandbox skips automatic settlement polling": "В песочнице автоматический опрос сверки пропускается",
+    "Bank code": "Код банка",
+    "Bank account number": "Номер банковского счёта",
+    "Account holder name": "Имя владельца счёта",
+    "VND per USD": "VND за 1 USD",
+    "Minimum top-up amount": "Минимальная сумма пополнения",
+    "VietQR API base URL": "Базовый URL API VietQR",
+    "Merchant username": "Имя пользователя мерчанта",
+    "Merchant password": "Пароль мерчанта",
+    "Sync username": "Имя пользователя синхронизации",
+    "Sync password": "Пароль синхронизации",
+    "Sync secret key": "Секретный ключ синхронизации",
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Учётные данные синхронизации — это пара Basic auth, которую вы передаёте VietQR для получения токена и отправки транзакций; они должны отличаться от имени и пароля мерчанта."
   }
 }

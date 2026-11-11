@@ -7359,6 +7359,24 @@
     "Minimum amount for the bonus": "Số tiền tối thiểu để được tặng",
     "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Nạp dưới mức này không được tặng. Đặt phần trăm về 0 để tắt khuyến mãi.",
     "Signup bonus threshold": "Ngưỡng nạp để nhận thưởng đăng ký",
-    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Tổng số tiền nạp cần đạt trước khi cộng thưởng người dùng mới. 0 là cộng ngay khi đăng ký."
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Tổng số tiền nạp cần đạt trước khi cộng thưởng người dùng mới. 0 là cộng ngay khi đăng ký.",
+    "VietQR": "VietQR",
+    "VietQR Bank Transfer": "Chuyển khoản ngân hàng VietQR",
+    "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.": "Khách quét mã VietQR và chuyển đúng số tiền. Khi chưa có thông tin merchant, hệ thống chỉ xuất ảnh QR và quản trị viên phải xác nhận từng lần nạp.",
+    "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.": "Đối soát tự động cần kết nối merchant VietQR. VietQR hiện chỉ liên kết được tài khoản MB Bank và BIDV; ngân hàng khác dùng chế độ xác nhận thủ công.",
+    "Enable VietQR top-up": "Bật nạp tiền qua VietQR",
+    "Sandbox skips automatic settlement polling": "Chế độ sandbox bỏ qua việc tự động đối soát",
+    "Bank code": "Mã ngân hàng",
+    "Bank account number": "Số tài khoản ngân hàng",
+    "Account holder name": "Tên chủ tài khoản",
+    "VND per USD": "VND trên 1 USD",
+    "Minimum top-up amount": "Mức nạp tối thiểu",
+    "VietQR API base URL": "Địa chỉ API VietQR",
+    "Merchant username": "Tên đăng nhập merchant",
+    "Merchant password": "Mật khẩu merchant",
+    "Sync username": "Tên đăng nhập đồng bộ",
+    "Sync password": "Mật khẩu đồng bộ",
+    "Sync secret key": "Khoá bí mật đồng bộ",
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Thông tin đồng bộ là cặp Basic auth bạn cấp cho VietQR để họ lấy token và đẩy giao dịch; phải khác tên đăng nhập và mật khẩu merchant."
   }
 }

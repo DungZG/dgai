@@ -7359,6 +7359,24 @@
     "Minimum amount for the bonus": "Minimum amount for the bonus",
     "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.",
     "Signup bonus threshold": "Signup bonus threshold",
-    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead."
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.",
+    "VietQR": "VietQR",
+    "VietQR Bank Transfer": "VietQR Bank Transfer",
+    "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.": "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.",
+    "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.": "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.",
+    "Enable VietQR top-up": "Enable VietQR top-up",
+    "Sandbox skips automatic settlement polling": "Sandbox skips automatic settlement polling",
+    "Bank code": "Bank code",
+    "Bank account number": "Bank account number",
+    "Account holder name": "Account holder name",
+    "VND per USD": "VND per USD",
+    "Minimum top-up amount": "Minimum top-up amount",
+    "VietQR API base URL": "VietQR API base URL",
+    "Merchant username": "Merchant username",
+    "Merchant password": "Merchant password",
+    "Sync username": "Sync username",
+    "Sync password": "Sync password",
+    "Sync secret key": "Sync secret key",
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password."
   }
 }

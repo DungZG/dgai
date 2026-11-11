@@ -187,6 +187,21 @@ const BILLING_SECTIONS = [
         }}
         waffoPancakeProvisionedStoreID={settings.WaffoPancakeStoreID ?? ''}
         waffoPancakeProvisionedProductID={settings.WaffoPancakeProductID ?? ''}
+        vietqrDefaultValues={{
+          VietQREnabled: settings.VietQREnabled,
+          VietQRBankCode: settings.VietQRBankCode,
+          VietQRBankAccount: settings.VietQRBankAccount,
+          VietQRAccountName: settings.VietQRAccountName,
+          VietQRUsername: settings.VietQRUsername,
+          VietQRPassword: settings.VietQRPassword,
+          VietQRSyncUsername: settings.VietQRSyncUsername,
+          VietQRSyncPassword: settings.VietQRSyncPassword,
+          VietQRSyncSecretKey: settings.VietQRSyncSecretKey,
+          VietQRSandbox: settings.VietQRSandbox,
+          VietQRVNDRate: settings.VietQRVNDRate,
+          VietQRMinTopUp: settings.VietQRMinTopUp,
+          VietQRAPIBaseURL: settings.VietQRAPIBaseURL,
+        }}
         complianceDefaults={{
           confirmed: settings['payment_setting.compliance_confirmed'] ?? false,
           termsVersion:

@@ -81,6 +81,10 @@ import {
   WaffoSettingsSection,
   type WaffoSettingsValues,
 } from './waffo-settings-section'
+import {
+  VietQRSettingsSection,
+  type VietQRSettingsValues,
+} from './vietqr-settings-section'
 
 function isHttpOriginUrl(value: string) {
   const trimmed = value.trim()
@@ -181,13 +185,28 @@ const paymentSchema = z.object({
   WaffoPancakeMerchantID: z.string(),
   WaffoPancakePrivateKey: z.string(),
   WaffoPancakeReturnURL: z.string(),
+  VietQREnabled: z.boolean(),
+  VietQRBankCode: z.string(),
+  VietQRBankAccount: z.string(),
+  VietQRAccountName: z.string(),
+  VietQRUsername: z.string(),
+  VietQRPassword: z.string(),
+  VietQRSyncUsername: z.string(),
+  VietQRSyncPassword: z.string(),
+  VietQRSyncSecretKey: z.string(),
+  VietQRSandbox: z.boolean(),
+  VietQRVNDRate: z.coerce.number().min(0),
+  VietQRMinTopUp: z.coerce.number().min(1),
+  VietQRAPIBaseURL: z.string(),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
 type WaffoFormFieldValues = Omit<WaffoSettingsValues, 'WaffoPayMethods'>
 type PaymentBaseFormValues = Omit<
   PaymentFormValues,
-  keyof WaffoFormFieldValues | keyof WaffoPancakeSettingsValues
+  | keyof WaffoFormFieldValues
+  | keyof WaffoPancakeSettingsValues
+  | keyof VietQRSettingsValues
 >
 
 const CURRENT_COMPLIANCE_TERMS_VERSION = 'v1'
@@ -204,6 +223,7 @@ type PaymentSettingsSectionProps = {
   defaultValues: PaymentBaseFormValues
   waffoDefaultValues: WaffoSettingsValues
   waffoPancakeDefaultValues: WaffoPancakeSettingsValues
+  vietqrDefaultValues: VietQRSettingsValues
   waffoPancakeProvisionedStoreID?: string
   waffoPancakeProvisionedProductID?: string
   complianceDefaults: PaymentComplianceDefaults
@@ -222,6 +242,7 @@ export function PaymentSettingsSection({
   defaultValues,
   waffoDefaultValues,
   waffoPancakeDefaultValues,
+  vietqrDefaultValues,
   waffoPancakeProvisionedStoreID,
   waffoPancakeProvisionedProductID,
   complianceDefaults,
@@ -234,8 +255,14 @@ export function PaymentSettingsSection({
       ...defaultValues,
       ...waffoDefaultValues,
       ...waffoPancakeDefaultValues,
+      ...vietqrDefaultValues,
     }),
-    [defaultValues, waffoDefaultValues, waffoPancakeDefaultValues]
+    [
+      defaultValues,
+      waffoDefaultValues,
+      waffoPancakeDefaultValues,
+      vietqrDefaultValues,
+    ]
   )
   const initialRef = React.useRef(initialFormValues)
   const defaultsSignature = React.useMemo(
@@ -412,6 +439,19 @@ export function PaymentSettingsSection({
     [setPaymentValue]
   )
 
+  const setVietQRValue = React.useCallback(
+    <K extends keyof VietQRSettingsValues>(
+      key: K,
+      value: VietQRSettingsValues[K]
+    ) => {
+      setPaymentValue(
+        key as keyof PaymentFormValues,
+        value as PaymentFormValues[keyof PaymentFormValues]
+      )
+    },
+    [setPaymentValue]
+  )
+
   React.useEffect(() => {
     const parsedDefaults = JSON.parse(defaultsSignature) as PaymentFormValues
     initialRef.current = parsedDefaults
@@ -468,6 +508,19 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         values.WaffoPancakeReturnURL.trim()
       ),
+      VietQREnabled: values.VietQREnabled,
+      VietQRBankCode: values.VietQRBankCode.trim().toUpperCase(),
+      VietQRBankAccount: values.VietQRBankAccount.trim(),
+      VietQRAccountName: values.VietQRAccountName.trim(),
+      VietQRUsername: values.VietQRUsername.trim(),
+      VietQRPassword: values.VietQRPassword,
+      VietQRSyncUsername: values.VietQRSyncUsername.trim(),
+      VietQRSyncPassword: values.VietQRSyncPassword,
+      VietQRSyncSecretKey: values.VietQRSyncSecretKey,
+      VietQRSandbox: values.VietQRSandbox,
+      VietQRVNDRate: values.VietQRVNDRate,
+      VietQRMinTopUp: values.VietQRMinTopUp,
+      VietQRAPIBaseURL: removeTrailingSlash(values.VietQRAPIBaseURL.trim()),
     }
 
     const initial = {
@@ -517,6 +570,21 @@ export function PaymentSettingsSection({
       WaffoPancakePrivateKey: initialRef.current.WaffoPancakePrivateKey.trim(),
       WaffoPancakeReturnURL: removeTrailingSlash(
         initialRef.current.WaffoPancakeReturnURL.trim()
+      ),
+      VietQREnabled: initialRef.current.VietQREnabled,
+      VietQRBankCode: initialRef.current.VietQRBankCode.trim().toUpperCase(),
+      VietQRBankAccount: initialRef.current.VietQRBankAccount.trim(),
+      VietQRAccountName: initialRef.current.VietQRAccountName.trim(),
+      VietQRUsername: initialRef.current.VietQRUsername.trim(),
+      VietQRPassword: initialRef.current.VietQRPassword,
+      VietQRSyncUsername: initialRef.current.VietQRSyncUsername.trim(),
+      VietQRSyncPassword: initialRef.current.VietQRSyncPassword,
+      VietQRSyncSecretKey: initialRef.current.VietQRSyncSecretKey,
+      VietQRSandbox: initialRef.current.VietQRSandbox,
+      VietQRVNDRate: initialRef.current.VietQRVNDRate,
+      VietQRMinTopUp: initialRef.current.VietQRMinTopUp,
+      VietQRAPIBaseURL: removeTrailingSlash(
+        initialRef.current.VietQRAPIBaseURL.trim()
       ),
     }
 
@@ -736,6 +804,76 @@ export function PaymentSettingsSection({
       updates.push({ key: 'WaffoPayMethods', value: sanitized.WaffoPayMethods })
     }
 
+    if (sanitized.VietQREnabled !== initial.VietQREnabled) {
+      updates.push({ key: 'VietQREnabled', value: sanitized.VietQREnabled })
+    }
+
+    if (sanitized.VietQRBankCode !== initial.VietQRBankCode) {
+      updates.push({ key: 'VietQRBankCode', value: sanitized.VietQRBankCode })
+    }
+
+    if (sanitized.VietQRBankAccount !== initial.VietQRBankAccount) {
+      updates.push({
+        key: 'VietQRBankAccount',
+        value: sanitized.VietQRBankAccount,
+      })
+    }
+
+    if (sanitized.VietQRAccountName !== initial.VietQRAccountName) {
+      updates.push({
+        key: 'VietQRAccountName',
+        value: sanitized.VietQRAccountName,
+      })
+    }
+
+    if (sanitized.VietQRUsername !== initial.VietQRUsername) {
+      updates.push({ key: 'VietQRUsername', value: sanitized.VietQRUsername })
+    }
+
+    if (sanitized.VietQRPassword) {
+      updates.push({ key: 'VietQRPassword', value: sanitized.VietQRPassword })
+    }
+
+    if (sanitized.VietQRSyncUsername !== initial.VietQRSyncUsername) {
+      updates.push({
+        key: 'VietQRSyncUsername',
+        value: sanitized.VietQRSyncUsername,
+      })
+    }
+
+    if (sanitized.VietQRSyncPassword) {
+      updates.push({
+        key: 'VietQRSyncPassword',
+        value: sanitized.VietQRSyncPassword,
+      })
+    }
+
+    if (sanitized.VietQRSyncSecretKey) {
+      updates.push({
+        key: 'VietQRSyncSecretKey',
+        value: sanitized.VietQRSyncSecretKey,
+      })
+    }
+
+    if (sanitized.VietQRSandbox !== initial.VietQRSandbox) {
+      updates.push({ key: 'VietQRSandbox', value: sanitized.VietQRSandbox })
+    }
+
+    if (sanitized.VietQRVNDRate !== initial.VietQRVNDRate) {
+      updates.push({ key: 'VietQRVNDRate', value: sanitized.VietQRVNDRate })
+    }
+
+    if (sanitized.VietQRMinTopUp !== initial.VietQRMinTopUp) {
+      updates.push({ key: 'VietQRMinTopUp', value: sanitized.VietQRMinTopUp })
+    }
+
+    if (sanitized.VietQRAPIBaseURL !== initial.VietQRAPIBaseURL) {
+      updates.push({
+        key: 'VietQRAPIBaseURL',
+        value: sanitized.VietQRAPIBaseURL,
+      })
+    }
+
     const hasWaffoPancakeChanges =
       sanitized.WaffoPancakeMerchantID !== initial.WaffoPancakeMerchantID ||
       sanitized.WaffoPancakePrivateKey.length > 0 ||
@@ -833,6 +971,21 @@ export function PaymentSettingsSection({
     WaffoPancakePrivateKey: currentFormValues.WaffoPancakePrivateKey,
     WaffoPancakeReturnURL: currentFormValues.WaffoPancakeReturnURL,
   }
+  const vietqrValues: VietQRSettingsValues = {
+    VietQREnabled: currentFormValues.VietQREnabled,
+    VietQRBankCode: currentFormValues.VietQRBankCode,
+    VietQRBankAccount: currentFormValues.VietQRBankAccount,
+    VietQRAccountName: currentFormValues.VietQRAccountName,
+    VietQRUsername: currentFormValues.VietQRUsername,
+    VietQRPassword: currentFormValues.VietQRPassword,
+    VietQRSyncUsername: currentFormValues.VietQRSyncUsername,
+    VietQRSyncPassword: currentFormValues.VietQRSyncPassword,
+    VietQRSyncSecretKey: currentFormValues.VietQRSyncSecretKey,
+    VietQRSandbox: currentFormValues.VietQRSandbox,
+    VietQRVNDRate: currentFormValues.VietQRVNDRate,
+    VietQRMinTopUp: currentFormValues.VietQRMinTopUp,
+    VietQRAPIBaseURL: currentFormValues.VietQRAPIBaseURL,
+  }
 
   return (
     <SettingsSection title={t('Payment Gateway')}>
@@ -915,11 +1068,12 @@ export function PaymentSettingsSection({
           />
           <Tabs defaultValue='general' className='min-w-0'>
             <div className='overflow-x-auto pb-1'>
-              <TabsList className='grid min-w-[44rem] grid-cols-6'>
+              <TabsList className='grid min-w-[52rem] grid-cols-7'>
                 <TabsTrigger value='general'>{t('General')}</TabsTrigger>
                 <TabsTrigger value='epay'>Epay</TabsTrigger>
                 <TabsTrigger value='stripe'>{t('Stripe')}</TabsTrigger>
                 <TabsTrigger value='creem'>Creem</TabsTrigger>
+                <TabsTrigger value='vietqr'>{t('VietQR')}</TabsTrigger>
                 <TabsTrigger value='waffo-pancake'>Waffo Pancake</TabsTrigger>
                 <TabsTrigger value='waffo'>Waffo</TabsTrigger>
               </TabsList>
@@ -1744,6 +1898,13 @@ export function PaymentSettingsSection({
                 selectedBinding={waffoPancakeSelection}
                 savedBinding={waffoPancakeSavedBinding}
                 onSelectedBindingChange={setWaffoPancakeSelection}
+              />
+            </TabsContent>
+
+            <TabsContent value='vietqr' className={paymentTabContentClassName}>
+              <VietQRSettingsSection
+                values={vietqrValues}
+                onValueChange={setVietQRValue}
               />
             </TabsContent>
 

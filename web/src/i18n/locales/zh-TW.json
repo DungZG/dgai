@@ -7359,6 +7359,24 @@
     "Minimum amount for the bonus": "獲得贈送的最低金額",
     "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "低於此金額的儲值不贈送。將百分比設為 0 可關閉活動。",
     "Signup bonus threshold": "註冊獎勵門檻",
-    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "發放新用戶獎勵前需要累計儲值的金額。0 表示註冊時立即發放。"
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "發放新用戶獎勵前需要累計儲值的金額。0 表示註冊時立即發放。",
+    "VietQR": "VietQR",
+    "VietQR Bank Transfer": "VietQR 銀行轉帳",
+    "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.": "客戶掃描 VietQR 條碼並轉入準確金額。未設定商戶憑證時只會產生條碼圖片，每次儲值都需要管理員手動確認。",
+    "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.": "自動對帳需要 VietQR 商戶連線。VietQR 目前僅支援連結 MB Bank 和 BIDV 帳戶，其他銀行只能手動確認。",
+    "Enable VietQR top-up": "啟用 VietQR 儲值",
+    "Sandbox skips automatic settlement polling": "沙箱模式略過自動對帳輪詢",
+    "Bank code": "銀行代碼",
+    "Bank account number": "銀行帳號",
+    "Account holder name": "帳戶名稱",
+    "VND per USD": "每美元兌越南盾",
+    "Minimum top-up amount": "最低儲值金額",
+    "VietQR API base URL": "VietQR API 位址",
+    "Merchant username": "商戶使用者名稱",
+    "Merchant password": "商戶密碼",
+    "Sync username": "同步使用者名稱",
+    "Sync password": "同步密碼",
+    "Sync secret key": "同步金鑰",
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "同步憑證是你提供給 VietQR 的 Basic auth 組合，用於取得權杖並推送交易，必須與商戶使用者名稱和密碼不同。"
   }
 }

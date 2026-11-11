@@ -7359,6 +7359,24 @@
     "Minimum amount for the bonus": "ボーナスの最低金額",
     "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "この金額未満のチャージにはボーナスが付きません。プロモーションを無効にするには割合を 0 にしてください。",
     "Signup bonus threshold": "登録ボーナスのしきい値",
-    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "新規ユーザー特典を付与する前に必要な累計チャージ額。0 の場合は登録時に付与します。"
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "新規ユーザー特典を付与する前に必要な累計チャージ額。0 の場合は登録時に付与します。",
+    "VietQR": "VietQR",
+    "VietQR Bank Transfer": "VietQR 銀行振込",
+    "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.": "顧客は VietQR コードを読み取り、正確な金額を振り込みます。マーチャント認証情報がない場合、QR 画像のみが発行され、管理者が各チャージを確認する必要があります。",
+    "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.": "自動照合には VietQR マーチャント接続が必要です。VietQR は現在 MB Bank と BIDV の口座のみ連携でき、他の銀行は手動確認モードになります。",
+    "Enable VietQR top-up": "VietQR チャージを有効化",
+    "Sandbox skips automatic settlement polling": "サンドボックスでは自動照合のポーリングをスキップします",
+    "Bank code": "銀行コード",
+    "Bank account number": "銀行口座番号",
+    "Account holder name": "口座名義",
+    "VND per USD": "1 USD あたりの VND",
+    "Minimum top-up amount": "最低チャージ金額",
+    "VietQR API base URL": "VietQR API ベース URL",
+    "Merchant username": "マーチャントユーザー名",
+    "Merchant password": "マーチャントパスワード",
+    "Sync username": "同期ユーザー名",
+    "Sync password": "同期パスワード",
+    "Sync secret key": "同期シークレットキー",
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "同期認証情報は、VietQR がトークンを取得して取引を送信するために渡す Basic 認証の組です。マーチャントのユーザー名とパスワードとは別の値にする必要があります。"
   }
 }

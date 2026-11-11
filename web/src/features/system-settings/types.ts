@@ -355,6 +355,19 @@ export type BillingSettings = {
   // section (saved via /api/option/waffo-pancake/save).
   WaffoPancakeStoreID: string
   WaffoPancakeProductID: string
+  VietQREnabled: boolean
+  VietQRBankCode: string
+  VietQRBankAccount: string
+  VietQRAccountName: string
+  VietQRUsername: string
+  VietQRPassword: string
+  VietQRSyncUsername: string
+  VietQRSyncPassword: string
+  VietQRSyncSecretKey: string
+  VietQRSandbox: boolean
+  VietQRVNDRate: number
+  VietQRMinTopUp: number
+  VietQRAPIBaseURL: string
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number

@@ -7359,6 +7359,24 @@
     "Minimum amount for the bonus": "Montant minimum pour le bonus",
     "Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.": "Les recharges inférieures à ce montant ne reçoivent aucun bonus. Mettez le pourcentage à 0 pour désactiver la promotion.",
     "Signup bonus threshold": "Seuil du bonus d'inscription",
-    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Total de recharges payées requis avant de créditer la récompense. 0 la verse à l'inscription."
+    "Total paid top-ups required before the new-user reward is credited. 0 pays it at registration instead.": "Total de recharges payées requis avant de créditer la récompense. 0 la verse à l'inscription.",
+    "VietQR": "VietQR",
+    "VietQR Bank Transfer": "Virement bancaire VietQR",
+    "Customers scan a VietQR code and transfer the exact amount. Without merchant credentials only the QR image is issued and an administrator must confirm each top-up.": "Les clients scannent un code VietQR et transfèrent le montant exact. Sans identifiants marchand, seule l'image du QR est générée et un administrateur doit confirmer chaque recharge.",
+    "Automatic reconciliation requires a VietQR merchant connection. VietQR currently links only MB Bank and BIDV accounts; other banks work in manual confirmation mode.": "Le rapprochement automatique nécessite une connexion marchand VietQR. VietQR ne relie actuellement que les comptes MB Bank et BIDV ; les autres banques fonctionnent en confirmation manuelle.",
+    "Enable VietQR top-up": "Activer la recharge VietQR",
+    "Sandbox skips automatic settlement polling": "Le mode sandbox ignore l'interrogation automatique du règlement",
+    "Bank code": "Code banque",
+    "Bank account number": "Numéro de compte bancaire",
+    "Account holder name": "Nom du titulaire",
+    "VND per USD": "VND par USD",
+    "Minimum top-up amount": "Montant minimum de recharge",
+    "VietQR API base URL": "URL de base de l'API VietQR",
+    "Merchant username": "Identifiant marchand",
+    "Merchant password": "Mot de passe marchand",
+    "Sync username": "Identifiant de synchronisation",
+    "Sync password": "Mot de passe de synchronisation",
+    "Sync secret key": "Clé secrète de synchronisation",
+    "The sync credentials are the Basic auth pair you give VietQR so it can fetch a token and push transactions; they must differ from the merchant username and password.": "Les identifiants de synchronisation sont le couple Basic auth fourni à VietQR pour obtenir un jeton et pousser les transactions ; ils doivent différer de l'identifiant et du mot de passe marchand."
   }
 }

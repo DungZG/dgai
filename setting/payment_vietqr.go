@@ -5,21 +5,21 @@ package setting
 // VietQR (username/password for their token endpoint, plus the Basic auth
 // pair VietQR uses to call our transaction-sync endpoint).
 var (
-	VietQREnabled   = false
-	VietQRBankCode  = "TCB"
-	VietQRBankAccount = "0395185726"
-	VietQRAccountName = ""
+	VietQREnabled     = false
+	VietQRBankCode    = "TPB"
+	VietQRBankAccount = "10006460824"
+	VietQRAccountName = "NGUYEN TRI DUNG"
 
 	// Merchant credentials for the VietQR Callback API (api.vietqr.org).
 	// Leave empty to stay in QR-image mode.
-	VietQRUsername = ""
-	VietQRPassword = ""
+	VietQRUsername  = ""
+	VietQRPassword  = ""
 	VietQRSecretKey = ""
 	VietQRSandbox   = true
 
 	// Credentials VietQR uses to fetch our bearer token and push transactions.
-	VietQRSyncUsername = ""
-	VietQRSyncPassword = ""
+	VietQRSyncUsername  = ""
+	VietQRSyncPassword  = ""
 	VietQRSyncSecretKey = ""
 
 	// VietQRVNDRate converts the gateway's billing currency (USD) to VND for
