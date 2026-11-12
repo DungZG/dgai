@@ -7392,6 +7392,21 @@
     "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.",
     "Referral top-up commission {{quota}} from {{username}}": "Referral top-up commission {{quota}} from {{username}}",
     "Referral commission (%)": "Referral commission (%)",
-    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Percentage of each referred customer's top-up paid to their inviter. 0 disables it."
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.",
+    "Referral": "Referral",
+    "Share your link and earn {{percent}}% of every top-up the people you invite make.": "Share your link and earn {{percent}}% of every top-up the people you invite make.",
+    "Share your link and earn rewards when people you invite join and top up.": "Share your link and earn rewards when people you invite join and top up.",
+    "Commission": "Commission",
+    "Your referral link": "Your referral link",
+    "Pending rewards": "Pending rewards",
+    "Reward history": "Reward history",
+    "Share your link": "Share your link",
+    "Send your referral link to friends or post it wherever your audience is.": "Send your referral link to friends or post it wherever your audience is.",
+    "They sign up and top up": "They sign up and top up",
+    "The link registers them under your account automatically.": "The link registers them under your account automatically.",
+    "You earn {{percent}}% of every top-up": "You earn {{percent}}% of every top-up",
+    "You earn a reward for every signup": "You earn a reward for every signup",
+    "Rewards accumulate here and can be moved to your balance at any time.": "Rewards accumulate here and can be moved to your balance at any time.",
+    "How it works": "How it works"
   }
 }

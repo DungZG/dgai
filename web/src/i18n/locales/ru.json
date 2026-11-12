@@ -7392,6 +7392,21 @@
     "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Получайте {{percent}}% с каждого пополнения приглашённых вами людей. Накопленные награды можно в любой момент перевести на баланс.",
     "Referral top-up commission {{quota}} from {{username}}": "Комиссия с пополнения {{quota}} от {{username}}",
     "Referral commission (%)": "Комиссия за приглашения (%)",
-    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Процент с каждого пополнения приглашённого пользователя, выплачиваемый пригласившему. 0 отключает."
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Процент с каждого пополнения приглашённого пользователя, выплачиваемый пригласившему. 0 отключает.",
+    "Referral": "Рефералы",
+    "Share your link and earn {{percent}}% of every top-up the people you invite make.": "Делитесь ссылкой и получайте {{percent}}% с каждого пополнения приглашённых.",
+    "Share your link and earn rewards when people you invite join and top up.": "Делитесь ссылкой и получайте награды, когда приглашённые регистрируются и пополняют баланс.",
+    "Commission": "Комиссия",
+    "Your referral link": "Ваша реферальная ссылка",
+    "Pending rewards": "Награды к получению",
+    "Reward history": "История наград",
+    "Share your link": "Поделитесь ссылкой",
+    "Send your referral link to friends or post it wherever your audience is.": "Отправьте ссылку друзьям или разместите там, где находится ваша аудитория.",
+    "They sign up and top up": "Они регистрируются и пополняют",
+    "The link registers them under your account automatically.": "Ссылка автоматически привязывает их к вашему аккаунту.",
+    "You earn {{percent}}% of every top-up": "Вы получаете {{percent}}% с каждого пополнения",
+    "You earn a reward for every signup": "Вы получаете награду за каждую регистрацию",
+    "Rewards accumulate here and can be moved to your balance at any time.": "Награды накапливаются здесь и в любой момент переводятся на баланс.",
+    "How it works": "Как это работает"
   }
 }

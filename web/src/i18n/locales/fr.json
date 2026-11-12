@@ -7392,6 +7392,21 @@
     "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Gagnez {{percent}} % de chaque recharge effectuée par vos invités. Transférez les récompenses accumulées vers votre solde à tout moment.",
     "Referral top-up commission {{quota}} from {{username}}": "Commission de recharge {{quota}} de {{username}}",
     "Referral commission (%)": "Commission de parrainage (%)",
-    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Pourcentage de chaque recharge d'un filleul versé à son parrain. 0 désactive."
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Pourcentage de chaque recharge d'un filleul versé à son parrain. 0 désactive.",
+    "Referral": "Parrainage",
+    "Share your link and earn {{percent}}% of every top-up the people you invite make.": "Partagez votre lien et gagnez {{percent}} % de chaque recharge effectuée par vos invités.",
+    "Share your link and earn rewards when people you invite join and top up.": "Partagez votre lien et gagnez des récompenses lorsque vos invités s'inscrivent et rechargent.",
+    "Commission": "Commission",
+    "Your referral link": "Votre lien de parrainage",
+    "Pending rewards": "Récompenses en attente",
+    "Reward history": "Historique des récompenses",
+    "Share your link": "Partagez votre lien",
+    "Send your referral link to friends or post it wherever your audience is.": "Envoyez votre lien de parrainage à vos amis ou publiez-le là où se trouve votre audience.",
+    "They sign up and top up": "Ils s'inscrivent et rechargent",
+    "The link registers them under your account automatically.": "Le lien les rattache automatiquement à votre compte.",
+    "You earn {{percent}}% of every top-up": "Vous gagnez {{percent}} % de chaque recharge",
+    "You earn a reward for every signup": "Vous gagnez une récompense par inscription",
+    "Rewards accumulate here and can be moved to your balance at any time.": "Les récompenses s'accumulent ici et peuvent être transférées vers votre solde à tout moment.",
+    "How it works": "Comment ça marche"
   }
 }

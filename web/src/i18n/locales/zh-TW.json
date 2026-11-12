@@ -7392,6 +7392,21 @@
     "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "您邀請的使用者每次儲值，您可獲得 {{percent}}%。累積獎勵可隨時轉入餘額。",
     "Referral top-up commission {{quota}} from {{username}}": "來自 {{username}} 的儲值佣金 {{quota}}",
     "Referral commission (%)": "推薦佣金 (%)",
-    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "推薦使用者每次儲值的百分比支付給邀請人。0 表示關閉。"
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "推薦使用者每次儲值的百分比支付給邀請人。0 表示關閉。",
+    "Referral": "推薦",
+    "Share your link and earn {{percent}}% of every top-up the people you invite make.": "分享您的連結，受邀使用者每次儲值您可獲得 {{percent}}%。",
+    "Share your link and earn rewards when people you invite join and top up.": "分享您的連結，受邀使用者註冊並儲值後您可獲得獎勵。",
+    "Commission": "佣金",
+    "Your referral link": "您的推薦連結",
+    "Pending rewards": "待領取獎勵",
+    "Reward history": "獎勵紀錄",
+    "Share your link": "分享連結",
+    "Send your referral link to friends or post it wherever your audience is.": "把推薦連結傳給朋友，或發佈在您的受眾所在之處。",
+    "They sign up and top up": "他們註冊並儲值",
+    "The link registers them under your account automatically.": "該連結會自動把他們登記在您的帳戶下。",
+    "You earn {{percent}}% of every top-up": "您獲得每次儲值的 {{percent}}%",
+    "You earn a reward for every signup": "您獲得每次註冊的獎勵",
+    "Rewards accumulate here and can be moved to your balance at any time.": "獎勵在此累積，可隨時轉入餘額。",
+    "How it works": "運作方式"
   }
 }

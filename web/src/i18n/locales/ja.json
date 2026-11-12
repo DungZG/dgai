@@ -7392,6 +7392,21 @@
     "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "招待した人がチャージするたびに {{percent}}% を獲得できます。貯まった特典はいつでも残高に移せます。",
     "Referral top-up commission {{quota}} from {{username}}": "{{username}} のチャージによる紹介報酬 {{quota}}",
     "Referral commission (%)": "紹介報酬 (%)",
-    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "招待された利用者のチャージ額のうち紹介者に支払う割合。0 で無効。"
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "招待された利用者のチャージ額のうち紹介者に支払う割合。0 で無効。",
+    "Referral": "紹介",
+    "Share your link and earn {{percent}}% of every top-up the people you invite make.": "リンクを共有すると、招待した人のチャージごとに {{percent}}% を獲得できます。",
+    "Share your link and earn rewards when people you invite join and top up.": "リンクを共有すると、招待した人が登録・チャージしたときに報酬を獲得できます。",
+    "Commission": "報酬率",
+    "Your referral link": "あなたの紹介リンク",
+    "Pending rewards": "受け取り待ちの報酬",
+    "Reward history": "報酬履歴",
+    "Share your link": "リンクを共有",
+    "Send your referral link to friends or post it wherever your audience is.": "紹介リンクを友人に送るか、あなたの視聴者がいる場所に投稿してください。",
+    "They sign up and top up": "相手が登録してチャージ",
+    "The link registers them under your account automatically.": "リンクにより自動的にあなたのアカウントに紐づきます。",
+    "You earn {{percent}}% of every top-up": "チャージごとに {{percent}}% を獲得",
+    "You earn a reward for every signup": "登録ごとに報酬を獲得",
+    "Rewards accumulate here and can be moved to your balance at any time.": "報酬はここに貯まり、いつでも残高に移せます。",
+    "How it works": "仕組み"
   }
 }

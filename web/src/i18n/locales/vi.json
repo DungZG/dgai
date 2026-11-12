@@ -7392,6 +7392,21 @@
     "Earn {{percent}}% of every top-up made by people you invite. Transfer accumulated rewards to your balance anytime.": "Nhận {{percent}}% mỗi lần người bạn mời nạp tiền. Chuyển hoa hồng đã tích lũy vào số dư bất cứ lúc nào.",
     "Referral top-up commission {{quota}} from {{username}}": "Hoa hồng nạp {{quota}} từ {{username}}",
     "Referral commission (%)": "Hoa hồng giới thiệu (%)",
-    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Phần trăm mỗi lần nạp của người được giới thiệu trả cho người mời. 0 là tắt."
+    "Percentage of each referred customer's top-up paid to their inviter. 0 disables it.": "Phần trăm mỗi lần nạp của người được giới thiệu trả cho người mời. 0 là tắt.",
+    "Referral": "Giới thiệu",
+    "Share your link and earn {{percent}}% of every top-up the people you invite make.": "Chia sẻ liên kết và nhận {{percent}}% mỗi lần người bạn mời nạp tiền.",
+    "Share your link and earn rewards when people you invite join and top up.": "Chia sẻ liên kết và nhận thưởng khi người bạn mời tham gia và nạp tiền.",
+    "Commission": "Hoa hồng",
+    "Your referral link": "Liên kết giới thiệu của bạn",
+    "Pending rewards": "Hoa hồng chờ nhận",
+    "Reward history": "Lịch sử hoa hồng",
+    "Share your link": "Chia sẻ liên kết",
+    "Send your referral link to friends or post it wherever your audience is.": "Gửi liên kết giới thiệu cho bạn bè hoặc đăng ở nơi khán giả của bạn theo dõi.",
+    "They sign up and top up": "Họ đăng ký và nạp tiền",
+    "The link registers them under your account automatically.": "Liên kết tự động ghi danh họ vào tài khoản của bạn.",
+    "You earn {{percent}}% of every top-up": "Bạn nhận {{percent}}% mỗi lần họ nạp",
+    "You earn a reward for every signup": "Bạn nhận thưởng cho mỗi lượt đăng ký",
+    "Rewards accumulate here and can be moved to your balance at any time.": "Hoa hồng tích lũy tại đây và có thể chuyển vào số dư bất cứ lúc nào.",
+    "How it works": "Cách hoạt động"
   }
 }

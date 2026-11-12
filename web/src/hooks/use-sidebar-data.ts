@@ -31,6 +31,7 @@ import {
   Radio,
   ServerCog,
   Settings,
+  Share2,
   ShieldCheck,
   Ticket,
   User,
@@ -115,6 +116,11 @@ export function useSidebarData(): SidebarData {
             title: t('Wallet'),
             url: '/wallet',
             icon: Wallet,
+          },
+          {
+            title: t('Referral'),
+            url: '/referral',
+            icon: Share2,
           },
           {
             title: t('Profile'),
