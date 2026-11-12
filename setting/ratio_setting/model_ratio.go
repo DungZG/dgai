@@ -527,6 +527,13 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 		return 3, true
 	}
 
+	// Opus 4.8 bills output at 1.67x input upstream, so an explicitly
+	// configured completion ratio must win over the family default; 5 stays
+	// only as the fallback when nothing is configured.
+	if strings.HasPrefix(name, "claude-opus-4-8") {
+		return 5, false
+	}
+
 	if strings.Contains(name, "claude-3") {
 		return 5, true
 	} else if strings.Contains(name, "claude-sonnet-4") || strings.Contains(name, "claude-opus-4") || strings.Contains(name, "claude-haiku-4") {
