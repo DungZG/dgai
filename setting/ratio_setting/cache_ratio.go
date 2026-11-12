@@ -10,6 +10,13 @@ const (
 )
 
 var defaultCacheRatio = map[string]float64{
+	"claude-opus-5-5":                     0.5,
+	"claude-opus-4-8":                     0.1,
+	"claude-haiku-5-5":                    0.3,
+	"gpt-6.1-sol":                         0.1,
+	"cx/gpt-6-luna":                       0.75,
+	"gpt-6.1-terra":                       0.3,
+	"gpt-6-astra":                         0.5,
 	"gemini-3-flash-preview":              0.1,
 	"gemini-3-pro-preview":                0.1,
 	"gemini-3.1-pro-preview":              0.1,
@@ -56,7 +63,6 @@ var defaultCacheRatio = map[string]float64{
 	"claude-sonnet-4-20250514-thinking":   0.1,
 	"claude-sonnet-4-5-20250929":          0.1,
 	"claude-sonnet-4-5-20250929-thinking": 0.1,
-	"claude-opus-4-8":                     0.1,
 	"claude-opus-4-8-thinking":            0.1,
 	"claude-opus-4-8-max":                 0.1,
 	"claude-opus-4-8-xhigh":               0.1,
@@ -66,6 +72,13 @@ var defaultCacheRatio = map[string]float64{
 }
 
 var defaultCreateCacheRatio = map[string]float64{
+	"claude-opus-5-5":                     1.25,
+	"claude-opus-4-8":                     1,
+	"claude-haiku-5-5":                    1.2333,
+	"gpt-6.1-sol":                         1.25,
+	"cx/gpt-6-luna":                       1.25,
+	"gpt-6.1-terra":                       1.2857,
+	"gpt-6-astra":                         0,
 	"gpt-5.6-sol":                         1.25,
 	"gpt-5.6-terra":                       1.25,
 	"gpt-5.6-luna":                        1.25,
@@ -81,7 +94,6 @@ var defaultCreateCacheRatio = map[string]float64{
 	"claude-sonnet-4-20250514-thinking":   1.25,
 	"claude-sonnet-4-5-20250929":          1.25,
 	"claude-sonnet-4-5-20250929-thinking": 1.25,
-	"claude-opus-4-8":                     1.25,
 	"claude-opus-4-8-thinking":            1.25,
 	"claude-opus-4-8-max":                 1.25,
 	"claude-opus-4-8-xhigh":               1.25,

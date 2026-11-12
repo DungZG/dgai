@@ -26,6 +26,14 @@ const (
 // 1 === ￥0.014 / 1k tokens
 
 var defaultModelRatio = map[string]float64{
+	// dgai upstream (Vilao) — ratio = VND/1M ÷ 26500 ÷ 0.7 ÷ 2, i.e. 30% margin on the sale price.
+	"claude-opus-5-5":  0.067385,
+	"claude-opus-4-8":  0.040431,
+	"claude-haiku-5-5": 0.002830,
+	"gpt-6.1-sol":      0.026954,
+	"cx/gpt-6-luna":    0.005391,
+	"gpt-6.1-terra":    0.009434,
+	"gpt-6-astra":      0.067385,
 	//"midjourney":                50,
 	"gpt-4-gizmo-*":                            15,
 	"gpt-4o-gizmo-*":                           2.5,
@@ -137,7 +145,6 @@ var defaultModelRatio = map[string]float64{
 	"claude-3-7-sonnet-20250219-thinking":      1.5,
 	"claude-sonnet-4-20250514":                 1.5,
 	"claude-sonnet-4-5-20250929":               1.5,
-	"claude-opus-4-8":                          2.5,
 	"claude-opus-4-8-max":                      2.5,
 	"claude-opus-4-8-xhigh":                    2.5,
 	"claude-opus-4-8-high":                     2.5,
@@ -311,10 +318,17 @@ var modelRatioMap = types.NewRWMap[string, float64]()
 var completionRatioMap = types.NewRWMap[string, float64]()
 
 var defaultCompletionRatio = map[string]float64{
-	"gpt-4-gizmo-*":  2,
-	"gpt-4o-gizmo-*": 3,
-	"gpt-4-all":      2,
-	"gpt-image-1":    8,
+	"claude-opus-5-5":  5,
+	"claude-opus-4-8":  1.6667,
+	"claude-haiku-5-5": 5,
+	"gpt-6.1-sol":      6,
+	"cx/gpt-6-luna":    1.5,
+	"gpt-6.1-terra":    5,
+	"gpt-6-astra":      6,
+	"gpt-4-gizmo-*":    2,
+	"gpt-4o-gizmo-*":   3,
+	"gpt-4-all":        2,
+	"gpt-image-1":      8,
 }
 
 // InitRatioSettings initializes all model related settings maps
