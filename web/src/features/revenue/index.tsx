@@ -65,7 +65,9 @@ export function Revenue() {
     const from = new Date(today.getTime() - 29 * 86400_000)
     return toDateInput(Math.floor(from.getTime() / 1000))
   })
-  const [endDate, setEndDate] = useState(() => toDateInput(Math.floor(today.getTime() / 1000)))
+  const [endDate, setEndDate] = useState(() =>
+    toDateInput(Math.floor(today.getTime() / 1000))
+  )
 
   const startTimestamp = dayStart(startDate)
   const endTimestamp = dayEnd(endDate)
