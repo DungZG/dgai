@@ -7407,6 +7407,27 @@
     "You earn {{percent}}% of every top-up": "You earn {{percent}}% of every top-up",
     "You earn a reward for every signup": "You earn a reward for every signup",
     "Rewards accumulate here and can be moved to your balance at any time.": "Rewards accumulate here and can be moved to your balance at any time.",
-    "How it works": "How it works"
+    "How it works": "How it works",
+    "Unified AI API gateway": "Unified AI API gateway",
+    "One key, {{count}} models, one endpoint": "One key, {{count}} models, one endpoint",
+    "Route requests to every supported provider through a single OpenAI-compatible API, with per-token billing, usage logs and quota control.": "Route requests to every supported provider through a single OpenAI-compatible API, with per-token billing, usage logs and quota control.",
+    "Open the console": "Open the console",
+    "Models available": "Models available",
+    "Providers": "Providers",
+    "Pay per token": "Pay per token",
+    "Available models": "Available models",
+    "Prices shown per 1M tokens, unless the model bills per request.": "Prices shown per 1M tokens, unless the model bills per request.",
+    "See all pricing": "See all pricing",
+    "{{price}} per request": "{{price}} per request",
+    "In": "In",
+    "Out": "Out",
+    "Create an account and an API key": "Create an account and an API key",
+    "Sign up, then mint a key in the console. Every key carries its own quota and model access.": "Sign up, then mint a key in the console. Every key carries its own quota and model access.",
+    "Top up your balance": "Top up your balance",
+    "Pay by bank transfer or card. Credit lands in your balance immediately and is consumed per token.": "Pay by bank transfer or card. Credit lands in your balance immediately and is consumed per token.",
+    "Point your client at one endpoint": "Point your client at one endpoint",
+    "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.": "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.",
+    "One key, one endpoint, every model": "One key, one endpoint, every model",
+    "No models are on sale yet.": "No models are on sale yet."
   }
 }
