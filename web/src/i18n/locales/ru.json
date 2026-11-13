@@ -7442,6 +7442,7 @@
     "Cost entry saved": "Себестоимость сохранена",
     "Failed to save cost entry": "Не удалось сохранить себестоимость",
     "Cost entry deleted": "Себестоимость удалена",
-    "Failed to delete cost entry": "Не удалось удалить себестоимость"
+    "Failed to delete cost entry": "Не удалось удалить себестоимость",
+    "P95 latency": "Задержка P95"
   }
 }

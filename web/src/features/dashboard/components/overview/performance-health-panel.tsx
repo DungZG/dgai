@@ -86,8 +86,10 @@ export function PerformanceHealthPanel() {
           />
           <MetricCell
             icon={Timer}
-            label={t('Average latency')}
-            value={formatLatency(summary?.avg_latency_ms ?? 0)}
+            label={t('P95 latency')}
+            value={formatLatency(
+              summary?.p95_latency_ms || summary?.avg_latency_ms || 0
+            )}
             loading={loading}
             tone='warning'
           />

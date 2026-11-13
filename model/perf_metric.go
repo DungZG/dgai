@@ -20,6 +20,10 @@ type PerfMetric struct {
 	TtftCount      int64  `json:"-" gorm:"default:0"`
 	OutputTokens   int64  `json:"-" gorm:"default:0"`
 	GenerationMs   int64  `json:"-" gorm:"default:0"`
+	// LatencyHist is a comma-separated count per fixed latency bucket. It is a
+	// text column because the bucket list is code-defined; SQL cannot sum it
+	// portably, so percentiles are merged in Go.
+	LatencyHist string `json:"-" gorm:"type:text"`
 }
 
 func (PerfMetric) TableName() string {
@@ -44,6 +48,10 @@ func UpsertPerfMetric(metric *PerfMetric) error {
 			"ttft_count":       gorm.Expr("perf_metrics.ttft_count + ?", metric.TtftCount),
 			"output_tokens":    gorm.Expr("perf_metrics.output_tokens + ?", metric.OutputTokens),
 			"generation_ms":    gorm.Expr("perf_metrics.generation_ms + ?", metric.GenerationMs),
+			// shortcut: a conflicting upsert overwrites the histogram instead of
+			// merging it. Each bucket is flushed once per interval, so this only
+			// loses data if two instances write the same bucket at the same time.
+			"latency_hist": metric.LatencyHist,
 		}),
 	}).Create(metric).Error
 }
@@ -146,4 +154,27 @@ func PerfMetricStartTime(hours int) int64 {
 		hours = 24
 	}
 	return time.Now().Add(-time.Duration(hours) * time.Hour).Unix()
+}
+
+// PerfMetricHistRow carries the raw latency histogram of one stored bucket so
+// percentiles can be merged in Go; SQL SUM cannot combine the bucket counts.
+type PerfMetricHistRow struct {
+	ModelName   string `json:"model_name"`
+	BucketTs    int64  `json:"bucket_ts"`
+	LatencyHist string `json:"latency_hist"`
+}
+
+func GetPerfMetricHistRows(startTs int64, endTs int64, groups []string) ([]PerfMetricHistRow, error) {
+	var rows []PerfMetricHistRow
+	query := DB.Model(&PerfMetric{}).
+		Select("model_name, bucket_ts, latency_hist").
+		Where("bucket_ts >= ? AND bucket_ts <= ? AND latency_hist <> ''", startTs, endTs)
+	if groups != nil {
+		if len(groups) == 0 {
+			return rows, nil
+		}
+		query = query.Where(commonGroupCol+" IN ?", groups)
+	}
+	err := query.Find(&rows).Error
+	return rows, err
 }

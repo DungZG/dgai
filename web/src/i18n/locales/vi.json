@@ -7442,6 +7442,7 @@
     "Cost entry saved": "Đã lưu giá vốn",
     "Failed to save cost entry": "Lưu giá vốn thất bại",
     "Cost entry deleted": "Đã xoá giá vốn",
-    "Failed to delete cost entry": "Xoá giá vốn thất bại"
+    "Failed to delete cost entry": "Xoá giá vốn thất bại",
+    "P95 latency": "Độ trễ P95"
   }
 }

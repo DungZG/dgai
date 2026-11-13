@@ -1,6 +1,9 @@
 package perfmetrics
 
-import "sync/atomic"
+import (
+	"math"
+	"sync/atomic"
+)
 
 type Store interface {
 	Record(sample Sample)
@@ -30,6 +33,8 @@ type QueryParams struct {
 // Summary is the request-weighted aggregate over every bucket in the window.
 type Summary struct {
 	AvgLatencyMs int64   `json:"avg_latency_ms"`
+	P50LatencyMs int64   `json:"p50_latency_ms"`
+	P95LatencyMs int64   `json:"p95_latency_ms"`
 	SuccessRate  float64 `json:"success_rate"`
 	AvgTps       float64 `json:"avg_tps"`
 }
@@ -38,6 +43,8 @@ type BucketPoint struct {
 	Ts           int64   `json:"ts"`
 	AvgTtftMs    int64   `json:"avg_ttft_ms"`
 	AvgLatencyMs int64   `json:"avg_latency_ms"`
+	P50LatencyMs int64   `json:"p50_latency_ms"`
+	P95LatencyMs int64   `json:"p95_latency_ms"`
 	SuccessRate  float64 `json:"success_rate"`
 	AvgTps       float64 `json:"avg_tps"`
 }
@@ -46,6 +53,8 @@ type GroupResult struct {
 	Group        string        `json:"group"`
 	AvgTtftMs    int64         `json:"avg_ttft_ms"`
 	AvgLatencyMs int64         `json:"avg_latency_ms"`
+	P50LatencyMs int64         `json:"p50_latency_ms"`
+	P95LatencyMs int64         `json:"p95_latency_ms"`
 	SuccessRate  float64       `json:"success_rate"`
 	AvgTps       float64       `json:"avg_tps"`
 	Series       []BucketPoint `json:"series"`
@@ -69,6 +78,8 @@ type SuccessRatePoint struct {
 type ModelSummary struct {
 	ModelName           string             `json:"model_name"`
 	AvgLatencyMs        int64              `json:"avg_latency_ms"`
+	P50LatencyMs        int64              `json:"p50_latency_ms"`
+	P95LatencyMs        int64              `json:"p95_latency_ms"`
 	SuccessRate         float64            `json:"success_rate"`
 	AvgTps              float64            `json:"avg_tps"`
 	RecentSuccessSeries []SuccessRatePoint `json:"recent_success_series,omitempty"`
@@ -99,6 +110,7 @@ type counters struct {
 	ttftCount      int64
 	outputTokens   int64
 	generationMs   int64
+	latencyHist    [latencyHistBuckets]int64
 }
 
 type atomicBucket struct {
@@ -109,6 +121,7 @@ type atomicBucket struct {
 	ttftCount      atomic.Int64
 	outputTokens   atomic.Int64
 	generationMs   atomic.Int64
+	latencyHist    [latencyHistBuckets]atomic.Int64
 }
 
 func (b *atomicBucket) add(sample Sample) {
@@ -118,6 +131,7 @@ func (b *atomicBucket) add(sample Sample) {
 	}
 	if sample.LatencyMs > 0 {
 		b.totalLatencyMs.Add(sample.LatencyMs)
+		b.latencyHist[latencyHistIndex(sample.LatencyMs)].Add(1)
 	}
 	if sample.HasTtft && sample.TtftMs >= 0 {
 		b.ttftSumMs.Add(sample.TtftMs)
@@ -138,6 +152,7 @@ func (b *atomicBucket) snapshot() counters {
 		ttftCount:      b.ttftCount.Load(),
 		outputTokens:   b.outputTokens.Load(),
 		generationMs:   b.generationMs.Load(),
+		latencyHist:    b.histSnapshot(false),
 	}
 }
 
@@ -150,7 +165,20 @@ func (b *atomicBucket) drain() counters {
 		ttftCount:      b.ttftCount.Swap(0),
 		outputTokens:   b.outputTokens.Swap(0),
 		generationMs:   b.generationMs.Swap(0),
+		latencyHist:    b.histSnapshot(true),
 	}
+}
+
+func (b *atomicBucket) histSnapshot(drain bool) [latencyHistBuckets]int64 {
+	var hist [latencyHistBuckets]int64
+	for i := range b.latencyHist {
+		if drain {
+			hist[i] = b.latencyHist[i].Swap(0)
+		} else {
+			hist[i] = b.latencyHist[i].Load()
+		}
+	}
+	return hist
 }
 
 func (b *atomicBucket) addCounters(c counters) {
@@ -175,4 +203,53 @@ func (b *atomicBucket) addCounters(c counters) {
 	if c.generationMs != 0 {
 		b.generationMs.Add(c.generationMs)
 	}
+	for i, n := range c.latencyHist {
+		if n != 0 {
+			b.latencyHist[i].Add(n)
+		}
+	}
+}
+
+// latencyHistBuckets buckets latency into fixed upper bounds so percentiles stay
+// mergeable across the in-memory and Redis stores. Percentiles report the upper
+// bound of the bucket that crosses the target, so P95 is never understated.
+const latencyHistBuckets = 24
+
+var latencyHistBounds = [latencyHistBuckets]int64{
+	50, 100, 150, 200, 300, 400, 500, 750,
+	1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000,
+	15000, 20000, 30000, 45000, 60000, 90000, 120000, 300000,
+}
+
+func latencyHistIndex(ms int64) int {
+	for i, bound := range latencyHistBounds {
+		if ms <= bound {
+			return i
+		}
+	}
+	return latencyHistBuckets - 1
+}
+
+// latencyPercentile returns the bucket upper bound at which the cumulative
+// request count reaches q (0..1). Zero when the histogram is empty.
+func latencyPercentile(hist *[latencyHistBuckets]int64, q float64) int64 {
+	var total int64
+	for _, n := range hist {
+		total += n
+	}
+	if total <= 0 {
+		return 0
+	}
+	target := int64(math.Ceil(q * float64(total)))
+	if target < 1 {
+		target = 1
+	}
+	var seen int64
+	for i, n := range hist {
+		seen += n
+		if seen >= target {
+			return latencyHistBounds[i]
+		}
+	}
+	return latencyHistBounds[latencyHistBuckets-1]
 }

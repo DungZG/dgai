@@ -147,13 +147,22 @@ func TestRecordTaskResultSamplesTerminalTasks(t *testing.T) {
 		mergeCounters(merged, k, value.(*atomicBucket).snapshot())
 		return true
 	})
-	assert.Equal(t, counters{
+	got := merged[bucketKey{model: "video-model", group: "a"}]
+	expected := counters{
 		requestCount:   2,
 		successCount:   1,
 		totalLatencyMs: 180000,
 		outputTokens:   5000,
 		generationMs:   100000,
-	}, merged[bucketKey{model: "video-model", group: "a"}])
+	}
+	// Both sampled tasks must land in the latency histogram.
+	var histTotal int64
+	for _, n := range got.latencyHist {
+		histTotal += n
+	}
+	assert.Equal(t, int64(2), histTotal)
+	got.latencyHist = expected.latencyHist
+	assert.Equal(t, expected, got)
 }
 
 // TEST_PERF_MYSQL_DSN / TEST_PERF_POSTGRES_DSN optionally run the aggregation
@@ -220,7 +229,7 @@ func TestPerformanceAggregationAndFlush(t *testing.T) {
 			before, err := Query(QueryParams{Model: "test-model", Hours: 24, AllowedGroups: groups})
 			require.NoError(t, err)
 			require.NotNil(t, before.Summary)
-			assert.Equal(t, Summary{SuccessRate: 99.01, AvgLatencyMs: 1009, AvgTps: 5}, *before.Summary)
+			assert.Equal(t, Summary{SuccessRate: 99.01, AvgLatencyMs: 1009, AvgTps: 5, P50LatencyMs: 2000, P95LatencyMs: 2000}, *before.Summary)
 			assert.Equal(t, start, before.WindowStart)
 			require.Len(t, before.Series, 1)
 			assert.Equal(t, hour, before.Series[0].Ts)
@@ -349,4 +358,30 @@ func TestPerformanceAggregationAndFlush(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestLatencyPercentileBuckets(t *testing.T) {
+	var hist [latencyHistBuckets]int64
+	// 90 fast samples at 120ms plus 10 slow ones at 9000ms: P50 must land in the
+	// 150ms bucket and P95 in the 10000ms bucket.
+	for range 90 {
+		hist[latencyHistIndex(120)]++
+	}
+	for range 10 {
+		hist[latencyHistIndex(9000)]++
+	}
+	assert.Equal(t, int64(150), latencyPercentile(&hist, 0.50))
+	assert.Equal(t, int64(10000), latencyPercentile(&hist, 0.95))
+
+	var empty [latencyHistBuckets]int64
+	assert.Equal(t, int64(0), latencyPercentile(&empty, 0.95))
+}
+
+func TestLatencyHistRoundTrip(t *testing.T) {
+	var hist [latencyHistBuckets]int64
+	hist[0] = 3
+	hist[latencyHistBuckets-1] = 7
+	encoded := encodeLatencyHist(hist)
+	assert.Equal(t, hist, decodeLatencyHist(encoded))
+	assert.Equal(t, [latencyHistBuckets]int64{}, decodeLatencyHist(""))
 }

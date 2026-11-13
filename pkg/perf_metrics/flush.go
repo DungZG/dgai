@@ -2,6 +2,7 @@ package perfmetrics
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
@@ -48,6 +49,7 @@ func flushCompletedBuckets() {
 			TtftCount:      drained.ttftCount,
 			OutputTokens:   drained.outputTokens,
 			GenerationMs:   drained.generationMs,
+			LatencyHist:    encodeLatencyHist(drained.latencyHist),
 		})
 		if err != nil {
 			bucket.addCounters(drained)
@@ -77,7 +79,7 @@ func cleanupExpiredMetrics(retentionDays int) {
 }
 
 func redisCounters(values map[string]string) counters {
-	return counters{
+	result := counters{
 		requestCount:   parseRedisInt(values["req"]),
 		successCount:   parseRedisInt(values["ok"]),
 		totalLatencyMs: parseRedisInt(values["lat"]),
@@ -86,6 +88,14 @@ func redisCounters(values map[string]string) counters {
 		outputTokens:   parseRedisInt(values["out"]),
 		generationMs:   parseRedisInt(values["gen_ms"]),
 	}
+	for i := range result.latencyHist {
+		result.latencyHist[i] = parseRedisInt(values[latencyHistField(i)])
+	}
+	return result
+}
+
+func latencyHistField(i int) string {
+	return "lh" + strconv.Itoa(i)
 }
 
 func parseRedisInt(value string) int64 {
@@ -94,4 +104,34 @@ func parseRedisInt(value string) int64 {
 	}
 	parsed, _ := strconv.ParseInt(value, 10, 64)
 	return parsed
+}
+
+// encodeLatencyHist serialises the per-bucket counts for the text column.
+func encodeLatencyHist(hist [latencyHistBuckets]int64) string {
+	var b strings.Builder
+	for i, n := range hist {
+		if i > 0 {
+			b.WriteByte(',')
+		}
+		b.WriteString(strconv.FormatInt(n, 10))
+	}
+	return b.String()
+}
+
+// decodeLatencyHist accepts anything the column may hold, including the empty
+// string written before histograms existed, and returns all-zero buckets.
+func decodeLatencyHist(raw string) [latencyHistBuckets]int64 {
+	var hist [latencyHistBuckets]int64
+	if raw == "" {
+		return hist
+	}
+	i := 0
+	for part := range strings.SplitSeq(raw, ",") {
+		if i >= latencyHistBuckets {
+			break
+		}
+		hist[i] = parseRedisInt(part)
+		i++
+	}
+	return hist
 }

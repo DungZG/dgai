@@ -7442,6 +7442,7 @@
     "Cost entry saved": "Cost entry saved",
     "Failed to save cost entry": "Failed to save cost entry",
     "Cost entry deleted": "Cost entry deleted",
-    "Failed to delete cost entry": "Failed to delete cost entry"
+    "Failed to delete cost entry": "Failed to delete cost entry",
+    "P95 latency": "P95 latency"
   }
 }

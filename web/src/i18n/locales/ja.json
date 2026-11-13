@@ -7442,6 +7442,7 @@
     "Cost entry saved": "コストを保存しました",
     "Failed to save cost entry": "コストの保存に失敗しました",
     "Cost entry deleted": "コストを削除しました",
-    "Failed to delete cost entry": "コストの削除に失敗しました"
+    "Failed to delete cost entry": "コストの削除に失敗しました",
+    "P95 latency": "P95 レイテンシ"
   }
 }

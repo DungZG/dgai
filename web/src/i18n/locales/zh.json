@@ -7442,6 +7442,7 @@
     "Cost entry saved": "成本已保存",
     "Failed to save cost entry": "保存成本失败",
     "Cost entry deleted": "成本已删除",
-    "Failed to delete cost entry": "删除成本失败"
+    "Failed to delete cost entry": "删除成本失败",
+    "P95 latency": "P95 延迟"
   }
 }
