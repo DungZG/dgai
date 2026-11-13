@@ -121,7 +121,9 @@ export function OAuthProviders({
     })
   }
 
-  if (status?.telegram_oauth) {
+  // telegram_oauth_configured is false while the bot credentials are missing;
+  // showing the button then would only produce a failed authorization.
+  if (status?.telegram_oauth && status?.telegram_oauth_configured !== false) {
     providerButtons.push({
       key: 'telegram',
       label: t('Continue with Telegram'),
