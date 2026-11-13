@@ -42,7 +42,7 @@ const FEATURED_MODEL_LIMIT = 6
 export function AboutIntro() {
   const { t } = useTranslation()
   const { status } = useStatus()
-  const { models, isLoading } = usePricingData()
+  const { models, isLoading, error } = usePricingData()
   const user = useAuthStore((state) => state.auth.user)
 
   const docsUrl = (status?.docs_link as string | undefined) || '/docs'
@@ -209,25 +209,28 @@ export function AboutIntro() {
         </section>
       ) : null}
 
-      {/* Live catalogue */}
-      <section className='mt-10 space-y-3'>
-        <div className='flex items-end justify-between gap-3'>
-          <div>
-            <h2 className='text-lg font-semibold'>{t('Available models')}</h2>
-            <p className='text-muted-foreground text-sm'>
-              {t(
-                'Prices shown per 1M tokens, unless the model bills per request.'
-              )}
-            </p>
+      {/* Live catalogue — hidden when the pricing endpoint is off, because an
+          empty list there means "unavailable", not "nothing on sale". */}
+      {error ? null : (
+        <section className='mt-10 space-y-3'>
+          <div className='flex items-end justify-between gap-3'>
+            <div>
+              <h2 className='text-lg font-semibold'>{t('Available models')}</h2>
+              <p className='text-muted-foreground text-sm'>
+                {t(
+                  'Prices shown per 1M tokens, unless the model bills per request.'
+                )}
+              </p>
+            </div>
+            <Button variant='ghost' size='sm' render={<Link to='/pricing' />}>
+              {t('See all pricing')}
+              <ArrowRight className='ms-1.5 size-3.5' />
+            </Button>
           </div>
-          <Button variant='ghost' size='sm' render={<Link to='/pricing' />}>
-            {t('See all pricing')}
-            <ArrowRight className='ms-1.5 size-3.5' />
-          </Button>
-        </div>
 
-        {renderCatalogue()}
-      </section>
+          {renderCatalogue()}
+        </section>
+      )}
 
       {/* How it works */}
       <section className='mt-10'>
