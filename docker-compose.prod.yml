@@ -64,7 +64,8 @@ services:
     image: ghcr.io/${DGAI_IMAGE_REPO:?set DGAI_IMAGE_REPO e.g. dungzg/dgai}:${DGAI_IMAGE_TAG:-latest}
     container_name: dgai-optimizer
     restart: always
-    command: ["/optimizer", "-config", "/etc/optimizer/config.json"]
+    entrypoint: ["/optimizer"]
+    command: ["-config", "/etc/optimizer/config.json"]
     volumes:
       - ./optimizer.json:/etc/optimizer/config.json:ro
     deploy:
