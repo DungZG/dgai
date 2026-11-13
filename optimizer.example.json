@@ -1,0 +1,13 @@
+{
+  "listen_addr": ":8080",
+  "token": "CHANGE_ME_INTERNAL_TOKEN",
+  "upstreams": [
+    {
+      "name": "vilao",
+      "base_url": "https://api.vilao.ai",
+      "api_key": "CHANGE_ME_VILAO_KEY",
+      "cache_ttl_seconds": 0,
+      "max_cache_entries": 1000
+    }
+  ]
+}

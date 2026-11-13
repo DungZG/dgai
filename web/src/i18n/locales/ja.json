@@ -7428,6 +7428,20 @@
     "Point your client at one endpoint": "クライアントを 1 つのエンドポイントに向ける",
     "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.": "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.",
     "One key, one endpoint, every model": "1 つのキー、1 つのエンドポイント、すべてのモデル",
-    "No models are on sale yet.": "提供中のモデルはまだありません。"
+    "No models are on sale yet.": "提供中のモデルはまだありません。",
+    "Margin": "粗利",
+    "Provider Cost & Margin": "上流コストと粗利",
+    "Upstream cost per million tokens. Margin is computed from consume logs, so it never affects billing.": "100 万トークンあたりの上流コスト。粗利は消費ログから算出され、課金には影響しません。",
+    "Recorded costs": "記録済みコスト",
+    "No cost entries yet.": "コスト記録はまだありません。",
+    "Input price (USD / 1M)": "入力価格（USD / 1M）",
+    "Output price (USD / 1M)": "出力価格（USD / 1M）",
+    "Margin over the last 30 days": "過去 30 日間の粗利",
+    "No consume logs in this period.": "この期間の消費ログはありません。",
+    "No cost recorded": "コスト未記録",
+    "Cost entry saved": "コストを保存しました",
+    "Failed to save cost entry": "コストの保存に失敗しました",
+    "Cost entry deleted": "コストを削除しました",
+    "Failed to delete cost entry": "コストの削除に失敗しました"
   }
 }

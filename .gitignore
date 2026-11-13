@@ -56,3 +56,6 @@ go.work.sum
 # local database dumps
 *.sql.gz
 backups/
+
+# Token Optimizer runtime config (holds upstream API keys)
+optimizer.json

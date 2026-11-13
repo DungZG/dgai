@@ -7428,6 +7428,20 @@
     "Point your client at one endpoint": "將用戶端指向一個端點",
     "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.": "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.",
     "One key, one endpoint, every model": "一個金鑰，一個端點，所有模型",
-    "No models are on sale yet.": "目前沒有在售模型。"
+    "No models are on sale yet.": "目前沒有在售模型。",
+    "Margin": "利潤",
+    "Provider Cost & Margin": "上游成本與利潤",
+    "Upstream cost per million tokens. Margin is computed from consume logs, so it never affects billing.": "每百萬 token 的上游成本。利潤由消費日誌計算，不影響計費。",
+    "Recorded costs": "已記錄的成本",
+    "No cost entries yet.": "尚無成本記錄。",
+    "Input price (USD / 1M)": "輸入價格（USD / 1M）",
+    "Output price (USD / 1M)": "輸出價格（USD / 1M）",
+    "Margin over the last 30 days": "最近 30 天利潤",
+    "No consume logs in this period.": "此期間沒有消費日誌。",
+    "No cost recorded": "未記錄成本",
+    "Cost entry saved": "成本已儲存",
+    "Failed to save cost entry": "儲存成本失敗",
+    "Cost entry deleted": "成本已刪除",
+    "Failed to delete cost entry": "刪除成本失敗"
   }
 }

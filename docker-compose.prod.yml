@@ -56,6 +56,31 @@ services:
       timeout: 10s
       retries: 3
 
+  # Token Optimizer: an optional upstream that New API reaches as a channel.
+  # It is internal-only (no published port); a channel points at
+  # http://optimizer:8080/u/<upstream> and New API keeps auth, quota and logs.
+  # Start it only when optimizer.json exists on the server.
+  optimizer:
+    image: ghcr.io/${DGAI_IMAGE_REPO:?set DGAI_IMAGE_REPO e.g. dungzg/dgai}:${DGAI_IMAGE_TAG:-latest}
+    container_name: dgai-optimizer
+    restart: always
+    command: ["/optimizer", "-config", "/etc/optimizer/config.json"]
+    volumes:
+      - ./optimizer.json:/etc/optimizer/config.json:ro
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - dgai-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/health/live || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    profiles:
+      - optimizer
+
   redis:
     image: redis:7-alpine
     container_name: dgai-redis

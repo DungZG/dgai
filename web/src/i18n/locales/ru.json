@@ -7428,6 +7428,20 @@
     "Point your client at one endpoint": "Направьте клиент на один эндпоинт",
     "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.": "Use the OpenAI-compatible base URL with any SDK, CLI, or IDE. Switching models is a single string change.",
     "One key, one endpoint, every model": "Один ключ, один эндпоинт, все модели",
-    "No models are on sale yet.": "Модели пока не продаются."
+    "No models are on sale yet.": "Модели пока не продаются.",
+    "Margin": "Маржа",
+    "Provider Cost & Margin": "Себестоимость и маржа",
+    "Upstream cost per million tokens. Margin is computed from consume logs, so it never affects billing.": "Себестоимость провайдера за миллион токенов. Маржа рассчитывается по журналам потребления и не влияет на биллинг.",
+    "Recorded costs": "Записанная себестоимость",
+    "No cost entries yet.": "Записей о себестоимости пока нет.",
+    "Input price (USD / 1M)": "Цена входа (USD / 1M)",
+    "Output price (USD / 1M)": "Цена выхода (USD / 1M)",
+    "Margin over the last 30 days": "Маржа за последние 30 дней",
+    "No consume logs in this period.": "За этот период нет журналов потребления.",
+    "No cost recorded": "Себестоимость не записана",
+    "Cost entry saved": "Себестоимость сохранена",
+    "Failed to save cost entry": "Не удалось сохранить себестоимость",
+    "Cost entry deleted": "Себестоимость удалена",
+    "Failed to delete cost entry": "Не удалось удалить себестоимость"
   }
 }

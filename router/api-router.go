@@ -219,6 +219,15 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/subscription/epay/notify", controller.SubscriptionEpayNotify)
 		apiRouter.GET("/subscription/epay/return", controller.SubscriptionEpayReturn)
 		apiRouter.POST("/subscription/epay/return", anonymousRequestBodyLimit, controller.SubscriptionEpayReturn)
+		// Provider cost and margin reporting (read-only over logs, never on the relay path)
+		providerCostRoute := apiRouter.Group("/provider_cost")
+		providerCostRoute.Use(middleware.AdminAuth())
+		{
+			providerCostRoute.GET("/", controller.GetProviderCosts)
+			providerCostRoute.PUT("/", controller.SaveProviderCost)
+			providerCostRoute.DELETE("/:id", controller.DeleteProviderCost)
+			providerCostRoute.GET("/margins", controller.GetModelMargins)
+		}
 		optionRoute := apiRouter.Group("/option")
 		optionRoute.Use(middleware.RootAuth())
 		{
