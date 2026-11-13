@@ -98,3 +98,26 @@ func GetModelMargins(startTimestamp, endTimestamp int64) ([]ModelMargin, error) 
 	}
 	return rows, nil
 }
+
+// UserSpendWindows carries a user's recent spend so the velocity alert can
+// compare today against their own trailing baseline.
+type UserSpendWindows struct {
+	UserId        int   `json:"user_id"`
+	RecentQuota   int64 `json:"recent_quota"`
+	BaselineQuota int64 `json:"baseline_quota"`
+}
+
+// GetUserSpendWindows sums consume quota per user for two adjacent windows.
+// baselineDays sets the length of the earlier window, which is averaged to get
+// a per-day baseline.
+func GetUserSpendWindows(recentSince int64, baselineSince int64) ([]UserSpendWindows, error) {
+	var rows []UserSpendWindows
+	err := LOG_DB.Model(&Log{}).
+		Select("user_id, "+
+			"COALESCE(sum(CASE WHEN created_at >= ? THEN quota ELSE 0 END), 0) AS recent_quota, "+
+			"COALESCE(sum(CASE WHEN created_at < ? THEN quota ELSE 0 END), 0) AS baseline_quota", recentSince, recentSince).
+		Where("type = ? AND created_at >= ?", LogTypeConsume, baselineSince).
+		Group("user_id").
+		Scan(&rows).Error
+	return rows, err
+}

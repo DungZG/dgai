@@ -20,6 +20,8 @@ export type PerformanceSummary = {
   avg_latency_ms: number
   p50_latency_ms?: number
   p95_latency_ms?: number
+  p50_ttft_ms?: number
+  p95_ttft_ms?: number
   success_rate: number
   avg_tps: number
 }
@@ -30,6 +32,8 @@ export type PerformanceSeriesPoint = {
   avg_latency_ms: number
   p50_latency_ms?: number
   p95_latency_ms?: number
+  p50_ttft_ms?: number
+  p95_ttft_ms?: number
   success_rate: number
   avg_tps: number
 }
@@ -40,6 +44,8 @@ export type PerformanceGroup = {
   avg_latency_ms: number
   p50_latency_ms?: number
   p95_latency_ms?: number
+  p50_ttft_ms?: number
+  p95_ttft_ms?: number
   success_rate: number
   avg_tps: number
   series: PerformanceSeriesPoint[]

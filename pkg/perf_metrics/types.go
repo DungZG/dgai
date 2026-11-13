@@ -35,6 +35,8 @@ type Summary struct {
 	AvgLatencyMs int64   `json:"avg_latency_ms"`
 	P50LatencyMs int64   `json:"p50_latency_ms"`
 	P95LatencyMs int64   `json:"p95_latency_ms"`
+	P50TtftMs    int64   `json:"p50_ttft_ms"`
+	P95TtftMs    int64   `json:"p95_ttft_ms"`
 	SuccessRate  float64 `json:"success_rate"`
 	AvgTps       float64 `json:"avg_tps"`
 }
@@ -45,6 +47,8 @@ type BucketPoint struct {
 	AvgLatencyMs int64   `json:"avg_latency_ms"`
 	P50LatencyMs int64   `json:"p50_latency_ms"`
 	P95LatencyMs int64   `json:"p95_latency_ms"`
+	P50TtftMs    int64   `json:"p50_ttft_ms"`
+	P95TtftMs    int64   `json:"p95_ttft_ms"`
 	SuccessRate  float64 `json:"success_rate"`
 	AvgTps       float64 `json:"avg_tps"`
 }
@@ -55,6 +59,8 @@ type GroupResult struct {
 	AvgLatencyMs int64         `json:"avg_latency_ms"`
 	P50LatencyMs int64         `json:"p50_latency_ms"`
 	P95LatencyMs int64         `json:"p95_latency_ms"`
+	P50TtftMs    int64         `json:"p50_ttft_ms"`
+	P95TtftMs    int64         `json:"p95_ttft_ms"`
 	SuccessRate  float64       `json:"success_rate"`
 	AvgTps       float64       `json:"avg_tps"`
 	Series       []BucketPoint `json:"series"`
@@ -80,6 +86,8 @@ type ModelSummary struct {
 	AvgLatencyMs        int64              `json:"avg_latency_ms"`
 	P50LatencyMs        int64              `json:"p50_latency_ms"`
 	P95LatencyMs        int64              `json:"p95_latency_ms"`
+	P50TtftMs           int64              `json:"p50_ttft_ms"`
+	P95TtftMs           int64              `json:"p95_ttft_ms"`
 	SuccessRate         float64            `json:"success_rate"`
 	AvgTps              float64            `json:"avg_tps"`
 	RecentSuccessSeries []SuccessRatePoint `json:"recent_success_series,omitempty"`
@@ -111,6 +119,7 @@ type counters struct {
 	outputTokens   int64
 	generationMs   int64
 	latencyHist    [latencyHistBuckets]int64
+	ttftHist       [latencyHistBuckets]int64
 }
 
 type atomicBucket struct {
@@ -122,6 +131,7 @@ type atomicBucket struct {
 	outputTokens   atomic.Int64
 	generationMs   atomic.Int64
 	latencyHist    [latencyHistBuckets]atomic.Int64
+	ttftHist       [latencyHistBuckets]atomic.Int64
 }
 
 func (b *atomicBucket) add(sample Sample) {
@@ -136,6 +146,7 @@ func (b *atomicBucket) add(sample Sample) {
 	if sample.HasTtft && sample.TtftMs >= 0 {
 		b.ttftSumMs.Add(sample.TtftMs)
 		b.ttftCount.Add(1)
+		b.ttftHist[latencyHistIndex(sample.TtftMs)].Add(1)
 	}
 	if sample.OutputTokens > 0 && sample.GenerationMs > 0 {
 		b.outputTokens.Add(sample.OutputTokens)
@@ -152,7 +163,8 @@ func (b *atomicBucket) snapshot() counters {
 		ttftCount:      b.ttftCount.Load(),
 		outputTokens:   b.outputTokens.Load(),
 		generationMs:   b.generationMs.Load(),
-		latencyHist:    b.histSnapshot(false),
+		latencyHist:    b.histSnapshot(&b.latencyHist, false),
+		ttftHist:       b.histSnapshot(&b.ttftHist, false),
 	}
 }
 
@@ -165,17 +177,18 @@ func (b *atomicBucket) drain() counters {
 		ttftCount:      b.ttftCount.Swap(0),
 		outputTokens:   b.outputTokens.Swap(0),
 		generationMs:   b.generationMs.Swap(0),
-		latencyHist:    b.histSnapshot(true),
+		latencyHist:    b.histSnapshot(&b.latencyHist, true),
+		ttftHist:       b.histSnapshot(&b.ttftHist, true),
 	}
 }
 
-func (b *atomicBucket) histSnapshot(drain bool) [latencyHistBuckets]int64 {
+func (b *atomicBucket) histSnapshot(src *[latencyHistBuckets]atomic.Int64, drain bool) [latencyHistBuckets]int64 {
 	var hist [latencyHistBuckets]int64
-	for i := range b.latencyHist {
+	for i := range src {
 		if drain {
-			hist[i] = b.latencyHist[i].Swap(0)
+			hist[i] = src[i].Swap(0)
 		} else {
-			hist[i] = b.latencyHist[i].Load()
+			hist[i] = src[i].Load()
 		}
 	}
 	return hist
@@ -206,6 +219,11 @@ func (b *atomicBucket) addCounters(c counters) {
 	for i, n := range c.latencyHist {
 		if n != 0 {
 			b.latencyHist[i].Add(n)
+		}
+	}
+	for i, n := range c.ttftHist {
+		if n != 0 {
+			b.ttftHist[i].Add(n)
 		}
 	}
 }

@@ -24,6 +24,8 @@ type PerfMetric struct {
 	// text column because the bucket list is code-defined; SQL cannot sum it
 	// portably, so percentiles are merged in Go.
 	LatencyHist string `json:"-" gorm:"type:text"`
+	// TtftHist uses the same bucket layout for time-to-first-token.
+	TtftHist string `json:"-" gorm:"type:text"`
 }
 
 func (PerfMetric) TableName() string {
@@ -52,6 +54,7 @@ func UpsertPerfMetric(metric *PerfMetric) error {
 			// merging it. Each bucket is flushed once per interval, so this only
 			// loses data if two instances write the same bucket at the same time.
 			"latency_hist": metric.LatencyHist,
+			"ttft_hist":    metric.TtftHist,
 		}),
 	}).Create(metric).Error
 }
@@ -162,12 +165,13 @@ type PerfMetricHistRow struct {
 	ModelName   string `json:"model_name"`
 	BucketTs    int64  `json:"bucket_ts"`
 	LatencyHist string `json:"latency_hist"`
+	TtftHist    string `json:"ttft_hist"`
 }
 
 func GetPerfMetricHistRows(startTs int64, endTs int64, groups []string) ([]PerfMetricHistRow, error) {
 	var rows []PerfMetricHistRow
 	query := DB.Model(&PerfMetric{}).
-		Select("model_name, bucket_ts, latency_hist").
+		Select("model_name, bucket_ts, latency_hist, ttft_hist").
 		Where("bucket_ts >= ? AND bucket_ts <= ? AND latency_hist <> ''", startTs, endTs)
 	if groups != nil {
 		if len(groups) == 0 {
@@ -176,5 +180,24 @@ func GetPerfMetricHistRows(startTs int64, endTs int64, groups []string) ([]PerfM
 		query = query.Where(commonGroupCol+" IN ?", groups)
 	}
 	err := query.Find(&rows).Error
+	return rows, err
+}
+
+// ChannelSuccessRate aggregates relay outcomes per channel over a time window.
+// perf_metrics keys on (model, group); abilities maps that pair to a channel.
+type ChannelSuccessRate struct {
+	ChannelId    int   `json:"channel_id"`
+	RequestCount int64 `json:"request_count"`
+	SuccessCount int64 `json:"success_count"`
+}
+
+func GetChannelSuccessRates(sinceTs int64) ([]ChannelSuccessRate, error) {
+	var rows []ChannelSuccessRate
+	err := DB.Table("perf_metrics AS p").
+		Select("a.channel_id AS channel_id, SUM(p.request_count) AS request_count, SUM(p.success_count) AS success_count").
+		Joins("JOIN abilities AS a ON a.model = p.model_name AND a."+commonGroupCol+" = p."+commonGroupCol).
+		Where("p.bucket_ts >= ? AND p.request_count > 0", sinceTs).
+		Group("a.channel_id").
+		Scan(&rows).Error
 	return rows, err
 }

@@ -168,7 +168,7 @@ export function ModelDetailsPerformance(props: { model: PricingModel }) {
   }
 
   const avgTps = summary?.avg_tps ?? 0
-  const avgLatency = summary?.avg_latency_ms ?? 0
+  const avgLatency = summary?.p95_latency_ms || summary?.avg_latency_ms || 0
   const successRate = summary?.success_rate ?? Number.NaN
   const incidentCount = uptimeSeries.reduce((s, p) => s + p.incidents, 0)
 
@@ -183,7 +183,7 @@ export function ModelDetailsPerformance(props: { model: PricingModel }) {
         />
         <StatCard
           icon={Timer}
-          label={t('Average latency')}
+          label={t('P95 latency')}
           value={formatLatency(avgLatency)}
         />
         <StatCard

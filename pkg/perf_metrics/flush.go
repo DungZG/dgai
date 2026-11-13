@@ -50,6 +50,7 @@ func flushCompletedBuckets() {
 			OutputTokens:   drained.outputTokens,
 			GenerationMs:   drained.generationMs,
 			LatencyHist:    encodeLatencyHist(drained.latencyHist),
+			TtftHist:       encodeLatencyHist(drained.ttftHist),
 		})
 		if err != nil {
 			bucket.addCounters(drained)
@@ -90,12 +91,17 @@ func redisCounters(values map[string]string) counters {
 	}
 	for i := range result.latencyHist {
 		result.latencyHist[i] = parseRedisInt(values[latencyHistField(i)])
+		result.ttftHist[i] = parseRedisInt(values[ttftHistField(i)])
 	}
 	return result
 }
 
 func latencyHistField(i int) string {
 	return "lh" + strconv.Itoa(i)
+}
+
+func ttftHistField(i int) string {
+	return "th" + strconv.Itoa(i)
 }
 
 func parseRedisInt(value string) int64 {

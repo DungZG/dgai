@@ -385,3 +385,19 @@ func TestLatencyHistRoundTrip(t *testing.T) {
 	assert.Equal(t, hist, decodeLatencyHist(encoded))
 	assert.Equal(t, [latencyHistBuckets]int64{}, decodeLatencyHist(""))
 }
+
+func TestTtftHistogramIsIndependent(t *testing.T) {
+	var bucket atomicBucket
+	// 8 fast first tokens, 2 slow ones; latency is deliberately different so a
+	// swapped histogram would show up.
+	for range 8 {
+		bucket.add(Sample{LatencyMs: 5000, TtftMs: 120, HasTtft: true})
+	}
+	for range 2 {
+		bucket.add(Sample{LatencyMs: 60000, TtftMs: 9000, HasTtft: true})
+	}
+	snap := bucket.snapshot()
+	assert.Equal(t, int64(5000), latencyPercentile(&snap.latencyHist, 0.50))
+	assert.Equal(t, int64(150), latencyPercentile(&snap.ttftHist, 0.50))
+	assert.Equal(t, int64(10000), latencyPercentile(&snap.ttftHist, 0.95))
+}

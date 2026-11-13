@@ -21,6 +21,43 @@ func RegisterScheduledSystemTasks() {
 	service.RegisterSystemTaskHandler(modelUpdateHandler{})
 	service.RegisterSystemTaskHandler(midjourneyPollHandler{})
 	service.RegisterSystemTaskHandler(asyncTaskPollHandler{})
+	service.RegisterSystemTaskHandler(channelHealthHandler{})
+	service.RegisterSystemTaskHandler(spendVelocityHandler{})
+}
+
+// channelHealthHandler warns administrators when a channel's recent success rate
+// falls below the alert threshold. It reads the perf metrics already collected
+// for the model square, so it adds no sampling cost of its own.
+type channelHealthHandler struct{}
+
+func (channelHealthHandler) Type() string { return model.SystemTaskTypeChannelHealth }
+
+func (channelHealthHandler) Enabled() bool { return true }
+
+func (channelHealthHandler) Interval() time.Duration { return 15 * time.Minute }
+
+func (channelHealthHandler) NewPayload() any { return nil }
+
+func (channelHealthHandler) Run(ctx context.Context, task *model.SystemTask, runnerID string) {
+	sent := service.CheckChannelHealth(30)
+	finishSystemTaskHandler(task, runnerID, model.SystemTaskStatusSucceeded, map[string]any{"notices": sent}, nil)
+}
+
+// spendVelocityHandler warns administrators when a user's recent spend runs far
+// above their own trailing average, which is how a leaked key usually presents.
+type spendVelocityHandler struct{}
+
+func (spendVelocityHandler) Type() string { return model.SystemTaskTypeSpendVelocity }
+
+func (spendVelocityHandler) Enabled() bool { return true }
+
+func (spendVelocityHandler) Interval() time.Duration { return time.Hour }
+
+func (spendVelocityHandler) NewPayload() any { return nil }
+
+func (spendVelocityHandler) Run(ctx context.Context, task *model.SystemTask, runnerID string) {
+	sent := service.CheckSpendVelocity()
+	finishSystemTaskHandler(task, runnerID, model.SystemTaskStatusSucceeded, map[string]any{"notices": sent}, nil)
 }
 
 // channelTestHandler runs the scheduled "test all channels" job. Enablement and

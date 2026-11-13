@@ -103,6 +103,10 @@ const (
 	MsgChannelTestCompletedSubject  = "channel.test_completed_subject"
 	MsgChannelTestCompletedContent  = "channel.test_completed_content"
 	MsgChannelResponseTimeExceeded  = "channel.response_time_exceeded"
+	MsgChannelHealthDegradedSubject = "channel.health_degraded_subject"
+	MsgChannelHealthDegradedContent = "channel.health_degraded_content"
+	MsgSpendVelocitySubject         = "spend.velocity_subject"
+	MsgSpendVelocityContent         = "spend.velocity_content"
 
 	MsgChannelUpstreamUpdateNotifySubject   = "channel.upstream_update_notify_subject"
 	MsgChannelUpstreamUpdateSummary         = "channel.upstream_update_summary"
