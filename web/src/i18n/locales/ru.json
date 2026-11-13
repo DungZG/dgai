@@ -7443,6 +7443,12 @@
     "Failed to save cost entry": "Не удалось сохранить себестоимость",
     "Cost entry deleted": "Себестоимость удалена",
     "Failed to delete cost entry": "Не удалось удалить себестоимость",
-    "P95 latency": "Задержка P95"
+    "P95 latency": "Задержка P95",
+    "Export CSV": "Экспорт CSV",
+    "From": "С",
+    "To": "По",
+    "Date": "Дата",
+    "Prompt tokens": "Входные токены",
+    "Completion tokens": "Выходные токены"
   }
 }

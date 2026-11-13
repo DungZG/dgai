@@ -29,6 +29,7 @@ import {
   MessageSquare,
   PlugZap,
   Radio,
+  ReceiptText,
   ServerCog,
   Settings,
   Share2,
@@ -162,6 +163,11 @@ export function useSidebarData(): SidebarData {
             title: t('Subscriptions'),
             url: '/subscriptions',
             icon: CreditCard,
+          },
+          {
+            title: t('Revenue'),
+            url: '/revenue',
+            icon: ReceiptText,
           },
           {
             title: t('System Info'),

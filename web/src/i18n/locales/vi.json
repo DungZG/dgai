@@ -7443,6 +7443,12 @@
     "Failed to save cost entry": "Lưu giá vốn thất bại",
     "Cost entry deleted": "Đã xoá giá vốn",
     "Failed to delete cost entry": "Xoá giá vốn thất bại",
-    "P95 latency": "Độ trễ P95"
+    "P95 latency": "Độ trễ P95",
+    "Export CSV": "Xuất CSV",
+    "From": "Từ ngày",
+    "To": "Đến ngày",
+    "Date": "Ngày",
+    "Prompt tokens": "Token đầu vào",
+    "Completion tokens": "Token đầu ra"
   }
 }

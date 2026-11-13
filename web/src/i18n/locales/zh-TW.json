@@ -7443,6 +7443,12 @@
     "Failed to save cost entry": "儲存成本失敗",
     "Cost entry deleted": "成本已刪除",
     "Failed to delete cost entry": "刪除成本失敗",
-    "P95 latency": "P95 延遲"
+    "P95 latency": "P95 延遲",
+    "Export CSV": "匯出 CSV",
+    "From": "開始日期",
+    "To": "結束日期",
+    "Date": "日期",
+    "Prompt tokens": "輸入 token",
+    "Completion tokens": "輸出 token"
   }
 }

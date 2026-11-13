@@ -7443,6 +7443,12 @@
     "Failed to save cost entry": "Failed to save cost entry",
     "Cost entry deleted": "Cost entry deleted",
     "Failed to delete cost entry": "Failed to delete cost entry",
-    "P95 latency": "P95 latency"
+    "P95 latency": "P95 latency",
+    "Export CSV": "Export CSV",
+    "From": "From",
+    "To": "To",
+    "Date": "Date",
+    "Prompt tokens": "Prompt tokens",
+    "Completion tokens": "Completion tokens"
   }
 }

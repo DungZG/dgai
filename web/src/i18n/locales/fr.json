@@ -7443,6 +7443,12 @@
     "Failed to save cost entry": "Échec de l'enregistrement du coût",
     "Cost entry deleted": "Coût supprimé",
     "Failed to delete cost entry": "Échec de la suppression du coût",
-    "P95 latency": "Latence P95"
+    "P95 latency": "Latence P95",
+    "Export CSV": "Exporter en CSV",
+    "From": "Du",
+    "To": "Au",
+    "Date": "Date",
+    "Prompt tokens": "Tokens d'entrée",
+    "Completion tokens": "Tokens de sortie"
   }
 }
