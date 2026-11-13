@@ -144,6 +144,9 @@ export function ReferralHero(props: ReferralHeroProps) {
 export function ReferralStats(props: { referral: ReferralInfo | null }) {
   const { t } = useTranslation()
 
+  // Pending is deliberately absent: the hero already shows it next to the
+  // transfer button, and repeating the same number twice is noise.
+  const percent = props.referral?.commission_percent ?? 0
   const items = [
     {
       icon: <Users className='size-4' />,
@@ -152,13 +155,13 @@ export function ReferralStats(props: { referral: ReferralInfo | null }) {
     },
     {
       icon: <Gift className='size-4' />,
-      label: t('Pending'),
-      value: formatQuota(props.referral?.aff_quota ?? 0),
+      label: t('Total Earned'),
+      value: formatQuota(props.referral?.aff_history_quota ?? 0),
     },
     {
       icon: <Gift className='size-4' />,
-      label: t('Total Earned'),
-      value: formatQuota(props.referral?.aff_history_quota ?? 0),
+      label: t('Commission'),
+      value: percent > 0 ? `${percent}%` : t('Not configured'),
     },
   ]
 

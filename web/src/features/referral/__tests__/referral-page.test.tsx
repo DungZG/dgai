@@ -151,13 +151,16 @@ it('disables the transfer while compliance is unconfirmed', () => {
   ).toBeDisabled()
 })
 
-it('reports invites, pending and lifetime earnings', () => {
+it('reports invites, lifetime earnings and the commission rate', () => {
   wrap(<ReferralStats referral={referral} />)
 
   expect(screen.getByText('Invites')).toBeVisible()
   expect(screen.getByText('7')).toBeVisible()
-  expect(screen.getByText('Pending')).toBeVisible()
   expect(screen.getByText('Total Earned')).toBeVisible()
+  expect(screen.getByText('Commission')).toBeVisible()
+  expect(screen.getByText('30%')).toBeVisible()
+  // Pending lives in the hero next to the transfer button, not here.
+  expect(screen.queryByText('Pending')).not.toBeInTheDocument()
 })
 
 it('renders reward events in the viewer language', () => {
