@@ -19,16 +19,25 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { SignUp } from '@/features/auth/sign-up'
+import { statusQueryOptions } from '@/lib/status-query'
 import { useAuthStore } from '@/stores/auth-store'
 
 export const Route = createFileRoute('/(auth)/sign-up')({
   component: SignUp,
-  beforeLoad: async () => {
+  beforeLoad: async ({ context }) => {
     const { auth } = useAuthStore.getState()
 
     // 如果已经有用户信息，说明已登录，注册页对其无意义，跳转到 dashboard
     if (auth.user) {
       throw redirect({ to: '/dashboard' })
+    }
+
+    // Registration may be switched off by the administrator. Reading the shared
+    // status query here keeps the page from rendering a form the server would
+    // reject on submit.
+    const status = await context.queryClient.fetchQuery(statusQueryOptions)
+    if (status?.register_enabled === false) {
+      throw redirect({ to: '/sign-in' })
     }
   },
 })
