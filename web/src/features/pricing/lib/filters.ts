@@ -245,6 +245,8 @@ export function extractAllTags(models: PricingModel[]): string[] {
     if (model.tags) {
       const tags = parseTags(model.tags)
       tags.forEach((tag) => {
+        // The sale marker drives a badge, not a filter chip.
+        if (/^sale[:-]\d{1,2}$/i.test(tag)) return
         tagSet.add(tag.toLowerCase())
       })
     }
