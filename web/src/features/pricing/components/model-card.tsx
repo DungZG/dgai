@@ -63,8 +63,25 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
   const showRechargePrice = props.showRechargePrice ?? false
   const isTokenBased = isTokenBasedModel(props.model)
   const tokenUnitLabel = tokenUnit === 'K' ? '1K' : '1M'
-  const tags = parseTags(props.model.tags)
+  const tags = parseTags(props.model.tags).filter(
+    (tag) => !/^sale[:-]\d{1,2}$/i.test(tag)
+  )
   const salePercent = salePercentFromTags(props.model.tags)
+  // The list price is what the customer pays before the discount, so it is
+  // derived from the discounted ratio rather than stored a second time.
+  const originalPriceModel = useMemo(() => {
+    if (salePercent === null) return null
+    const factor = 100 / (100 - salePercent)
+    return {
+      ...props.model,
+      model_ratio: (props.model.model_ratio ?? 0) * factor,
+      model_price: (props.model.model_price ?? 0) * factor,
+      cache_ratio:
+        props.model.cache_ratio != null
+          ? props.model.cache_ratio * factor
+          : undefined,
+    }
+  }, [props.model, salePercent])
   const groups = props.model.enable_groups || []
   const endpoints = props.model.supported_endpoint_types || []
   const modelIconKey = props.model.icon || props.model.vendor_icon
@@ -244,6 +261,19 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             {' '}
             / {tokenUnitLabel}
           </span>
+          {salePercent !== null && originalPriceModel && (
+            <span className='text-muted-foreground/60 ml-1.5 text-xs font-normal line-through'>
+              {formatPrice(
+                originalPriceModel,
+                price.type,
+                tokenUnit,
+                showRechargePrice,
+                priceRate,
+                usdExchangeRate,
+                props.selectedGroup
+              )}
+            </span>
+          )}
         </span>
       </div>
     ))
