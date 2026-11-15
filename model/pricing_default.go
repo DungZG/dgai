@@ -83,7 +83,8 @@ func initDefaultVendorMapping(metaMap map[string]*Model, vendorMap map[int]*Vend
 	})
 	for _, ability := range enableAbilities {
 		modelName := ability.Model
-		if _, exists := metaMap[modelName]; exists {
+		meta, exists := metaMap[modelName]
+		if exists && meta.VendorID != 0 {
 			continue
 		}
 
@@ -98,12 +99,22 @@ func initDefaultVendorMapping(metaMap map[string]*Model, vendorMap map[int]*Vend
 			}
 		}
 
-		// 创建模型元数据
-		metaMap[modelName] = &Model{
-			ModelName: modelName,
-			VendorID:  vendorID,
-			Status:    1,
-			NameRule:  NameRuleExact,
+		if !exists {
+			// 创建模型元数据
+			metaMap[modelName] = &Model{
+				ModelName: modelName,
+				VendorID:  vendorID,
+				Status:    1,
+				NameRule:  NameRuleExact,
+			}
+			continue
+		}
+
+		// A row the admin created without a vendor means "not chosen yet", so
+		// the default rule fills it in instead of leaving the model ungrouped
+		// and icon-less in the catalog.
+		if vendorID != 0 {
+			meta.VendorID = vendorID
 		}
 	}
 }

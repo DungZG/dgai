@@ -292,3 +292,31 @@ func TestCacheUpdateChannelSyncsAdvancedCustomConfig(t *testing.T) {
 
 	assert.Nil(t, channel2advancedCustomConfig[401])
 }
+
+// A model row the admin created without choosing a vendor still belongs to the
+// vendor its name implies; otherwise it renders without an icon and falls
+// outside every vendor group in the catalog.
+func TestPricingFillsDefaultVendorForModelRowWithoutVendor(t *testing.T) {
+	resetPricingEndpointTestTables(t)
+
+	insertPricingEndpointChannel(t, 501, constant.ChannelTypeAnthropic, dto.ChannelOtherSettings{})
+	insertPricingEndpointAbility(t, 501, "claude-fable-5-1")
+	insertPricingEndpointAbility(t, 501, "gpt-4o")
+	require.NoError(t, DB.Create(&Model{ModelName: "claude-fable-5-1", Status: 1}).Error)
+	require.NoError(t, DB.Create(&Model{ModelName: "gpt-4o", VendorID: defaultVendorDisplayIDs["DeepSeek"], Status: 1}).Error)
+
+	vendorByModel := make(map[string]int)
+	for _, pricing := range GetPricing() {
+		vendorByModel[pricing.ModelName] = pricing.VendorID
+	}
+
+	assert.Equal(t, defaultVendorDisplayIDs["Anthropic"], vendorByModel["claude-fable-5-1"])
+	// An explicit vendor is the admin's choice and must survive.
+	assert.Equal(t, defaultVendorDisplayIDs["DeepSeek"], vendorByModel["gpt-4o"])
+
+	iconsByVendor := make(map[int]string)
+	for _, vendor := range GetVendors() {
+		iconsByVendor[vendor.ID] = vendor.Icon
+	}
+	assert.Equal(t, "Claude.Color", iconsByVendor[defaultVendorDisplayIDs["Anthropic"]])
+}
