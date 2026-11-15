@@ -7450,6 +7450,11 @@
     "Date": "日付",
     "Prompt tokens": "入力トークン",
     "Completion tokens": "出力トークン",
-    "Limited-time sale": "期間限定セール"
+    "Limited-time sale": "期間限定セール",
+    "Every 24 hours": "24時間ごと",
+    "Daily quota": "1日あたりの利用枠",
+    "Quota per period": "期間あたりの利用枠",
+    "Unused quota does not roll over": "未使用の利用枠は繰り越されません",
+    "Wallet may be charged after the plan quota is exhausted": "プランの利用枠を使い切ると、ウォレット残高から引き落とされる場合があります"
   }
 }

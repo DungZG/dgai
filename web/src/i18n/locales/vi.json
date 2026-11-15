@@ -7450,6 +7450,11 @@
     "Date": "Ngày",
     "Prompt tokens": "Token đầu vào",
     "Completion tokens": "Token đầu ra",
-    "Limited-time sale": "Giảm giá có thời hạn"
+    "Limited-time sale": "Giảm giá có thời hạn",
+    "Every 24 hours": "Mỗi 24 giờ",
+    "Daily quota": "Hạn mức/ngày",
+    "Quota per period": "Hạn mức mỗi kỳ",
+    "Unused quota does not roll over": "Hạn mức chưa dùng không được cộng dồn",
+    "Wallet may be charged after the plan quota is exhausted": "Có thể trừ số dư ví sau khi hết hạn mức gói"
   }
 }

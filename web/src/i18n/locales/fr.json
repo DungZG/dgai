@@ -7450,6 +7450,11 @@
     "Date": "Date",
     "Prompt tokens": "Tokens d'entrée",
     "Completion tokens": "Tokens de sortie",
-    "Limited-time sale": "Promotion à durée limitée"
+    "Limited-time sale": "Promotion à durée limitée",
+    "Every 24 hours": "Toutes les 24 heures",
+    "Daily quota": "Quota quotidien",
+    "Quota per period": "Quota par période",
+    "Unused quota does not roll over": "Le quota inutilisé n’est pas reporté",
+    "Wallet may be charged after the plan quota is exhausted": "Le solde du portefeuille peut être débité après épuisement du quota du forfait"
   }
 }

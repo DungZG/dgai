@@ -7450,6 +7450,11 @@
     "Date": "日期",
     "Prompt tokens": "输入 token",
     "Completion tokens": "输出 token",
-    "Limited-time sale": "限时优惠"
+    "Limited-time sale": "限时优惠",
+    "Every 24 hours": "每 24 小时",
+    "Daily quota": "每日额度",
+    "Quota per period": "每期额度",
+    "Unused quota does not roll over": "未使用的额度不会结转",
+    "Wallet may be charged after the plan quota is exhausted": "套餐额度用尽后可能扣除钱包余额"
   }
 }

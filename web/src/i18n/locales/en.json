@@ -7450,6 +7450,11 @@
     "Date": "Date",
     "Prompt tokens": "Prompt tokens",
     "Completion tokens": "Completion tokens",
-    "Limited-time sale": "Limited-time sale"
+    "Limited-time sale": "Limited-time sale",
+    "Every 24 hours": "Every 24 hours",
+    "Daily quota": "Daily quota",
+    "Quota per period": "Quota per period",
+    "Unused quota does not roll over": "Unused quota does not roll over",
+    "Wallet may be charged after the plan quota is exhausted": "Wallet may be charged after the plan quota is exhausted"
   }
 }

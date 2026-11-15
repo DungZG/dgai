@@ -39,7 +39,11 @@ import {
   paySubscriptionWaffoPancake,
   paySubscriptionBalance,
 } from '../../api'
-import { formatDuration, formatResetPeriod } from '../../lib'
+import {
+  formatDuration,
+  formatResetPeriod,
+  formatPlanQuotaLabel,
+} from '../../lib'
 import type { PlanRecord } from '../../types'
 
 interface PaymentMethod {
@@ -268,13 +272,23 @@ export function SubscriptionPurchaseDialog(props: Props) {
           )}
           <div className='flex items-center justify-between'>
             <span className='text-muted-foreground text-sm'>
-              {t('Plan Quota')}
+              {formatPlanQuotaLabel(plan, t)}
             </span>
             <span className='flex items-center gap-1 text-sm'>
               <Package className='h-3.5 w-3.5' />
               {totalAmount > 0 ? formatQuota(totalAmount) : t('Unlimited')}
             </span>
           </div>
+          {plan.quota_reset_period !== 'never' && (
+            <p className='text-muted-foreground text-xs'>
+              {t('Unused quota does not roll over')}
+            </p>
+          )}
+          {plan.allow_wallet_overflow !== false && (
+            <p className='text-muted-foreground text-xs'>
+              {t('Wallet may be charged after the plan quota is exhausted')}
+            </p>
+          )}
           {plan.upgrade_group && (
             <div className='flex items-center justify-between'>
               <span className='text-muted-foreground text-sm'>

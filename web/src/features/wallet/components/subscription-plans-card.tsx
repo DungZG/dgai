@@ -51,7 +51,11 @@ import {
   updateBillingPreference,
 } from '@/features/subscriptions/api'
 import { SubscriptionPurchaseDialog } from '@/features/subscriptions/components/dialogs/subscription-purchase-dialog'
-import { formatDuration, formatResetPeriod } from '@/features/subscriptions/lib'
+import {
+  formatDuration,
+  formatResetPeriod,
+  formatPlanQuotaLabel,
+} from '@/features/subscriptions/lib'
 import type {
   PlanRecord,
   UserSubscriptionRecord,
@@ -541,8 +545,14 @@ export function SubscriptionPlansCard({
                   ? `${t('Quota Reset')}: ${formatResetPeriod(plan, t)}`
                   : null,
                 totalAmount > 0
-                  ? `${t('Total Quota')}: ${formatQuota(totalAmount)}`
-                  : `${t('Total Quota')}: ${t('Unlimited')}`,
+                  ? `${formatPlanQuotaLabel(plan, t)}: ${formatQuota(totalAmount)}`
+                  : `${formatPlanQuotaLabel(plan, t)}: ${t('Unlimited')}`,
+                plan.quota_reset_period !== 'never'
+                  ? t('Unused quota does not roll over')
+                  : null,
+                plan.allow_wallet_overflow !== false
+                  ? t('Wallet may be charged after the plan quota is exhausted')
+                  : null,
                 limit > 0 ? `${t('Purchase Limit')}: ${limit}` : null,
                 plan.upgrade_group
                   ? `${t('Upgrade Group')}: ${plan.upgrade_group}`
