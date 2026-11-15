@@ -305,6 +305,21 @@ func OpenaiHandler(c *gin.Context, info *relaycommon.RelayInfo, resp *http.Respo
 	}
 
 	usageModified := false
+	// Some OpenAI-compatible gateways report Anthropic-style input_tokens and
+	// output_tokens instead of prompt_tokens and completion_tokens. Prefer the
+	// counts the upstream actually reported over a local estimate, otherwise the
+	// customer is billed for an approximation of what the gateway charged.
+	if simpleResponse.Usage.PromptTokens == 0 && simpleResponse.Usage.InputTokens > 0 {
+		simpleResponse.Usage.PromptTokens = simpleResponse.Usage.InputTokens
+		usageModified = true
+	}
+	if simpleResponse.Usage.CompletionTokens == 0 && simpleResponse.Usage.OutputTokens > 0 {
+		simpleResponse.Usage.CompletionTokens = simpleResponse.Usage.OutputTokens
+		usageModified = true
+	}
+	if usageModified && simpleResponse.Usage.TotalTokens == 0 {
+		simpleResponse.Usage.TotalTokens = simpleResponse.Usage.PromptTokens + simpleResponse.Usage.CompletionTokens
+	}
 	if simpleResponse.Usage.PromptTokens == 0 {
 		completionTokens := simpleResponse.Usage.CompletionTokens
 		if completionTokens == 0 {
