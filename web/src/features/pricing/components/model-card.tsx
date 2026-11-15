@@ -36,7 +36,7 @@ import {
   getDynamicPricingSummary,
   isUnconfiguredTaskUsageModel,
 } from '../lib/dynamic-price'
-import { parseTags } from '../lib/filters'
+import { parseTags, salePercentFromTags } from '../lib/filters'
 import { isTokenBasedModel } from '../lib/model-helpers'
 import { formatPrice, formatRequestPrice } from '../lib/price'
 import { taskPriceLabel, taskUsageUnitLabel } from '../lib/task-price-display'
@@ -64,6 +64,7 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
   const isTokenBased = isTokenBasedModel(props.model)
   const tokenUnitLabel = tokenUnit === 'K' ? '1K' : '1M'
   const tags = parseTags(props.model.tags)
+  const salePercent = salePercentFromTags(props.model.tags)
   const groups = props.model.enable_groups || []
   const endpoints = props.model.supported_endpoint_types || []
   const modelIconKey = props.model.icon || props.model.vendor_icon
@@ -295,6 +296,14 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             </p>
           )}
         </div>
+        {salePercent !== null && (
+          <span
+            className='bg-destructive/10 text-destructive ring-destructive/30 inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums ring-1'
+            title={t('Limited-time sale')}
+          >
+            -{salePercent}%
+          </span>
+        )}
         <CopyButton
           value={props.model.model_name}
           tooltip={t('Copy model name')}

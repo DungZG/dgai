@@ -7449,6 +7449,7 @@
     "To": "结束日期",
     "Date": "日期",
     "Prompt tokens": "输入 token",
-    "Completion tokens": "输出 token"
+    "Completion tokens": "输出 token",
+    "Limited-time sale": "限时优惠"
   }
 }

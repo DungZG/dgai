@@ -77,7 +77,7 @@ import {
   isUnconfiguredTaskUsageModel,
   type DynamicPriceEntry,
 } from '../lib/dynamic-price'
-import { parseTags } from '../lib/filters'
+import { parseTags, salePercentFromTags } from '../lib/filters'
 import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
 import { withPluginPricing } from '../lib/plugin-pricing'
 import { formatFixedPrice, formatGroupPrice } from '../lib/price'
@@ -519,7 +519,9 @@ function ModelBackendProviderSection(props: { model: PricingModel }) {
   const model = props.model
   const groups = normalizeCatalogItems(model.enable_groups)
   const endpoints = normalizeCatalogItems(model.supported_endpoint_types)
-  const tags = parseTags(model.tags)
+  const tags = parseTags(model.tags).filter(
+    (tag) => !/^sale[:-]\d{1,2}$/i.test(tag)
+  )
   const cells: React.ReactNode[] = []
 
   if (model.vendor_name) {
@@ -608,6 +610,14 @@ function ModelHeader(props: { model: PricingModel }) {
         <h1 className='font-mono text-xl font-bold tracking-tight sm:text-2xl'>
           {model.model_name}
         </h1>
+        {salePercentFromTags(model.tags) !== null && (
+          <span
+            className='bg-destructive/10 text-destructive ring-destructive/30 inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-bold tabular-nums ring-1'
+            title={t('Limited-time sale')}
+          >
+            -{salePercentFromTags(model.tags)}%
+          </span>
+        )}
         <CopyButton
           value={model.model_name || ''}
           className='size-6'

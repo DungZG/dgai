@@ -269,3 +269,18 @@ export function filterByTag(
     return modelTags.includes(tagLower)
   })
 }
+
+/**
+ * Reads a sale marker from model tags, e.g. `sale:50` or `sale-50`.
+ * Returns the discount percentage, or null when the model is not on sale.
+ * The marker lives in the tag list so ending a promotion is a data change.
+ */
+export function salePercentFromTags(tagsString?: string): number | null {
+  for (const tag of parseTags(tagsString)) {
+    const match = /^sale[:-](\d{1,2})$/i.exec(tag)
+    if (!match) continue
+    const percent = Number(match[1])
+    if (percent > 0 && percent < 100) return percent
+  }
+  return null
+}
