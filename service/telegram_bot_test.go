@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -137,21 +138,25 @@ func TestTelegramTopUpCallbackSendsQR(t *testing.T) {
 		require.Equal(t, user.Id, userId)
 		require.EqualValues(t, 10, amount)
 		return &VietQRTopUpResult{
-			TradeNo:      "VQR12345678",
-			Amount:       10,
-			PayMoney:     10,
-			Memo:         "VQR-VIETQR-CONTENT",
-			TransferMemo: "DGAIVQR12345678",
-			QRImageURL:   "https://img.vietqr.io/image/TPB-100-test.png",
-			VNDAmount:    265000,
-			BankCode:     "TPB",
-			BankAccount:  "10006460824",
-			AccountName:  "NGUYEN TRI DUNG",
+			TradeNo:       "VQR12345678",
+			Amount:        10,
+			PayMoney:      10,
+			BonusQuota:    100000,
+			CreditedQuota: 5100000,
+			Memo:          "VQR-VIETQR-CONTENT",
+			TransferMemo:  "DGAIVQR12345678",
+			QRImageURL:    "https://img.vietqr.io/image/TPB-100-test.png",
+			QRContent:     "DGAIVQR12345678",
+			VNDAmount:     265000,
+			BankCode:      "TPB",
+			BankAccount:   "10006460824",
+			AccountName:   "NGUYEN TRI DUNG",
 		}, nil
 	})
 
 	var answered bool
-	var photo, caption string
+	var photoBytes []byte
+	var caption string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
@@ -159,12 +164,13 @@ func TestTelegramTopUpCallbackSendsQR(t *testing.T) {
 			answered = true
 			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
 		case "/bottest-token/sendPhoto":
-			var payload struct {
-				Photo   string `json:"photo"`
-				Caption string `json:"caption"`
-			}
-			require.NoError(t, common.DecodeJson(r.Body, &payload))
-			photo, caption = payload.Photo, payload.Caption
+			require.NoError(t, r.ParseMultipartForm(4<<20))
+			caption = r.FormValue("caption")
+			file, _, err := r.FormFile("photo")
+			require.NoError(t, err)
+			defer file.Close()
+			photoBytes, err = io.ReadAll(file)
+			require.NoError(t, err)
 			_, _ = w.Write([]byte(`{"ok":true,"result":{}}`))
 		default:
 			http.NotFound(w, r)
@@ -184,8 +190,11 @@ func TestTelegramTopUpCallbackSendsQR(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.True(t, answered)
-	assert.Equal(t, "https://img.vietqr.io/image/TPB-100-test.png", photo)
+	require.NotEmpty(t, photoBytes)
+	assert.Equal(t, []byte{0x89, 'P', 'N', 'G'}, photoBytes[:4])
 	assert.Contains(t, caption, "Nạp $10")
+	assert.Contains(t, caption, "Nhận: <b>$10.20</b>")
+	assert.Contains(t, caption, "+$0.20 thưởng")
 	assert.Contains(t, caption, "265.000 ₫")
 	assert.Contains(t, caption, "DGAIVQR12345678")
 	assert.NotContains(t, caption, "VQR-VIETQR-CONTENT")
@@ -229,6 +238,136 @@ func TestFormatModelStatusIncludesModelsWithoutTraffic(t *testing.T) {
 	assert.Contains(t, text, "idle-model")
 	assert.Contains(t, text, "Chưa có traffic")
 	assert.NotContains(t, text, "other-group")
+}
+
+func TestTopUpBonusPercent(t *testing.T) {
+	previousDisplay := operation_setting.GetGeneralSetting().QuotaDisplayType
+	previousPayment := *operation_setting.GetPaymentSetting()
+	t.Cleanup(func() {
+		operation_setting.GetGeneralSetting().QuotaDisplayType = previousDisplay
+		*operation_setting.GetPaymentSetting() = previousPayment
+	})
+	operation_setting.GetGeneralSetting().QuotaDisplayType = operation_setting.QuotaDisplayTypeUSD
+	operation_setting.GetPaymentSetting().TopUpBonusTiers = []operation_setting.TopUpBonusTier{
+		{MinAmountUSD: 10, Percent: 2},
+		{MinAmountUSD: 20, Percent: 5},
+		{MinAmountUSD: 50, Percent: 12},
+		{MinAmountUSD: 100, Percent: 25},
+	}
+	assert.Equal(t, 2.0, topUpBonusPercent(10))
+	assert.Equal(t, 5.0, topUpBonusPercent(20))
+	assert.Equal(t, 12.0, topUpBonusPercent(50))
+	assert.Equal(t, 25.0, topUpBonusPercent(100))
+	assert.Equal(t, 0.0, topUpBonusPercent(5))
+}
+
+func TestFormatPlanDetail(t *testing.T) {
+	previousQuotaPerUnit := common.QuotaPerUnit
+	common.QuotaPerUnit = 500000
+	t.Cleanup(func() { common.QuotaPerUnit = previousQuotaPerUnit })
+
+	plan := model.SubscriptionPlan{
+		Title:            "Pro",
+		Subtitle:         "For daily coding agents",
+		PriceAmount:      20,
+		Currency:         "USD",
+		DurationUnit:     "month",
+		DurationValue:    1,
+		TotalAmount:      1500000,
+		QuotaResetPeriod: "daily",
+		UpgradeGroup:     "vip",
+	}
+	plan.NormalizeDefaults()
+	text := formatPlanDetail(plan)
+	assert.Contains(t, text, "Pro")
+	assert.Contains(t, text, "$20.00")
+	assert.Contains(t, text, "1 tháng")
+	assert.Contains(t, text, "Hạn mức/ngày: $3.00")
+	assert.Contains(t, text, "Nâng nhóm")
+	assert.Contains(t, text, "Dùng tiếp số dư")
+}
+
+func TestBuyPlanWithBalance(t *testing.T) {
+	previousDB, previousLogDB := model.DB, model.LOG_DB
+	previousQuotaPerUnit := common.QuotaPerUnit
+	previousRedis, previousMemoryCache := common.RedisEnabled, common.MemoryCacheEnabled
+	previousDisplay := operation_setting.GetGeneralSetting().QuotaDisplayType
+	t.Cleanup(func() {
+		model.DB, model.LOG_DB = previousDB, previousLogDB
+		common.QuotaPerUnit = previousQuotaPerUnit
+		common.RedisEnabled, common.MemoryCacheEnabled = previousRedis, previousMemoryCache
+		operation_setting.GetGeneralSetting().QuotaDisplayType = previousDisplay
+	})
+
+	common.QuotaPerUnit = 500000
+	common.RedisEnabled, common.MemoryCacheEnabled = false, false
+	operation_setting.GetGeneralSetting().QuotaDisplayType = operation_setting.QuotaDisplayTypeUSD
+
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(
+		&model.User{},
+		&model.SubscriptionPlan{},
+		&model.UserSubscription{},
+		&model.SubscriptionOrder{},
+		&model.Log{},
+	))
+	model.DB, model.LOG_DB = db, db
+	t.Cleanup(func() {
+		sqlDB, dbErr := db.DB()
+		if dbErr == nil {
+			_ = sqlDB.Close()
+		}
+	})
+	user := &model.User{
+		Username:   "tg-plan",
+		Password:   "unused-password",
+		Status:     common.UserStatusEnabled,
+		TelegramId: "42",
+		Group:      "default",
+		Quota:      5_000_000,
+	}
+	require.NoError(t, db.Create(user).Error)
+	plan := &model.SubscriptionPlan{
+		Title:            "Pro",
+		PriceAmount:      10,
+		Currency:         "USD",
+		DurationUnit:     "month",
+		DurationValue:    1,
+		Enabled:          true,
+		TotalAmount:      5_000_000,
+		QuotaResetPeriod: "never",
+	}
+	plan.NormalizeDefaults()
+	require.NoError(t, db.Create(plan).Error)
+	model.InvalidateSubscriptionPlanCache(plan.Id)
+
+	var sentText string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path != "/bottest-token/sendMessage" {
+			http.NotFound(w, r)
+			return
+		}
+		var payload struct {
+			Text string `json:"text"`
+		}
+		require.NoError(t, common.DecodeJson(r.Body, &payload))
+		sentText = payload.Text
+		_, _ = w.Write([]byte(`{"ok":true,"result":{}}`))
+	}))
+	defer server.Close()
+
+	bot := &telegramBot{token: "test-token", apiBaseURL: server.URL, client: server.Client()}
+	require.NoError(t, bot.buyPlan(42, &telegramUser{ID: 42}, plan.Id))
+	assert.Contains(t, sentText, "Đã kích hoạt gói Pro")
+
+	var storedUser model.User
+	require.NoError(t, db.First(&storedUser, user.Id).Error)
+	assert.Zero(t, storedUser.Quota)
+	var count int64
+	require.NoError(t, db.Model(&model.UserSubscription{}).Where("user_id = ?", user.Id).Count(&count).Error)
+	assert.EqualValues(t, 1, count)
 }
 
 func TestParseTelegramCommand(t *testing.T) {

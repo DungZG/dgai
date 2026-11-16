@@ -88,6 +88,7 @@ func TestCreateVietQRTopUpCreatesPendingOrder(t *testing.T) {
 	payment.ComplianceConfirmed = true
 	payment.ComplianceTermsVersion = operation_setting.CurrentComplianceTermsVersion
 	payment.AmountDiscount = nil
+	payment.TopUpBonusTiers = []operation_setting.TopUpBonusTier{{MinAmountUSD: 10, Percent: 2}}
 	setting.VietQREnabled = true
 	setting.VietQRBankCode = "TPB"
 	setting.VietQRBankAccount = "10006460824"
@@ -122,6 +123,9 @@ func TestCreateVietQRTopUpCreatesPendingOrder(t *testing.T) {
 	assert.Len(t, result.TradeNo, vietqrTradeNoLen)
 	assert.EqualValues(t, 10, result.Amount)
 	assert.InDelta(t, 10, result.PayMoney, 0.0001)
+	assert.Equal(t, 5_000_000, result.BaseQuota)
+	assert.Equal(t, 100_000, result.BonusQuota)
+	assert.Equal(t, 5_100_000, result.CreditedQuota)
 	assert.EqualValues(t, 265000, result.VNDAmount)
 	assert.Equal(t, "DGAI"+result.TradeNo, result.Memo)
 	assert.Equal(t, "DGAI"+result.TradeNo, result.TransferMemo)

@@ -22,6 +22,7 @@ import (
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
 	"github.com/QuantumNous/new-api/setting"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
@@ -138,6 +139,16 @@ func createVietQRTopUp(ctx context.Context, userId int, amount int64) (*service.
 	if err != nil {
 		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorInvalidAmount, Message: err.Error()}
 	}
+	bonusQuota, err := operation_setting.TopUpBonus(quota)
+	if err != nil {
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorCreate, Message: err.Error()}
+	}
+	creditedQuota, err := common.WalletQuotaFromDecimalStrict(
+		decimal.NewFromInt(int64(quota)).Add(decimal.NewFromInt(int64(bonusQuota))),
+	)
+	if err != nil {
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorCreate, Message: err.Error()}
+	}
 	if err := model.ValidateTopUpQuotaCapacity(userId, quota); err != nil {
 		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorQuotaLimit, Message: err.Error()}
 	}
@@ -188,19 +199,22 @@ func createVietQRTopUp(ctx context.Context, userId int, amount int64) (*service.
 	}
 
 	return &service.VietQRTopUpResult{
-		TradeNo:      tradeNo,
-		Amount:       amount,
-		PayMoney:     payMoney,
-		Memo:         memo,
-		TransferMemo: transferMemo,
-		QRImageURL:   qrImageURL,
-		QRContent:    qrContent,
-		VNDAmount:    vndAmount,
-		VNDRate:      setting.VietQRVNDRate,
-		BankCode:     setting.VietQRBankCode,
-		BankAccount:  setting.VietQRBankAccount,
-		AccountName:  setting.VietQRAccountName,
-		ExpiresAt:    time.Now().Add(30 * time.Minute).Unix(),
+		TradeNo:       tradeNo,
+		Amount:        amount,
+		PayMoney:      payMoney,
+		BaseQuota:     quota,
+		BonusQuota:    bonusQuota,
+		CreditedQuota: creditedQuota,
+		Memo:          memo,
+		TransferMemo:  transferMemo,
+		QRImageURL:    qrImageURL,
+		QRContent:     qrContent,
+		VNDAmount:     vndAmount,
+		VNDRate:       setting.VietQRVNDRate,
+		BankCode:      setting.VietQRBankCode,
+		BankAccount:   setting.VietQRBankAccount,
+		AccountName:   setting.VietQRAccountName,
+		ExpiresAt:     time.Now().Add(30 * time.Minute).Unix(),
 	}, nil
 }
 

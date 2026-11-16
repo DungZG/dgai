@@ -215,6 +215,8 @@ func (bot *telegramBot) handlePrivateMessage(message *telegramMessage) error {
 		return bot.sendMessage(message.Chat.ID, "Đổi mã thành công. Đã cộng "+logger.FormatQuota(quota)+" vào số dư.")
 	case "models":
 		return bot.showModels(message.Chat.ID, 0, message.From)
+	case "plans":
+		return bot.showPlans(message.Chat.ID, 0, message.From)
 	case "id":
 		if message.From == nil {
 			return nil
@@ -331,6 +333,10 @@ func (bot *telegramBot) callAPI(method string, params any, result any) error {
 		return err
 	}
 	request.Header.Set("Content-Type", "application/json")
+	return bot.doRequest(method, request, result)
+}
+
+func (bot *telegramBot) doRequest(method string, request *http.Request, result any) error {
 	response, err := bot.client.Do(request)
 	if err != nil {
 		return fmt.Errorf("Telegram %s request failed", method)

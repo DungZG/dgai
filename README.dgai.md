@@ -172,8 +172,9 @@ Client Secret** của **Login Widget**; cặp OAuth dùng cho đăng nhập web
 (`TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET`, `TELEGRAM_OAUTH_ENABLED=true`) và
 redirect URL phải được đăng ký là `https://<domain>/oauth/telegram`.
 
-Lệnh `/start` mở card chính với các nút bấm. `/topup` hiển thị các gói nạp và
-gửi ảnh QR ngay trong chat; đơn được SePay/VietQR cộng số dư tự động.
+Lệnh `/start` mở card chính với các nút bấm. `/topup` hiển thị các gói nạp kèm
+ưu đãi theo bậc, tạo **ảnh QR PNG** ngay trong chat; đơn được SePay/VietQR cộng
+số dư và thưởng tự động. `/plans` liệt kê gói đăng ký và mua bằng số dư ví;
 `/balance` và `/redeem MÃ` yêu cầu tài khoản Telegram đã liên kết. `/models` báo
 tỷ lệ thành công, độ trễ P50, tốc độ tok/s và giá USD/1M token. `/support nội
 dung` gửi ticket vào nhóm hỗ trợ.
