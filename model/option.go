@@ -242,6 +242,8 @@ func loadOptionsFromDatabase() {
 		}
 	}
 	applyPasskeyDomainOptions(passkeyOptions)
+	// Deployment-provided Telegram credentials must survive every DB option sync.
+	system_setting.ApplyTelegramEnvOverrides()
 }
 
 func SyncOptions(frequency int) {

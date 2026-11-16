@@ -39,6 +39,12 @@ services:
       # critical bucket must cover normal browsing, not just login attempts.
       - CRITICAL_RATE_LIMIT=120
       - CRITICAL_RATE_LIMIT_DURATION=60
+      - DGAI_TELEGRAM_SUPPORT_CHAT_ID=${DGAI_TELEGRAM_SUPPORT_CHAT_ID:-}
+      - DGAI_TELEGRAM_SUPPORT_URL=${DGAI_TELEGRAM_SUPPORT_URL:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CLIENT_ID=${TELEGRAM_CLIENT_ID:-}
+      - TELEGRAM_CLIENT_SECRET=${TELEGRAM_CLIENT_SECRET:-}
+      - TELEGRAM_OAUTH_ENABLED=${TELEGRAM_OAUTH_ENABLED:-}
     deploy:
       resources:
         limits:

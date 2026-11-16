@@ -164,6 +164,23 @@ nhà cung cấp giữa các lượt.
 Mức nạp tối thiểu và các mức có sẵn đặt ở `MinTopUp` và
 `payment_setting.amount_options`.
 
+## Telegram bot
+
+Bot dùng **API Token** lấy từ @BotFather (`/mybots` → chọn bot → **API Token**),
+truyền qua `TELEGRAM_BOT_TOKEN` trong `.env.dgai`. Token này khác **Client ID /
+Client Secret** của **Login Widget**; cặp OAuth dùng cho đăng nhập web
+(`TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET`, `TELEGRAM_OAUTH_ENABLED=true`) và
+redirect URL phải được đăng ký là `https://<domain>/oauth/telegram`.
+
+Lệnh `/topup` mở trang ví; `/redeem MÃ`, `/balance` yêu cầu tài khoản Telegram đã
+liên kết. `/support nội dung` gửi ticket vào nhóm hỗ trợ; `/models` báo tỷ lệ
+thành công và số lượt gọi trong 24 giờ gần nhất.
+
+Đặt `DGAI_TELEGRAM_SUPPORT_CHAT_ID` và `DGAI_TELEGRAM_SUPPORT_URL` để chuyển ticket
+vào nhóm; admin trả lời bằng cách reply trực tiếp ticket. Bot chỉ chạy ở master
+node. Tạo group sau rồi điền ID âm của group vào biến chat ID.
+
+
 ## VietQR (chuyển khoản ngân hàng)
 
 Bật ở **Cài đặt → Billing & Payment → VietQR**. Tài khoản nhận tiền hiện tại:
