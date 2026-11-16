@@ -142,6 +142,9 @@ func GetTopUpInfo(c *gin.Context) {
 		"waffo_pancake_min_topup": setting.WaffoPancakeMinTopUp,
 		"amount_options":          operation_setting.GetPaymentSetting().AmountOptions,
 		"discount":                operation_setting.GetPaymentSetting().AmountDiscount,
+		"topup_bonus_tiers":       operation_setting.GetPaymentSetting().TopUpBonusTiers,
+		"quota_per_unit":          common.QuotaPerUnit,
+		"quota_display_type":      operation_setting.GetQuotaDisplayType(),
 		"topup_link":              common.TopUpLink,
 	}
 	common.ApiSuccess(c, data)
@@ -281,6 +284,18 @@ func paymentError(c *gin.Context, err error) {
 func rejectInvalidCreditedQuota(c *gin.Context, userId int, quota decimal.Decimal) bool {
 	creditedQuota, err := validateCreditedQuota(quota)
 	if err == nil {
+		return rejectInvalidTopUpBaseQuota(c, userId, creditedQuota)
+	}
+	if err != nil {
+		paymentError(c, err)
+		return true
+	}
+	return false
+}
+
+func rejectInvalidTopUpBaseQuota(c *gin.Context, userId int, baseQuota int) bool {
+	creditedQuota, err := operation_setting.TopUpQuotaWithBonus(baseQuota)
+	if err == nil {
 		err = model.ValidateTopUpQuotaCapacity(userId, creditedQuota)
 	}
 	if err != nil {
@@ -291,15 +306,12 @@ func rejectInvalidCreditedQuota(c *gin.Context, userId int, quota decimal.Decima
 }
 
 func rejectInvalidTopUpQuota(c *gin.Context, userId int, amount int64) bool {
-	creditedQuota, err := validateTopUpQuota(amount)
-	if err == nil {
-		err = model.ValidateTopUpQuotaCapacity(userId, creditedQuota)
-	}
+	baseQuota, err := validateTopUpQuota(amount)
 	if err != nil {
 		paymentError(c, err)
 		return true
 	}
-	return false
+	return rejectInvalidTopUpBaseQuota(c, userId, baseQuota)
 }
 
 func RequestEpay(c *gin.Context) {

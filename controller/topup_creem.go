@@ -99,7 +99,11 @@ func (*CreemAdaptor) RequestPay(c *gin.Context, req *CreemPayRequest) {
 	}
 
 	id := c.GetInt("id")
-	if rejectInvalidCreditedQuota(c, id, decimal.NewFromInt(selectedProduct.Quota)) {
+	baseQuota, err := common.WalletQuotaFromDecimalStrict(decimal.NewFromInt(selectedProduct.Quota))
+	if err != nil || rejectInvalidTopUpBaseQuota(c, id, baseQuota) {
+		if err != nil {
+			paymentError(c, common.NewMessage("Invalid top-up quota"))
+		}
 		return
 	}
 

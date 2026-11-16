@@ -315,9 +315,8 @@ export type BillingSettings = {
   PayMethods: string
   'payment_setting.amount_options': string
   'payment_setting.amount_discount': string
-  'payment_setting.topup_bonus_percent': string
   ReferralCommissionPercent: number
-  'payment_setting.topup_bonus_min_amount': string
+  'payment_setting.topup_bonus_tiers': string
   'payment_setting.signup_bonus_min_top_up': string
   'payment_setting.compliance_confirmed': boolean
   'payment_setting.compliance_terms_version': string

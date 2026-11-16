@@ -58,7 +58,12 @@ func (*StripeAdaptor) RequestAmount(c *gin.Context, req *StripePayRequest) {
 		paymentError(c, common.NewMessage("Failed to get the user group"))
 		return
 	}
-	if rejectInvalidCreditedQuota(c, id, getStripeCreditedQuota(req.Amount, group)) {
+	baseQuota, err := common.WalletQuotaFromDecimalStrict(getStripeCreditedQuota(req.Amount, group))
+	if err != nil {
+		paymentError(c, err)
+		return
+	}
+	if rejectInvalidCreditedQuota(c, id, decimal.NewFromInt(int64(baseQuota))) {
 		return
 	}
 	payMoney := getStripePayMoney(float64(req.Amount), group)
@@ -100,9 +105,14 @@ func (*StripeAdaptor) RequestPay(c *gin.Context, req *StripePayRequest) {
 		return
 	}
 	chargedMoney := GetChargedAmount(float64(req.Amount), *user)
-	if rejectInvalidCreditedQuota(c, id,
+	baseQuota, quotaErr := common.WalletQuotaFromDecimalStrict(
 		decimal.NewFromFloat(chargedMoney).Mul(decimal.NewFromFloat(common.QuotaPerUnit)),
-	) {
+	)
+	if quotaErr != nil {
+		paymentError(c, common.NewMessage("Invalid top-up quota"))
+		return
+	}
+	if rejectInvalidTopUpBaseQuota(c, id, baseQuota) {
 		return
 	}
 

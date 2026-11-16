@@ -160,6 +160,10 @@ export interface TopupInfo {
   amount_options: number[]
   /** Discount rates by amount */
   discount: Record<number, number>
+  /** Bonus percentages keyed by minimum base quota USD. */
+  topup_bonus_tiers?: { min_amount_usd: number; percent: number }[]
+  quota_per_unit?: number
+  quota_display_type?: string
   /** Optional topup link for purchasing codes */
   topup_link?: string
   /** Whether Creem topup is enabled */

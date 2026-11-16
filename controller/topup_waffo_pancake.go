@@ -355,7 +355,11 @@ func RequestWaffoPancakePay(c *gin.Context) {
 		return
 	}
 	id := c.GetInt("id")
-	if rejectInvalidTopUpQuota(c, id, req.Amount) {
+	baseQuota, err := validateTopUpQuota(req.Amount)
+	if err != nil || rejectInvalidTopUpBaseQuota(c, id, baseQuota) {
+		if err != nil {
+			paymentError(c, err)
+		}
 		return
 	}
 

@@ -125,3 +125,58 @@ it.each([
     expect(screen.getByPlaceholderText('Minimum 1')).toBeVisible()
   }
 )
+
+it('shows tier bonuses and received credit separately from the payment amount', async () => {
+  await i18n.changeLanguage('en')
+  render(
+    <I18nextProvider i18n={i18n}>
+      <RechargeFormCard
+        topupInfo={{
+          enable_online_topup: true,
+          enable_stripe_topup: false,
+          pay_methods: [],
+          min_topup: 1,
+          stripe_min_topup: 1,
+          amount_options: [5, 10, 20, 50, 100],
+          discount: {},
+          topup_bonus_tiers: [
+            { min_amount_usd: 10, percent: 2 },
+            { min_amount_usd: 20, percent: 5 },
+            { min_amount_usd: 50, percent: 12 },
+            { min_amount_usd: 100, percent: 25 },
+          ],
+        }}
+        presetAmounts={[5, 10, 20, 50, 100].map((value) => ({ value }))}
+        selectedPreset={null}
+        topupAmount={75}
+        paymentAmount={75}
+        calculating={false}
+        paymentLoading={null}
+        redemptionCode=''
+        redeeming={false}
+        onSelectPreset={vi.fn()}
+        onTopupAmountChange={vi.fn()}
+        onPaymentMethodSelect={vi.fn()}
+        onRedemptionCodeChange={vi.fn()}
+        onRedeem={vi.fn()}
+      />
+    </I18nextProvider>
+  )
+  for (const [amount, percent, total] of [
+    [10, 2, 10.2],
+    [20, 5, 21],
+    [50, 12, 56],
+    [100, 25, 125],
+  ]) {
+    const button = screen.getByRole('button', {
+      name: new RegExp(`^\\$${amount} `),
+    })
+    expect(button).toHaveTextContent(`+${percent}% bonus`)
+    expect(button).toHaveTextContent(`Pay $${amount}`)
+    expect(button).toHaveTextContent(`Receive $${total}`)
+  }
+  expect(screen.getByRole('button', { name: /^\$5 / })).not.toHaveTextContent(
+    'bonus'
+  )
+  expect(screen.getByText('Top-up bonus: +12% · Receive $84')).toBeVisible()
+})

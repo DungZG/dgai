@@ -70,6 +70,10 @@ import {
   normalizeJsonForComparison,
   removeTrailingSlash,
 } from './utils'
+import {
+  VietQRSettingsSection,
+  type VietQRSettingsValues,
+} from './vietqr-settings-section'
 import { saveWaffoPancakeConfig } from './waffo-pancake-api'
 import {
   WaffoPancakeSettingsSection,
@@ -81,10 +85,6 @@ import {
   WaffoSettingsSection,
   type WaffoSettingsValues,
 } from './waffo-settings-section'
-import {
-  VietQRSettingsSection,
-  type VietQRSettingsValues,
-} from './vietqr-settings-section'
 
 function isHttpOriginUrl(value: string) {
   const trimmed = value.trim()
@@ -134,9 +134,33 @@ const paymentSchema = z.object({
       })
     }
   }),
-  TopUpBonusPercent: z.coerce.number().min(0).max(100),
+  TopUpBonusTiers: z.string().superRefine((value, ctx) => {
+    const error = value.trim()
+      ? getJsonError(
+          value,
+          (parsed) =>
+            Array.isArray(parsed) &&
+            parsed.every(
+              (item, index) =>
+                item !== null &&
+                typeof item === 'object' &&
+                typeof item.min_amount_usd === 'number' &&
+                Number.isFinite(item.min_amount_usd) &&
+                item.min_amount_usd > 0 &&
+                typeof item.percent === 'number' &&
+                Number.isFinite(item.percent) &&
+                item.percent >= 0 &&
+                item.percent <= 100 &&
+                (index === 0 ||
+                  item.min_amount_usd > parsed[index - 1].min_amount_usd)
+            )
+        )
+      : 'JSON structure is invalid'
+    if (error) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: error })
+    }
+  }),
   ReferralCommissionPercent: z.coerce.number().min(0).max(100),
-  TopUpBonusMinAmount: z.coerce.number().min(0),
   SignupBonusMinTopUp: z.coerce.number().min(0),
   AmountDiscount: z.string().superRefine((value, ctx) => {
     const error = getJsonError(
@@ -391,10 +415,8 @@ export function PaymentSettingsSection({
       PayMethods: formatJsonForEditor(initialFormValues.PayMethods),
       AmountOptions: formatJsonForEditor(initialFormValues.AmountOptions),
       AmountDiscount: formatJsonForEditor(initialFormValues.AmountDiscount),
-      TopUpBonusPercent: initialFormValues.TopUpBonusPercent,
-      ReferralCommissionPercent:
-        initialFormValues.ReferralCommissionPercent,
-      TopUpBonusMinAmount: initialFormValues.TopUpBonusMinAmount,
+      TopUpBonusTiers: formatJsonForEditor(initialFormValues.TopUpBonusTiers),
+      ReferralCommissionPercent: initialFormValues.ReferralCommissionPercent,
       SignupBonusMinTopUp: initialFormValues.SignupBonusMinTopUp,
       CreemProducts: formatJsonForEditor(initialFormValues.CreemProducts),
     },
@@ -466,6 +488,7 @@ export function PaymentSettingsSection({
       PayMethods: formatJsonForEditor(parsedDefaults.PayMethods),
       AmountOptions: formatJsonForEditor(parsedDefaults.AmountOptions),
       AmountDiscount: formatJsonForEditor(parsedDefaults.AmountDiscount),
+      TopUpBonusTiers: formatJsonForEditor(parsedDefaults.TopUpBonusTiers),
       CreemProducts: formatJsonForEditor(parsedDefaults.CreemProducts),
     })
   }, [defaultsSignature, form])
@@ -481,9 +504,8 @@ export function PaymentSettingsSection({
       PayMethods: values.PayMethods.trim(),
       AmountOptions: values.AmountOptions.trim(),
       AmountDiscount: values.AmountDiscount.trim(),
-      TopUpBonusPercent: values.TopUpBonusPercent,
+      TopUpBonusTiers: values.TopUpBonusTiers.trim(),
       ReferralCommissionPercent: values.ReferralCommissionPercent,
-      TopUpBonusMinAmount: values.TopUpBonusMinAmount,
       SignupBonusMinTopUp: values.SignupBonusMinTopUp,
       StripeApiSecret: values.StripeApiSecret.trim(),
       StripeWebhookSecret: values.StripeWebhookSecret.trim(),
@@ -545,10 +567,8 @@ export function PaymentSettingsSection({
       PayMethods: initialRef.current.PayMethods.trim(),
       AmountOptions: initialRef.current.AmountOptions.trim(),
       AmountDiscount: initialRef.current.AmountDiscount.trim(),
-      TopUpBonusPercent: initialRef.current.TopUpBonusPercent,
-      ReferralCommissionPercent:
-        initialRef.current.ReferralCommissionPercent,
-      TopUpBonusMinAmount: initialRef.current.TopUpBonusMinAmount,
+      TopUpBonusTiers: initialRef.current.TopUpBonusTiers.trim(),
+      ReferralCommissionPercent: initialRef.current.ReferralCommissionPercent,
       SignupBonusMinTopUp: initialRef.current.SignupBonusMinTopUp,
       StripeApiSecret: initialRef.current.StripeApiSecret.trim(),
       StripeWebhookSecret: initialRef.current.StripeWebhookSecret.trim(),
@@ -659,27 +679,22 @@ export function PaymentSettingsSection({
       })
     }
 
-    if (sanitized.TopUpBonusPercent !== initial.TopUpBonusPercent) {
+    if (
+      normalizeJsonForComparison(sanitized.TopUpBonusTiers) !==
+      normalizeJsonForComparison(initial.TopUpBonusTiers)
+    ) {
       updates.push({
-        key: 'payment_setting.topup_bonus_percent',
-        value: String(sanitized.TopUpBonusPercent),
+        key: 'payment_setting.topup_bonus_tiers',
+        value: sanitized.TopUpBonusTiers,
       })
     }
 
     if (
-      sanitized.ReferralCommissionPercent !==
-      initial.ReferralCommissionPercent
+      sanitized.ReferralCommissionPercent !== initial.ReferralCommissionPercent
     ) {
       updates.push({
         key: 'ReferralCommissionPercent',
         value: String(sanitized.ReferralCommissionPercent),
-      })
-    }
-
-    if (sanitized.TopUpBonusMinAmount !== initial.TopUpBonusMinAmount) {
-      updates.push({
-        key: 'payment_setting.topup_bonus_min_amount',
-        value: String(sanitized.TopUpBonusMinAmount),
       })
     }
 
@@ -1368,28 +1383,30 @@ export function PaymentSettingsSection({
 
                   <FormField
                     control={form.control}
-                    name='TopUpBonusPercent'
+                    name='TopUpBonusTiers'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('Top-up bonus (%)')}</FormLabel>
+                        <FormLabel>{t('Top-up bonus tiers')}</FormLabel>
                         <FormControl>
-                          <Input
-                            type='number'
-                            step='0.1'
-                            min='0'
-                            max='100'
+                          <JsonCodeEditor
                             value={field.value}
-                            onChange={(event) =>
-                              field.onChange(event.target.value)
-                            }
-                            onBlur={field.onBlur}
+                            onChange={field.onChange}
                             name={field.name}
-                            ref={field.ref}
+                            onBlur={field.onBlur}
+                            textareaRef={field.ref}
+                            placeholder='[{"min_amount_usd":10,"percent":2},{"min_amount_usd":20,"percent":5},{"min_amount_usd":50,"percent":12},{"min_amount_usd":100,"percent":25}]'
+                            heightClassName='h-40 min-h-40 max-h-40'
+                            aria-invalid={Boolean(
+                              form.formState.errors.TopUpBonusTiers
+                            )}
                           />
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Extra credit granted on top of a paid top-up. 5 means a 10 dollar payment credits 10.50.'
+                            'Each tier applies from its minimum top-up amount; the highest qualifying tier replaces lower tiers.'
+                          )}{' '}
+                          {t(
+                            'Use positive, strictly increasing USD minimums and percentages from 0 to 100. Use [] to disable the bonus.'
                           )}
                         </FormDescription>
                         <FormMessage />
@@ -1421,36 +1438,6 @@ export function PaymentSettingsSection({
                         <FormDescription>
                           {t(
                             "Percentage of each referred customer's top-up paid to their inviter. 0 disables it."
-                          )}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name='TopUpBonusMinAmount'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Minimum amount for the bonus')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type='number'
-                            step='0.01'
-                            min='0'
-                            value={field.value}
-                            onChange={(event) =>
-                              field.onChange(event.target.value)
-                            }
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {t(
-                            'Top-ups below this amount receive no bonus. Set the percentage to 0 to disable the promotion.'
                           )}
                         </FormDescription>
                         <FormMessage />

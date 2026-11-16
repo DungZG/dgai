@@ -23,26 +23,31 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { formatNumber } from '@/lib/format'
 
 import { formatCreemPrice } from '../lib/format'
+import { getTopUpBonusPercent } from '../lib/payment'
 import type { CreemProduct } from '../types'
 
 interface CreemProductsSectionProps {
   products: CreemProduct[]
   onProductSelect: (product: CreemProduct) => void
   loading?: boolean
+  topupBonusTiers?: { min_amount_usd: number; percent: number }[]
+  quotaPerUnit?: number
 }
 
 export function CreemProductsSection({
   products,
   onProductSelect,
   loading,
+  topupBonusTiers,
+  quotaPerUnit,
 }: CreemProductsSectionProps) {
   const { t } = useTranslation()
 
   if (loading) {
     return (
       <div className='grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-3'>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className='h-24 rounded-lg' />
+        {['first', 'second', 'third'].map((key) => (
+          <Skeleton key={key} className='h-24 rounded-lg' />
         ))}
       </div>
     )
@@ -66,6 +71,19 @@ export function CreemProductsSection({
             <div className='text-muted-foreground mb-2 text-sm'>
               {t('Quota')}: {formatNumber(product.quota)}
             </div>
+            {getTopUpBonusPercent(
+              quotaPerUnit ? product.quota / quotaPerUnit : 0,
+              topupBonusTiers
+            ) > 0 && (
+              <div className='text-xs font-medium text-green-600'>
+                {t('+{{percent}}% bonus', {
+                  percent: getTopUpBonusPercent(
+                    quotaPerUnit ? product.quota / quotaPerUnit : 0,
+                    topupBonusTiers
+                  ),
+                })}
+              </div>
+            )}
             <div className='text-primary text-lg font-semibold'>
               {formatCreemPrice(product.price, product.currency)}
             </div>

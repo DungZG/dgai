@@ -34,7 +34,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { formatLocalCurrencyAmount } from '@/lib/currency'
+import {
+  formatLocalCurrencyAmount,
+  formatCurrencyFromUSD,
+} from '@/lib/currency'
 import { cn } from '@/lib/utils'
 
 import {
@@ -42,6 +45,8 @@ import {
   getPaymentIcon,
   getMinTopupAmount,
   calculatePresetPricing,
+  getTopUpBonusPercent,
+  topUpAmountUSD,
 } from '../lib'
 import type {
   PaymentMethod,
@@ -74,6 +79,8 @@ interface RechargeFormCardProps {
   onOpenBilling?: () => void
   creemProducts?: CreemProduct[]
   enableCreemTopup?: boolean
+  topupBonusTiers?: { min_amount_usd: number; percent: number }[]
+  quotaPerUnit?: number
   onCreemProductSelect?: (product: CreemProduct) => void
   enableWaffoTopup?: boolean
   waffoPayMethods?: WaffoPayMethod[]
@@ -104,6 +111,8 @@ export function RechargeFormCard({
   onOpenBilling,
   creemProducts,
   enableCreemTopup,
+  topupBonusTiers,
+  quotaPerUnit,
   onCreemProductSelect,
   enableWaffoTopup,
   waffoPayMethods,
@@ -113,6 +122,10 @@ export function RechargeFormCard({
 }: RechargeFormCardProps) {
   const { t } = useTranslation()
   const [localAmount, setLocalAmount] = useState(topupAmount.toString())
+  const bonusPercent = getTopUpBonusPercent(
+    topUpAmountUSD(topupAmount, topupInfo),
+    topupInfo?.topup_bonus_tiers
+  )
 
   useEffect(() => {
     // Empty string must survive, otherwise the field can never be cleared
@@ -232,6 +245,10 @@ export function RechargeFormCard({
                         preset.discount ||
                         topupInfo?.discount?.[preset.value] ||
                         1.0
+                      const bonusPercent = getTopUpBonusPercent(
+                        topUpAmountUSD(preset.value, topupInfo),
+                        topupInfo?.topup_bonus_tiers
+                      )
                       const {
                         displayValue,
                         actualPrice,
@@ -259,6 +276,13 @@ export function RechargeFormCard({
                             <div className='text-base font-semibold sm:text-lg'>
                               {formatLocalCurrencyAmount(displayValue)}
                             </div>
+                            {bonusPercent > 0 && (
+                              <div className='text-xs font-medium text-green-600'>
+                                {t('+{{percent}}% bonus', {
+                                  percent: bonusPercent,
+                                })}
+                              </div>
+                            )}
                             {hasDiscount && (
                               <div className='text-xs font-medium text-green-600'>
                                 {getDiscountLabel(discount, t)}
@@ -271,7 +295,8 @@ export function RechargeFormCard({
                                 t={t}
                                 i18nKey='Pay {{amount}} <savings>• Save {{saved}}</savings>'
                                 values={{
-                                  amount: formatLocalCurrencyAmount(actualPrice),
+                                  amount:
+                                    formatLocalCurrencyAmount(actualPrice),
                                   saved: formatLocalCurrencyAmount(savedAmount),
                                 }}
                                 components={{
@@ -284,6 +309,16 @@ export function RechargeFormCard({
                               })
                             )}
                           </div>
+                          {bonusPercent > 0 && (
+                            <div className='text-muted-foreground w-full text-xs'>
+                              {t('Receive {{amount}}', {
+                                amount: formatCurrencyFromUSD(
+                                  topUpAmountUSD(preset.value, topupInfo) *
+                                    (1 + bonusPercent / 100)
+                                ),
+                              })}
+                            </div>
+                          )}
                         </Button>
                       )
                     })}
@@ -321,6 +356,20 @@ export function RechargeFormCard({
                     )}
                   </div>
                 </div>
+                {bonusPercent > 0 && (
+                  <p className='text-muted-foreground text-xs'>
+                    {t('Top-up bonus: +{{percent}}%', {
+                      percent: bonusPercent,
+                    })}
+                    {' · '}
+                    {t('Receive {{amount}}', {
+                      amount: formatCurrencyFromUSD(
+                        topUpAmountUSD(topupAmount, topupInfo) *
+                          (1 + bonusPercent / 100)
+                      ),
+                    })}
+                  </p>
+                )}
               </div>
 
               <div className='space-y-2.5 sm:space-y-3'>
@@ -509,6 +558,8 @@ export function RechargeFormCard({
             <CreemProductsSection
               products={creemProducts}
               onProductSelect={onCreemProductSelect}
+              topupBonusTiers={topupBonusTiers}
+              quotaPerUnit={quotaPerUnit}
             />
           </div>
         )}

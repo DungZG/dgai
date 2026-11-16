@@ -47,6 +47,7 @@ interface PaymentConfirmDialogProps {
   processing: boolean
   discountRate?: number
   usdExchangeRate?: number
+  topupBonusPercent?: number
 }
 
 export function PaymentConfirmDialog({
@@ -59,6 +60,7 @@ export function PaymentConfirmDialog({
   calculating,
   processing,
   discountRate = DEFAULT_DISCOUNT_RATE,
+  topupBonusPercent = 0,
   usdExchangeRate = 1,
 }: PaymentConfirmDialogProps) {
   const { t } = useTranslation()
@@ -111,6 +113,13 @@ export function PaymentConfirmDialog({
               </div>
             )}
           </div>
+          {topupBonusPercent > 0 && (
+            <p className='text-muted-foreground text-sm'>
+              {t('Top-up bonus: +{{percent}}%', {
+                percent: topupBonusPercent,
+              })}
+            </p>
+          )}
 
           {hasDiscount && !calculating && (
             <div className='bg-muted/50 rounded-lg p-3'>

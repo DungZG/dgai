@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { formatNumber } from '@/lib/format'
 
 import { formatCreemPrice } from '../../lib/format'
+import { getTopUpBonusPercent } from '../../lib/payment'
 import type { CreemProduct } from '../../types'
 
 interface CreemConfirmDialogProps {
@@ -32,6 +33,8 @@ interface CreemConfirmDialogProps {
   onConfirm: () => void
   product: CreemProduct | null
   processing: boolean
+  topupBonusTiers?: { min_amount_usd: number; percent: number }[]
+  quotaPerUnit?: number
 }
 
 export function CreemConfirmDialog({
@@ -40,6 +43,8 @@ export function CreemConfirmDialog({
   onConfirm,
   product,
   processing,
+  topupBonusTiers,
+  quotaPerUnit,
 }: CreemConfirmDialogProps) {
   const { t } = useTranslation()
 
@@ -86,6 +91,19 @@ export function CreemConfirmDialog({
           <span className='text-muted-foreground'>{t('Quota')}</span>
           <span className='font-medium'>{formatNumber(product.quota)}</span>
         </div>
+        {getTopUpBonusPercent(
+          quotaPerUnit ? product.quota / quotaPerUnit : 0,
+          topupBonusTiers
+        ) > 0 && (
+          <p className='text-muted-foreground text-sm'>
+            {t('Top-up bonus: +{{percent}}%', {
+              percent: getTopUpBonusPercent(
+                quotaPerUnit ? product.quota / quotaPerUnit : 0,
+                topupBonusTiers
+              ),
+            })}
+          </p>
+        )}
       </div>
     </Dialog>
   )

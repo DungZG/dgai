@@ -295,6 +295,9 @@ func validateOptionValue(key string, value string) error {
 	if key == operation_setting.ChannelTestConcurrencyOptionKey {
 		return operation_setting.ValidateChannelTestConcurrency(value)
 	}
+	if key == operation_setting.TopUpBonusTiersOptionKey {
+		return operation_setting.ValidateTopUpBonusTiersJSON(value)
+	}
 	if key == operation_setting.LogMaxRangeDaysOptionKey {
 		return operation_setting.ValidateLogMaxRangeDays(value)
 	}
@@ -401,7 +404,13 @@ func UpdateOptionsBulk(values map[string]string) error {
 }
 
 func updateOptionMap(key string, value string) (err error) {
-	if key == retiredThemeOptionKey || key == legacyAccessTokenRetireAtKey {
+	if key == operation_setting.TopUpBonusTiersOptionKey {
+		if err := operation_setting.ValidateTopUpBonusTiersJSON(value); err != nil {
+			return err
+		}
+	}
+	if key == retiredThemeOptionKey || key == legacyAccessTokenRetireAtKey ||
+		key == "payment_setting.topup_bonus_percent" || key == "payment_setting.topup_bonus_min_amount" {
 		common.OptionMapRWMutex.Lock()
 		delete(common.OptionMap, key)
 		common.OptionMapRWMutex.Unlock()

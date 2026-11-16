@@ -165,6 +165,26 @@ function parseDiscountMap(data: unknown): Record<number, number> {
   )
 }
 
+function parseTopupBonusTiers(data: unknown): TopupInfo['topup_bonus_tiers'] {
+  return parseJsonArray(data)
+    .filter(
+      (item): item is Record<string, unknown> =>
+        !!item && typeof item === 'object'
+    )
+    .map((item) => ({
+      min_amount_usd: Number(item.min_amount_usd),
+      percent: Number(item.percent),
+    }))
+    .filter(
+      (tier) =>
+        Number.isFinite(tier.min_amount_usd) &&
+        tier.min_amount_usd > 0 &&
+        Number.isFinite(tier.percent) &&
+        tier.percent >= 0 &&
+        tier.percent <= 100
+    )
+}
+
 export function useTopupInfo() {
   const [topupInfo, setTopupInfo] = useState<TopupInfo | null>(null)
   const [presetAmounts, setPresetAmounts] = useState<PresetAmount[]>([])
@@ -189,6 +209,18 @@ export function useTopupInfo() {
         ),
         amount_options: parseAmountOptions(response.data.amount_options),
         discount: parseDiscountMap(response.data.discount),
+        topup_bonus_tiers: parseTopupBonusTiers(
+          response.data.topup_bonus_tiers
+        ),
+        quota_per_unit:
+          Number.isFinite(Number(response.data.quota_per_unit)) &&
+          Number(response.data.quota_per_unit) > 0
+            ? Number(response.data.quota_per_unit)
+            : undefined,
+        quota_display_type:
+          typeof response.data.quota_display_type === 'string'
+            ? response.data.quota_display_type
+            : undefined,
         creem_products: parseCreemProducts(response.data.creem_products),
         waffo_pay_methods: parseWaffoPayMethods(
           response.data.waffo_pay_methods

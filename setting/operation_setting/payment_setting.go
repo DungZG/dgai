@@ -1,37 +1,40 @@
 package operation_setting
 
 import (
+	"math"
+	"strings"
+
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/setting/config"
+	"github.com/shopspring/decimal"
 )
 
+type TopUpBonusTier struct {
+	MinAmountUSD float64 `json:"min_amount_usd"`
+	Percent      float64 `json:"percent"`
+}
+
+const TopUpBonusTiersOptionKey = "payment_setting.topup_bonus_tiers"
+
 type PaymentSetting struct {
-	AmountOptions  []int           `json:"amount_options"`
-	AmountDiscount map[int]float64 `json:"amount_discount"` // 充值金额对应的折扣，例如 100 元 0.9 表示 100 元充值享受 9 折优惠
-
-	// TopUpBonusPercent credits extra quota on top of a top-up, so paying 10
-	// dollars at 10 percent yields 11 dollars of credit. TopUpBonusMinAmount is
-	// the smallest top-up that earns it; zero disables the bonus entirely.
-	TopUpBonusPercent   float64 `json:"topup_bonus_percent"`
-	TopUpBonusMinAmount int     `json:"topup_bonus_min_amount"`
-
-	// SignupBonusMinTopUp defers the new-user bonus until the customer has paid
-	// this much in successful top-ups. Zero grants it at registration instead.
-	SignupBonusMinTopUp float64 `json:"signup_bonus_min_top_up"`
-
-	ComplianceConfirmed    bool   `json:"compliance_confirmed"`
-	ComplianceTermsVersion string `json:"compliance_terms_version"`
-	ComplianceConfirmedAt  int64  `json:"compliance_confirmed_at"`
-	ComplianceConfirmedBy  int    `json:"compliance_confirmed_by"`
-	ComplianceConfirmedIP  string `json:"compliance_confirmed_ip"`
+	AmountOptions          []int            `json:"amount_options"`
+	AmountDiscount         map[int]float64  `json:"amount_discount"`
+	TopUpBonusTiers        []TopUpBonusTier `json:"topup_bonus_tiers"`
+	SignupBonusMinTopUp    float64          `json:"signup_bonus_min_top_up"`
+	ComplianceConfirmed    bool             `json:"compliance_confirmed"`
+	ComplianceTermsVersion string           `json:"compliance_terms_version"`
+	ComplianceConfirmedAt  int64            `json:"compliance_confirmed_at"`
+	ComplianceConfirmedBy  int              `json:"compliance_confirmed_by"`
+	ComplianceConfirmedIP  string           `json:"compliance_confirmed_ip"`
 }
 
 const CurrentComplianceTermsVersion = "v1"
 
 // 默认配置
 var paymentSetting = PaymentSetting{
-	AmountOptions:  []int{10, 20, 50, 100, 200, 500},
-	AmountDiscount: map[int]float64{},
+	AmountOptions:   []int{10, 20, 50, 100, 200, 500},
+	AmountDiscount:  map[int]float64{},
+	TopUpBonusTiers: []TopUpBonusTier{},
 }
 
 func init() {
@@ -42,24 +45,65 @@ func init() {
 func GetPaymentSetting() *PaymentSetting {
 	return &paymentSetting
 }
+func ValidateTopUpBonusTiersJSON(value string) error {
+	trimmed := strings.TrimSpace(value)
+	if !strings.HasPrefix(trimmed, "[") {
+		return common.NewMessage("Top-up bonus tiers must be a JSON array")
+	}
+	var tiers []TopUpBonusTier
+	if err := common.UnmarshalJsonStr(trimmed, &tiers); err != nil {
+		return common.NewMessage("Top-up bonus tiers must be a JSON array")
+	}
+	if common.QuotaPerUnit <= 0 {
+		return common.NewMessage("Quota per unit must be greater than 0")
+	}
+	previousMinimum := 0.0
+	maxMinimum := float64(common.MaxWalletQuota) / common.QuotaPerUnit
+	for _, tier := range tiers {
+		if math.IsNaN(tier.MinAmountUSD) || math.IsInf(tier.MinAmountUSD, 0) || tier.MinAmountUSD <= previousMinimum || tier.MinAmountUSD > maxMinimum {
+			return common.NewMessage("Top-up bonus tier minimum amounts must be positive, increasing, and within the wallet quota limit")
+		}
+		if math.IsNaN(tier.Percent) || math.IsInf(tier.Percent, 0) || tier.Percent < 0 || tier.Percent > 100 {
+			return common.NewMessage("Top-up bonus tier percentages must be between 0 and 100")
+		}
+		previousMinimum = tier.MinAmountUSD
+	}
+	return nil
+}
+func TopUpBonus(baseQuota int) (int, error) {
+	if baseQuota <= 0 || common.QuotaPerUnit <= 0 {
+		return 0, nil
+	}
+	amountUSD := float64(baseQuota) / common.QuotaPerUnit
+	var selectedMinimum, percent float64
+	for _, tier := range paymentSetting.TopUpBonusTiers {
+		if tier.MinAmountUSD > selectedMinimum && tier.MinAmountUSD <= amountUSD &&
+			tier.MinAmountUSD > 0 && tier.Percent >= 0 && tier.Percent <= 100 &&
+			!math.IsNaN(tier.MinAmountUSD) && !math.IsInf(tier.MinAmountUSD, 0) &&
+			!math.IsNaN(tier.Percent) && !math.IsInf(tier.Percent, 0) {
+			selectedMinimum = tier.MinAmountUSD
+			percent = tier.Percent
+		}
+	}
+	if percent == 0 {
+		return 0, nil
+	}
+	return common.WalletQuotaFromDecimalStrict(
+		decimal.NewFromInt(int64(baseQuota)).Mul(decimal.NewFromFloat(percent)).Div(decimal.NewFromInt(100)),
+	)
+}
 
-// TopUpBonus applies the configured promotional bonus to a paid amount and
-// returns the extra quota granted on top of the base credit. The base credit is
-// passed in so the caller keeps its own rounding rules; the bonus is derived
-// from the same amount, never from user input alone.
-func TopUpBonus(amountUSD float64, baseQuota int) int {
-	setting := GetPaymentSetting()
-	if setting.TopUpBonusPercent <= 0 || amountUSD < float64(setting.TopUpBonusMinAmount) {
-		return 0
-	}
+func TopUpQuotaWithBonus(baseQuota int) (int, error) {
 	if baseQuota <= 0 {
-		return 0
+		return 0, common.NewMessage("Top-up quota must be greater than 0")
 	}
-	bonus := float64(baseQuota) * setting.TopUpBonusPercent / 100
-	if bonus <= 0 {
-		return 0
+	bonus, err := TopUpBonus(baseQuota)
+	if err != nil {
+		return 0, err
 	}
-	return common.QuotaFromFloat(bonus)
+	return common.WalletQuotaFromDecimalStrict(
+		decimal.NewFromInt(int64(baseQuota)).Add(decimal.NewFromInt(int64(bonus))),
+	)
 }
 
 func IsPaymentComplianceConfirmed() bool {

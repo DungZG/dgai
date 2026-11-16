@@ -217,3 +217,25 @@ export function mergePresetAmounts(
     discount: discounts[amount] || 1.0,
   }))
 }
+
+export function topUpAmountUSD(amount: number, info: TopupInfo | null): number {
+  if (info?.quota_display_type === 'TOKENS') {
+    return info.quota_per_unit ? Math.floor(amount / info.quota_per_unit) : 0
+  }
+  return amount
+}
+
+export function getTopUpBonusPercent(
+  baseAmountUsd: number,
+  tiers: { min_amount_usd: number; percent: number }[] = []
+): number {
+  let percent = 0
+  let minimum = 0
+  for (const tier of tiers) {
+    if (tier.min_amount_usd > minimum && tier.min_amount_usd <= baseAmountUsd) {
+      minimum = tier.min_amount_usd
+      percent = tier.percent
+    }
+  }
+  return percent
+}

@@ -24,13 +24,14 @@ import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
 import { getSelf } from '@/lib/api'
 
+import { requestVietQRPayment } from './api'
 import { AffiliateRewardsCard } from './components/affiliate-rewards-card'
 import { BillingHistoryDialog } from './components/dialogs/billing-history-dialog'
 import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
-import { RechargeFormCard } from './components/recharge-form-card'
 import { VietQRDialog } from './components/dialogs/vietqr-dialog'
+import { RechargeFormCard } from './components/recharge-form-card'
 import { SubscriptionPlansCard } from './components/subscription-plans-card'
 import { WalletStatsCard } from './components/wallet-stats-card'
 import { DEFAULT_DISCOUNT_RATE, PAYMENT_TYPES } from './constants'
@@ -43,11 +44,12 @@ import {
   useWaffoPayment,
   useWaffoPancakePayment,
 } from './hooks'
-import { requestVietQRPayment } from './api'
 import {
   getDefaultPaymentType,
   getMinTopupAmount,
   dispatchSelectedPayment,
+  getTopUpBonusPercent,
+  topUpAmountUSD,
 } from './lib'
 import type {
   UserWalletData,
@@ -83,7 +85,8 @@ export function Wallet(props: WalletProps) {
     useState<CreemProduct | null>(null)
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(true)
   const [vietqrDialogOpen, setVietqrDialogOpen] = useState(false)
-  const [vietqrDetails, setVietqrDetails] = useState<VietQRPaymentDetails | null>(null)
+  const [vietqrDetails, setVietqrDetails] =
+    useState<VietQRPaymentDetails | null>(null)
   const [vietqrLoading, setVietqrLoading] = useState(false)
 
   const { status } = useStatus()
@@ -345,6 +348,8 @@ export function Wallet(props: WalletProps) {
                   priceRatio={(status?.price as number) || 1}
                   usdExchangeRate={effectiveUsdExchangeRate}
                   onOpenBilling={() => setBillingDialogOpen(true)}
+                  topupBonusTiers={topupInfo?.topup_bonus_tiers}
+                  quotaPerUnit={topupInfo?.quota_per_unit}
                   creemProducts={topupInfo?.creem_products}
                   enableCreemTopup={topupInfo?.enable_creem_topup}
                   onCreemProductSelect={handleCreemProductSelect}
@@ -390,9 +395,12 @@ export function Wallet(props: WalletProps) {
         calculating={calculating}
         processing={processing || waffoProcessing || pancakeProcessing}
         discountRate={getDiscountRate()}
+        topupBonusPercent={getTopUpBonusPercent(
+          topUpAmountUSD(topupAmount, topupInfo),
+          topupInfo?.topup_bonus_tiers
+        )}
         usdExchangeRate={effectiveUsdExchangeRate}
       />
-
       <TransferDialog
         open={transferDialogOpen}
         onOpenChange={setTransferDialogOpen}
@@ -412,8 +420,9 @@ export function Wallet(props: WalletProps) {
         onConfirm={handleCreemConfirm}
         product={selectedCreemProduct}
         processing={creemProcessing}
+        topupBonusTiers={topupInfo?.topup_bonus_tiers}
+        quotaPerUnit={topupInfo?.quota_per_unit}
       />
-
       <VietQRDialog
         open={vietqrDialogOpen}
         onOpenChange={setVietqrDialogOpen}
