@@ -215,6 +215,14 @@ func (bot *telegramBot) handlePrivateMessage(message *telegramMessage) error {
 		return bot.sendMessage(message.Chat.ID, "Đổi mã thành công. Đã cộng "+logger.FormatQuota(quota)+" vào số dư.")
 	case "models":
 		return bot.showModels(message.Chat.ID, 0, message.From)
+	case "id":
+		if message.From == nil {
+			return nil
+		}
+		text := fmt.Sprintf("🆔 <b>Telegram ID</b>\n<code>%d</code>\nDùng ID này để liên kết trong Hồ sơ hoặc Admin → Users.", message.From.ID)
+		return bot.sendCard(message.Chat.ID, text, keyboard(
+			[]telegramInlineKeyboardButton{callbackButton("🏠 Menu", "menu")},
+		))
 	case "support":
 		return bot.openSupport(message, args)
 	default:

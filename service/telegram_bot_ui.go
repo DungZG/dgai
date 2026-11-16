@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -501,37 +502,82 @@ func telegramModelStatus(group string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if len(summary.Models) == 0 {
-		return "📊 <b>Model &amp; giá</b>\n\nChưa có lượt gọi nào trong 24 giờ qua.", nil
-	}
-
-	pricing := make(map[string]model.Pricing, len(summary.Models))
-	for _, item := range model.GetPricing() {
-		pricing[item.ModelName] = item
-	}
+	pricing := filterPricingForGroup(model.GetPricing(), group)
 	groupRatio := ratio_setting.GetGroupRatio(group)
 	if groupRatio <= 0 {
 		groupRatio = 1
 	}
+	return formatModelStatus(pricing, summary.Models, group, groupRatio), nil
+}
+
+func filterPricingForGroup(pricing []model.Pricing, group string) []model.Pricing {
+	filtered := make([]model.Pricing, 0, len(pricing))
+	for _, item := range pricing {
+		if len(item.EnableGroup) == 0 || slices.Contains(item.EnableGroup, "all") || slices.Contains(item.EnableGroup, group) {
+			filtered = append(filtered, item)
+		}
+	}
+	if len(filtered) == 0 {
+		return pricing
+	}
+	return filtered
+}
+
+func formatModelStatus(pricing []model.Pricing, metrics []perfmetrics.ModelSummary, group string, groupRatio float64) string {
+	if len(pricing) == 0 && len(metrics) == 0 {
+		return "📊 <b>Model &amp; giá</b>\n\nChưa có model nào đang bán."
+	}
+	if len(pricing) == 0 {
+		for _, item := range metrics {
+			pricing = append(pricing, model.Pricing{ModelName: item.ModelName})
+		}
+	}
+
+	metricByName := make(map[string]perfmetrics.ModelSummary, len(metrics))
+	for _, item := range metrics {
+		metricByName[item.ModelName] = item
+	}
+	active := make([]model.Pricing, 0, len(pricing))
+	idle := make([]model.Pricing, 0, len(pricing))
+	for _, item := range pricing {
+		if metric, ok := metricByName[item.ModelName]; ok && metric.RequestCount > 0 {
+			active = append(active, item)
+		} else {
+			idle = append(idle, item)
+		}
+	}
+	slices.SortFunc(active, func(a, b model.Pricing) int {
+		return cmp.Compare(metricByName[b.ModelName].RequestCount, metricByName[a.ModelName].RequestCount)
+	})
+	ordered := make([]model.Pricing, 0, len(active)+len(idle))
+	ordered = append(ordered, active...)
+	ordered = append(ordered, idle...)
 
 	var text strings.Builder
-	fmt.Fprintf(&text, "📊 <b>Model &amp; giá</b>\n24 giờ gần nhất · nhóm <code>%s</code>\n", html.EscapeString(group))
-	limit := min(len(summary.Models), 8)
-	for _, item := range summary.Models[:limit] {
-		latency := item.P50LatencyMs
-		if latency <= 0 {
-			latency = item.AvgLatencyMs
+	fmt.Fprintf(&text, "📊 <b>Model &amp; giá</b>\n24 giờ gần nhất · nhóm <code>%s</code> · <b>%d model</b>\n",
+		html.EscapeString(group), len(ordered))
+	const limit = 20
+	for i, item := range ordered {
+		if i >= limit {
+			fmt.Fprintf(&text, "\n… còn %d model khác\n", len(ordered)-i)
+			break
 		}
 		fmt.Fprintf(&text, "\n<b>%s</b>\n", html.EscapeString(item.ModelName))
-		fmt.Fprintf(&text, "✅ %.2f%% · ⚡ %s · 🚀 %s\n",
-			item.SuccessRate, formatLatency(latency), formatTPS(item.AvgTps))
-		fmt.Fprintf(&text, "💰 %s · 📞 %s\n",
-			modelPriceLine(pricing[item.ModelName], groupRatio), formatCount(item.RequestCount))
+		metric, hasMetric := metricByName[item.ModelName]
+		if hasMetric && metric.RequestCount > 0 {
+			latency := metric.P50LatencyMs
+			if latency <= 0 {
+				latency = metric.AvgLatencyMs
+			}
+			fmt.Fprintf(&text, "✅ %.2f%% · ⚡ %s · 🚀 %s\n",
+				metric.SuccessRate, formatLatency(latency), formatTPS(metric.AvgTps))
+			fmt.Fprintf(&text, "💰 %s · 📞 %s\n",
+				modelPriceLine(item, groupRatio), formatCount(metric.RequestCount))
+			continue
+		}
+		fmt.Fprintf(&text, "⚪ Chưa có traffic 24h · 💰 %s\n", modelPriceLine(item, groupRatio))
 	}
-	if len(summary.Models) > limit {
-		fmt.Fprintf(&text, "\n… còn %d model khác\n", len(summary.Models)-limit)
-	}
-	return text.String(), nil
+	return text.String()
 }
 
 func modelPriceLine(pricing model.Pricing, groupRatio float64) string {

@@ -10,6 +10,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/oauth"
+	perfmetrics "github.com/QuantumNous/new-api/pkg/perf_metrics"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/system_setting"
 	"github.com/glebarez/sqlite"
@@ -203,6 +204,31 @@ func TestFormatVND(t *testing.T) {
 	assert.Equal(t, "265.000", formatVND(265000))
 	assert.Equal(t, "1.000.000", formatVND(1000000))
 	assert.Equal(t, "999", formatVND(999))
+}
+
+func TestFormatModelStatusIncludesModelsWithoutTraffic(t *testing.T) {
+	pricing := []model.Pricing{
+		{ModelName: "active-model", ModelRatio: 1, CompletionRatio: 3, EnableGroup: []string{"default"}},
+		{ModelName: "idle-model", ModelRatio: 0.5, CompletionRatio: 2, EnableGroup: []string{"all"}},
+		{ModelName: "other-group", ModelRatio: 1, EnableGroup: []string{"vip"}},
+	}
+	filtered := filterPricingForGroup(pricing, "default")
+	require.Len(t, filtered, 2)
+
+	text := formatModelStatus(filtered, []perfmetrics.ModelSummary{{
+		ModelName:    "active-model",
+		RequestCount: 10,
+		SuccessRate:  99,
+		P50LatencyMs: 1000,
+		AvgTps:       50,
+	}}, "default", 1)
+
+	assert.Contains(t, text, "2 model")
+	assert.Contains(t, text, "active-model")
+	assert.Contains(t, text, "✅ 99.00%")
+	assert.Contains(t, text, "idle-model")
+	assert.Contains(t, text, "Chưa có traffic")
+	assert.NotContains(t, text, "other-group")
 }
 
 func TestParseTelegramCommand(t *testing.T) {
