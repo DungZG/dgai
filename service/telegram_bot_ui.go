@@ -1000,7 +1000,21 @@ func formatPlanQuotaLabel(plan model.SubscriptionPlan) string {
 	case "monthly":
 		return "Hạn mức/tháng: " + value
 	case "custom":
-		return fmt.Sprintf("Hạn mức mỗi %ds: %s", plan.QuotaResetCustomSeconds, value)
+		seconds := plan.QuotaResetCustomSeconds
+		switch {
+		case seconds == 86400:
+			return "Hạn mức/ngày: " + value
+		case seconds == 604800:
+			return "Hạn mức/tuần: " + value
+		case seconds == 2592000 || seconds == 30*86400:
+			return "Hạn mức/tháng: " + value
+		case seconds > 0 && seconds%86400 == 0:
+			return fmt.Sprintf("Hạn mức mỗi %d ngày: %s", seconds/86400, value)
+		case seconds > 0 && seconds%3600 == 0:
+			return fmt.Sprintf("Hạn mức mỗi %d giờ: %s", seconds/3600, value)
+		default:
+			return fmt.Sprintf("Hạn mức mỗi %ds: %s", seconds, value)
+		}
 	default:
 		return "Tổng hạn mức: " + value
 	}

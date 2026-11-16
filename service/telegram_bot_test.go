@@ -267,15 +267,16 @@ func TestFormatPlanDetail(t *testing.T) {
 	t.Cleanup(func() { common.QuotaPerUnit = previousQuotaPerUnit })
 
 	plan := model.SubscriptionPlan{
-		Title:            "Pro",
-		Subtitle:         "For daily coding agents",
-		PriceAmount:      20,
-		Currency:         "USD",
-		DurationUnit:     "month",
-		DurationValue:    1,
-		TotalAmount:      1500000,
-		QuotaResetPeriod: "daily",
-		UpgradeGroup:     "vip",
+		Title:                   "Pro",
+		Subtitle:                "For daily coding agents",
+		PriceAmount:             20,
+		Currency:                "USD",
+		DurationUnit:            "month",
+		DurationValue:           1,
+		TotalAmount:             1500000,
+		QuotaResetPeriod:        "custom",
+		QuotaResetCustomSeconds: 86400,
+		UpgradeGroup:            "vip",
 	}
 	plan.NormalizeDefaults()
 	text := formatPlanDetail(plan)
