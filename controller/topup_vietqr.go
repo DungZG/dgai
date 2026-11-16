@@ -20,6 +20,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/logger"
 	"github.com/QuantumNous/new-api/model"
+	"github.com/QuantumNous/new-api/service"
 	"github.com/QuantumNous/new-api/setting"
 
 	"github.com/gin-gonic/gin"
@@ -86,40 +87,68 @@ func isVietQRTopUpEnabled() bool {
 		strings.TrimSpace(setting.VietQRBankAccount) != ""
 }
 
+func init() {
+	service.SetVietQRTopUpCreator(createVietQRTopUp)
+}
+
 // RequestVietQRPay creates a pending top-up order and returns the QR image plus
 // the exact memo the customer must keep in the transfer description.
 func RequestVietQRPay(c *gin.Context) {
-	if !isVietQRTopUpEnabled() {
-		paymentError(c, common.NewMessage("VietQR top-up is not configured"))
-		return
-	}
 	var req VietQRPayRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		paymentError(c, common.NewMessage("Invalid parameters"))
 		return
 	}
+	result, err := createVietQRTopUp(c.Request.Context(), c.GetInt("id"), req.Amount)
+	if err != nil {
+		paymentError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{
+		"trade_no":     result.TradeNo,
+		"amount":       result.Amount,
+		"pay_money":    result.PayMoney,
+		"memo":         result.Memo,
+		"qr_image_url": result.QRImageURL,
+		"qr_content":   result.QRContent,
+		"vnd_amount":   result.VNDAmount,
+		"vnd_rate":     result.VNDRate,
+		"bank_code":    result.BankCode,
+		"bank_account": result.BankAccount,
+		"account_name": result.AccountName,
+		"expires_at":   result.ExpiresAt,
+	})
+}
+
+func createVietQRTopUp(ctx context.Context, userId int, amount int64) (*service.VietQRTopUpResult, error) {
+	if !isVietQRTopUpEnabled() {
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorNotConfigured, Message: "VietQR top-up is not configured"}
+	}
 	minTopUp := int64(setting.VietQRMinTopUp)
 	if minTopUp <= 0 {
 		minTopUp = 1
 	}
-	if req.Amount < minTopUp {
-		paymentError(c, common.NewMessage("Top-up amount cannot be less than {{min}}", map[string]any{"min": minTopUp}))
-		return
+	if amount < minTopUp {
+		return nil, &service.VietQRTopUpError{
+			Code:    service.VietQRTopUpErrorAmountTooLow,
+			Message: fmt.Sprintf("Top-up amount cannot be less than %d", minTopUp),
+		}
 	}
-	id := c.GetInt("id")
-	if rejectInvalidTopUpQuota(c, id, req.Amount) {
-		return
+	quota, err := validateTopUpQuota(amount)
+	if err != nil {
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorInvalidAmount, Message: err.Error()}
+	}
+	if err := model.ValidateTopUpQuotaCapacity(userId, quota); err != nil {
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorQuotaLimit, Message: err.Error()}
 	}
 
-	group, err := model.GetUserGroup(id, true)
+	user, err := model.GetUserById(userId, false)
 	if err != nil {
-		paymentError(c, common.NewMessage("Failed to get the user group"))
-		return
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorUser, Message: "Failed to get the user group"}
 	}
-	payMoney := getPayMoney(req.Amount, group)
+	payMoney := getPayMoney(amount, user.Group)
 	if payMoney < 0.01 {
-		paymentError(c, common.NewMessage("Payment amount is too low"))
-		return
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorPaymentLow, Message: "Payment amount is too low"}
 	}
 
 	// Fixed 11-char trade number so the memo can be split back apart even when a
@@ -130,8 +159,8 @@ func RequestVietQRPay(c *gin.Context) {
 	vndAmount := vietqrVNDAmount(payMoney)
 
 	topUp := &model.TopUp{
-		UserId:          id,
-		Amount:          req.Amount,
+		UserId:          userId,
+		Amount:          amount,
 		Money:           payMoney,
 		TradeNo:         tradeNo,
 		PaymentMethod:   model.PaymentMethodVietQR,
@@ -140,17 +169,16 @@ func RequestVietQRPay(c *gin.Context) {
 		Status:          common.TopUpStatusPending,
 	}
 	if err := topUp.Insert(); err != nil {
-		logger.LogError(c.Request.Context(), common.LogText("vietqr failed to create top-up order user_id=%d trade_no=%s error=%q", id, tradeNo, err.Error()))
-		paymentError(c, common.NewMessage("Failed to create order"))
-		return
+		logger.LogError(ctx, common.LogText("vietqr failed to create top-up order user_id=%d trade_no=%s error=%q", userId, tradeNo, err.Error()))
+		return nil, &service.VietQRTopUpError{Code: service.VietQRTopUpErrorCreate, Message: "Failed to create order"}
 	}
 
 	// Prefer a QR minted by VietQR: it registers this order id on their side,
 	// which is what lets the customer's "check payment" find the transfer.
 	qrImageURL := vietqrQRImageURL(vndAmount, memo)
 	qrContent := ""
-	if qr, content, err := vietqrCreateOrderQR(c.Request.Context(), tradeNo, vndAmount); err != nil {
-		logger.LogError(c.Request.Context(), common.LogText("vietqr generate-customer failed trade_no=%s error=%q", tradeNo, err.Error()))
+	if qr, content, err := vietqrCreateOrderQR(ctx, tradeNo, vndAmount); err != nil {
+		logger.LogError(ctx, common.LogText("vietqr generate-customer failed trade_no=%s error=%q", tradeNo, err.Error()))
 	} else {
 		// VietQR prefixes its own reference to the content it expects back, and
 		// only its own QR is registered for the check-payment lookup.
@@ -158,20 +186,20 @@ func RequestVietQRPay(c *gin.Context) {
 		memo = content
 	}
 
-	common.ApiSuccess(c, gin.H{
-		"trade_no":     tradeNo,
-		"amount":       req.Amount,
-		"pay_money":    payMoney,
-		"memo":         memo,
-		"qr_image_url": qrImageURL,
-		"qr_content":   qrContent,
-		"vnd_amount":   vndAmount,
-		"vnd_rate":     setting.VietQRVNDRate,
-		"bank_code":    setting.VietQRBankCode,
-		"bank_account": setting.VietQRBankAccount,
-		"account_name": setting.VietQRAccountName,
-		"expires_at":   time.Now().Add(30 * time.Minute).Unix(),
-	})
+	return &service.VietQRTopUpResult{
+		TradeNo:     tradeNo,
+		Amount:      amount,
+		PayMoney:    payMoney,
+		Memo:        memo,
+		QRImageURL:  qrImageURL,
+		QRContent:   qrContent,
+		VNDAmount:   vndAmount,
+		VNDRate:     setting.VietQRVNDRate,
+		BankCode:    setting.VietQRBankCode,
+		BankAccount: setting.VietQRBankAccount,
+		AccountName: setting.VietQRAccountName,
+		ExpiresAt:   time.Now().Add(30 * time.Minute).Unix(),
+	}, nil
 }
 
 // vietqrSyncBearer is the token VietQR must present when pushing transactions.

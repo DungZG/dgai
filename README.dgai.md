@@ -172,9 +172,11 @@ Client Secret** của **Login Widget**; cặp OAuth dùng cho đăng nhập web
 (`TELEGRAM_CLIENT_ID`, `TELEGRAM_CLIENT_SECRET`, `TELEGRAM_OAUTH_ENABLED=true`) và
 redirect URL phải được đăng ký là `https://<domain>/oauth/telegram`.
 
-Lệnh `/topup` mở trang ví; `/redeem MÃ`, `/balance` yêu cầu tài khoản Telegram đã
-liên kết. `/support nội dung` gửi ticket vào nhóm hỗ trợ; `/models` báo tỷ lệ
-thành công và số lượt gọi trong 24 giờ gần nhất.
+Lệnh `/start` mở card chính với các nút bấm. `/topup` hiển thị các gói nạp và
+gửi ảnh QR ngay trong chat; đơn được SePay/VietQR cộng số dư tự động.
+`/balance` và `/redeem MÃ` yêu cầu tài khoản Telegram đã liên kết. `/models` báo
+tỷ lệ thành công, độ trễ P50, tốc độ tok/s và giá USD/1M token. `/support nội
+dung` gửi ticket vào nhóm hỗ trợ.
 
 Đặt `DGAI_TELEGRAM_SUPPORT_CHAT_ID` và `DGAI_TELEGRAM_SUPPORT_URL` để chuyển ticket
 vào nhóm; admin trả lời bằng cách reply trực tiếp ticket. Bot chỉ chạy ở master

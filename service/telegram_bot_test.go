@@ -1,15 +1,21 @@
 package service
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/oauth"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/system_setting"
+	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestTelegramEnvOverrides(t *testing.T) {
@@ -62,6 +68,7 @@ func TestTelegramPrivateCommandsReply(t *testing.T) {
 	t.Cleanup(func() { system_setting.ServerAddress = previousAddress })
 
 	var sentText string
+	var sentMarkup json.RawMessage
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path != "/bottest-token/sendMessage" {
@@ -69,10 +76,12 @@ func TestTelegramPrivateCommandsReply(t *testing.T) {
 			return
 		}
 		var payload struct {
-			Text string `json:"text"`
+			Text        string          `json:"text"`
+			ReplyMarkup json.RawMessage `json:"reply_markup"`
 		}
 		require.NoError(t, common.DecodeJson(r.Body, &payload))
 		sentText = payload.Text
+		sentMarkup = payload.ReplyMarkup
 		_, _ = w.Write([]byte(`{"ok":true,"result":{}}`))
 	}))
 	defer server.Close()
@@ -83,12 +92,115 @@ func TestTelegramPrivateCommandsReply(t *testing.T) {
 	require.NoError(t, bot.handlePrivateMessage(&telegramMessage{
 		Chat: message.Chat, From: message.From, Text: "/start",
 	}))
-	assert.Contains(t, sentText, "DGai hỗ trợ")
+	assert.Contains(t, sentText, "DGAI API")
+	assert.Contains(t, sentText, "Nạp tiền")
 
 	require.NoError(t, bot.handlePrivateMessage(&telegramMessage{
 		Chat: message.Chat, From: message.From, Text: "/topup",
 	}))
-	assert.Contains(t, sentText, "https://dgai.io.vn/wallet")
+	assert.Contains(t, sentText, "Nạp tiền")
+	assert.Contains(t, string(sentMarkup), "$10")
+}
+
+func TestTelegramTopUpCallbackSendsQR(t *testing.T) {
+	previousDB := model.DB
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(&model.User{}))
+	user := &model.User{
+		Username:   "tg-topup",
+		Password:   "unused-password",
+		Status:     common.UserStatusEnabled,
+		TelegramId: "42",
+		Group:      "default",
+	}
+	require.NoError(t, db.Create(user).Error)
+	model.DB = db
+	t.Cleanup(func() {
+		model.DB = previousDB
+		sqlDB, err := db.DB()
+		if err == nil {
+			_ = sqlDB.Close()
+		}
+	})
+
+	previousDisplay := operation_setting.GetGeneralSetting().QuotaDisplayType
+	operation_setting.GetGeneralSetting().QuotaDisplayType = operation_setting.QuotaDisplayTypeUSD
+	t.Cleanup(func() {
+		operation_setting.GetGeneralSetting().QuotaDisplayType = previousDisplay
+	})
+
+	previousCreator := createVietQRTopUp
+	t.Cleanup(func() { createVietQRTopUp = previousCreator })
+	SetVietQRTopUpCreator(func(_ context.Context, userId int, amount int64) (*VietQRTopUpResult, error) {
+		require.Equal(t, user.Id, userId)
+		require.EqualValues(t, 10, amount)
+		return &VietQRTopUpResult{
+			TradeNo:     "VQR12345678",
+			Amount:      10,
+			PayMoney:    10,
+			Memo:        "DGAIVQR12345678",
+			QRImageURL:  "https://img.vietqr.io/image/TPB-100-test.png",
+			VNDAmount:   265000,
+			BankCode:    "TPB",
+			BankAccount: "10006460824",
+			AccountName: "NGUYEN TRI DUNG",
+		}, nil
+	})
+
+	var answered bool
+	var photo, caption string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/bottest-token/answerCallbackQuery":
+			answered = true
+			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
+		case "/bottest-token/sendPhoto":
+			var payload struct {
+				Photo   string `json:"photo"`
+				Caption string `json:"caption"`
+			}
+			require.NoError(t, common.DecodeJson(r.Body, &payload))
+			photo, caption = payload.Photo, payload.Caption
+			_, _ = w.Write([]byte(`{"ok":true,"result":{}}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	bot := &telegramBot{token: "test-token", apiBaseURL: server.URL, client: server.Client()}
+	err = bot.handleCallbackQuery(&telegramCallbackQuery{
+		ID:   "cb1",
+		From: &telegramUser{ID: 42},
+		Message: &telegramMessage{
+			MessageID: 1,
+			Chat:      telegramChat{ID: 42, Type: "private"},
+		},
+		Data: "topup:10",
+	})
+	require.NoError(t, err)
+	assert.True(t, answered)
+	assert.Equal(t, "https://img.vietqr.io/image/TPB-100-test.png", photo)
+	assert.Contains(t, caption, "Nạp $10")
+	assert.Contains(t, caption, "265.000 ₫")
+	assert.Contains(t, caption, "DGAIVQR12345678")
+}
+
+func TestModelPriceLine(t *testing.T) {
+	tokenModel := model.Pricing{ModelName: "token-model", QuotaType: 0, ModelRatio: 1, CompletionRatio: 3}
+	assert.Equal(t, "$2.00 in / $6.00 out / 1M", modelPriceLine(tokenModel, 1))
+
+	requestModel := model.Pricing{ModelName: "request-model", QuotaType: 1, ModelPrice: 0.5}
+	assert.Equal(t, "$0.50 / request", modelPriceLine(requestModel, 1))
+	assert.Equal(t, "—", modelPriceLine(model.Pricing{}, 1))
+}
+
+func TestFormatVND(t *testing.T) {
+	assert.Equal(t, "265.000", formatVND(265000))
+	assert.Equal(t, "1.000.000", formatVND(1000000))
+	assert.Equal(t, "999", formatVND(999))
 }
 
 func TestParseTelegramCommand(t *testing.T) {

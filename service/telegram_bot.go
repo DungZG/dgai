@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"maps"
 	"net/http"
 	"net/url"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -18,10 +16,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/logger"
 	"github.com/QuantumNous/new-api/model"
-	perfmetrics "github.com/QuantumNous/new-api/pkg/perf_metrics"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
-	"github.com/QuantumNous/new-api/setting/ratio_setting"
-	"github.com/QuantumNous/new-api/setting/system_setting"
 )
 
 const (
@@ -40,8 +35,9 @@ type telegramBot struct {
 }
 
 type telegramUpdate struct {
-	UpdateID int64            `json:"update_id"`
-	Message  *telegramMessage `json:"message"`
+	UpdateID      int64                  `json:"update_id"`
+	Message       *telegramMessage       `json:"message"`
+	CallbackQuery *telegramCallbackQuery `json:"callback_query"`
 }
 
 type telegramMessage struct {
@@ -50,6 +46,13 @@ type telegramMessage struct {
 	Chat           telegramChat     `json:"chat"`
 	From           *telegramUser    `json:"from"`
 	ReplyToMessage *telegramMessage `json:"reply_to_message"`
+}
+
+type telegramCallbackQuery struct {
+	ID      string           `json:"id"`
+	From    *telegramUser    `json:"from"`
+	Message *telegramMessage `json:"message"`
+	Data    string           `json:"data"`
 }
 
 type telegramChat struct {
@@ -158,6 +161,9 @@ func (bot *telegramBot) getUpdates(offset int64) ([]telegramUpdate, error) {
 }
 
 func (bot *telegramBot) handleUpdate(update telegramUpdate) error {
+	if update.CallbackQuery != nil {
+		return bot.handleCallbackQuery(update.CallbackQuery)
+	}
 	message := update.Message
 	if message == nil {
 		return nil
@@ -170,11 +176,7 @@ func (bot *telegramBot) handleUpdate(update telegramUpdate) error {
 		if command != "models" {
 			return nil
 		}
-		text, err := telegramModelStatus()
-		if err != nil {
-			return err
-		}
-		return bot.sendMessage(message.Chat.ID, text)
+		return bot.showModelsGroup(message.Chat.ID)
 	}
 	return bot.handlePrivateMessage(message)
 }
@@ -187,23 +189,14 @@ func (bot *telegramBot) handlePrivateMessage(message *telegramMessage) error {
 
 	switch command {
 	case "start", "help":
-		return bot.sendMessage(message.Chat.ID, "DGai hỗ trợ:\n/balance - xem số dư\n/topup - nạp tiền\n/redeem MÃ - đổi mã quà tặng\n/models - trạng thái model 24 giờ\n/support nội dung - gửi yêu cầu hỗ trợ")
+		return bot.showMainMenu(message.Chat.ID, 0, message.From)
 	case "topup":
-		baseURL := strings.TrimRight(system_setting.ServerAddress, "/")
-		if baseURL == "" {
-			return bot.sendMessage(message.Chat.ID, "Liên kết nạp tiền chưa được cấu hình. Vui lòng liên hệ hỗ trợ.")
+		if args != "" {
+			return bot.createTopUpFromCommand(message.Chat.ID, message.From, args)
 		}
-		return bot.sendMessage(message.Chat.ID, "Nạp tiền và chọn phương thức tại đây:\n"+baseURL+"/wallet")
+		return bot.showTopUpMenu(message.Chat.ID, 0, message.From)
 	case "balance":
-		user, err := bot.linkedUser(message.From)
-		if err != nil {
-			return bot.sendMessage(message.Chat.ID, err.Error())
-		}
-		quota, err := model.GetUserQuota(user.Id, true)
-		if err != nil {
-			return err
-		}
-		return bot.sendMessage(message.Chat.ID, "Số dư: "+logger.FormatQuota(quota))
+		return bot.showBalance(message.Chat.ID, 0, message.From)
 	case "redeem":
 		if !operation_setting.IsPaymentComplianceConfirmed() {
 			return bot.sendMessage(message.Chat.ID, "Tính năng đổi mã đang tạm tắt. Vui lòng liên hệ quản trị viên.")
@@ -221,11 +214,7 @@ func (bot *telegramBot) handlePrivateMessage(message *telegramMessage) error {
 		}
 		return bot.sendMessage(message.Chat.ID, "Đổi mã thành công. Đã cộng "+logger.FormatQuota(quota)+" vào số dư.")
 	case "models":
-		text, err := telegramModelStatus()
-		if err != nil {
-			return err
-		}
-		return bot.sendMessage(message.Chat.ID, text)
+		return bot.showModels(message.Chat.ID, 0, message.From)
 	case "support":
 		return bot.openSupport(message, args)
 	default:
@@ -318,30 +307,6 @@ func parseTelegramCommand(text string) (string, string) {
 	command, args, _ := strings.Cut(text[1:], " ")
 	command, _, _ = strings.Cut(command, "@")
 	return strings.ToLower(command), strings.TrimSpace(args)
-}
-
-func telegramModelStatus() (string, error) {
-	groups := slices.Collect(maps.Keys(ratio_setting.GetGroupRatioCopy()))
-	groups = append(groups, "auto")
-	slices.Sort(groups)
-	summary, err := perfmetrics.QuerySummaryAll(24, groups)
-	if err != nil {
-		return "", err
-	}
-	if len(summary.Models) == 0 {
-		return "Chưa có lượt gọi model được ghi nhận trong 24 giờ qua.", nil
-	}
-
-	var text strings.Builder
-	text.WriteString("Trạng thái model trong 24 giờ (tỷ lệ thành công / lượt gọi):\n")
-	for i, item := range summary.Models {
-		if i == 20 {
-			fmt.Fprintf(&text, "… còn %d model", len(summary.Models)-i)
-			break
-		}
-		fmt.Fprintf(&text, "\n%s: %.2f%% / %d", item.ModelName, item.SuccessRate, item.RequestCount)
-	}
-	return text.String(), nil
 }
 
 func (bot *telegramBot) sendMessage(chatID int64, text string) error {
