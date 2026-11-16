@@ -5,18 +5,19 @@ import "context"
 // VietQRTopUpResult is the order data both the HTTP wallet and the Telegram bot
 // need in order to show the same QR and memo.
 type VietQRTopUpResult struct {
-	TradeNo     string
-	Amount      int64
-	PayMoney    float64
-	Memo        string
-	QRImageURL  string
-	QRContent   string
-	VNDAmount   int64
-	VNDRate     float64
-	BankCode    string
-	BankAccount string
-	AccountName string
-	ExpiresAt   int64
+	TradeNo      string
+	Amount       int64
+	PayMoney     float64
+	Memo         string
+	TransferMemo string
+	QRImageURL   string
+	QRContent    string
+	VNDAmount    int64
+	VNDRate      float64
+	BankCode     string
+	BankAccount  string
+	AccountName  string
+	ExpiresAt    int64
 }
 
 // VietQRTopUpError carries a stable code for the bot while the HTTP handler

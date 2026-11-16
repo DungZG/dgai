@@ -345,7 +345,7 @@ func (bot *telegramBot) editCard(chatID, messageID int64, text string, markup *t
 
 func (bot *telegramBot) replaceCard(chatID, messageID int64, text string, markup *telegramInlineKeyboardMarkup) error {
 	if messageID > 0 {
-		if err := bot.editCard(chatID, messageID, text, markup); err == nil {
+		if err := bot.editCard(chatID, messageID, text, markup); err == nil || strings.Contains(err.Error(), "message is not modified") {
 			return nil
 		}
 	}
@@ -442,6 +442,10 @@ func formatQuotaDisplay(quota int) string {
 }
 
 func qrCaption(result *VietQRTopUpResult) string {
+	memo := result.TransferMemo
+	if memo == "" {
+		memo = result.Memo
+	}
 	return fmt.Sprintf(`💳 <b>Nạp %s</b>
 Quét QR để chuyển khoản.
 
@@ -457,7 +461,7 @@ Quét QR để chuyển khoản.
 		html.EscapeString(result.BankAccount),
 		html.EscapeString(result.AccountName),
 		formatVND(result.VNDAmount),
-		html.EscapeString(result.Memo),
+		html.EscapeString(memo),
 		html.EscapeString(result.TradeNo))
 }
 

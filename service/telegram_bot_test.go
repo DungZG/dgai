@@ -136,15 +136,16 @@ func TestTelegramTopUpCallbackSendsQR(t *testing.T) {
 		require.Equal(t, user.Id, userId)
 		require.EqualValues(t, 10, amount)
 		return &VietQRTopUpResult{
-			TradeNo:     "VQR12345678",
-			Amount:      10,
-			PayMoney:    10,
-			Memo:        "DGAIVQR12345678",
-			QRImageURL:  "https://img.vietqr.io/image/TPB-100-test.png",
-			VNDAmount:   265000,
-			BankCode:    "TPB",
-			BankAccount: "10006460824",
-			AccountName: "NGUYEN TRI DUNG",
+			TradeNo:      "VQR12345678",
+			Amount:       10,
+			PayMoney:     10,
+			Memo:         "VQR-VIETQR-CONTENT",
+			TransferMemo: "DGAIVQR12345678",
+			QRImageURL:   "https://img.vietqr.io/image/TPB-100-test.png",
+			VNDAmount:    265000,
+			BankCode:     "TPB",
+			BankAccount:  "10006460824",
+			AccountName:  "NGUYEN TRI DUNG",
 		}, nil
 	})
 
@@ -186,6 +187,7 @@ func TestTelegramTopUpCallbackSendsQR(t *testing.T) {
 	assert.Contains(t, caption, "Nạp $10")
 	assert.Contains(t, caption, "265.000 ₫")
 	assert.Contains(t, caption, "DGAIVQR12345678")
+	assert.NotContains(t, caption, "VQR-VIETQR-CONTENT")
 }
 
 func TestModelPriceLine(t *testing.T) {

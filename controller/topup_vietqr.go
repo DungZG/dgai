@@ -156,6 +156,7 @@ func createVietQRTopUp(ctx context.Context, userId int, amount int64) (*service.
 	// the description, and the callback is matched against the memo.
 	tradeNo := "VQR" + strings.ToUpper(common.GetRandomString(8))
 	memo := vietqrMemo(tradeNo)
+	transferMemo := memo
 	vndAmount := vietqrVNDAmount(payMoney)
 
 	topUp := &model.TopUp{
@@ -187,18 +188,19 @@ func createVietQRTopUp(ctx context.Context, userId int, amount int64) (*service.
 	}
 
 	return &service.VietQRTopUpResult{
-		TradeNo:     tradeNo,
-		Amount:      amount,
-		PayMoney:    payMoney,
-		Memo:        memo,
-		QRImageURL:  qrImageURL,
-		QRContent:   qrContent,
-		VNDAmount:   vndAmount,
-		VNDRate:     setting.VietQRVNDRate,
-		BankCode:    setting.VietQRBankCode,
-		BankAccount: setting.VietQRBankAccount,
-		AccountName: setting.VietQRAccountName,
-		ExpiresAt:   time.Now().Add(30 * time.Minute).Unix(),
+		TradeNo:      tradeNo,
+		Amount:       amount,
+		PayMoney:     payMoney,
+		Memo:         memo,
+		TransferMemo: transferMemo,
+		QRImageURL:   qrImageURL,
+		QRContent:    qrContent,
+		VNDAmount:    vndAmount,
+		VNDRate:      setting.VietQRVNDRate,
+		BankCode:     setting.VietQRBankCode,
+		BankAccount:  setting.VietQRBankAccount,
+		AccountName:  setting.VietQRAccountName,
+		ExpiresAt:    time.Now().Add(30 * time.Minute).Unix(),
 	}, nil
 }
 

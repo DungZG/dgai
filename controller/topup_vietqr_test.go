@@ -124,6 +124,7 @@ func TestCreateVietQRTopUpCreatesPendingOrder(t *testing.T) {
 	assert.InDelta(t, 10, result.PayMoney, 0.0001)
 	assert.EqualValues(t, 265000, result.VNDAmount)
 	assert.Equal(t, "DGAI"+result.TradeNo, result.Memo)
+	assert.Equal(t, "DGAI"+result.TradeNo, result.TransferMemo)
 	assert.Contains(t, result.QRImageURL, "img.vietqr.io/image/TPB-10006460824")
 	assert.Contains(t, result.QRImageURL, "DGAIVQR")
 
