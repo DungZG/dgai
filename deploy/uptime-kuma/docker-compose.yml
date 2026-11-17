@@ -1,0 +1,32 @@
+# Uptime Kuma for hosts whose public port changes after a stop/start.
+#
+# The published port is not written here: it comes from UK_PORT in .env so a
+# restart needs one env change, never an edit to this file.
+#
+#   cp .env.example .env && edit UK_PORT / UK_HOST
+#   ./uk.sh up
+#
+# Every command reads .env, so `./uk.sh port 3100` moves the site in one step.
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:${UK_VERSION:-2}
+    container_name: ${UK_NAME:-uptime-kuma}
+    restart: always
+    ports:
+      - "${UK_BIND:-0.0.0.0}:${UK_PORT:-3001}:3001"
+    volumes:
+      - uk_data:/app/data
+    environment:
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+      # The instance is private; keep it from reporting usage upstream.
+      - UPTIME_KUMA_DISABLE_STATS=${UK_DISABLE_STATS:-true}
+    healthcheck:
+      test: ["CMD-SHELL", "extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  uk_data:
