@@ -48,6 +48,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useStatus } from '@/hooks/use-status'
 import { getPaymentErrorTranslation } from '@/features/wallet/lib/payment'
 import { handleServerError } from '@/lib/handle-server-error'
 import { cn } from '@/lib/utils'
@@ -290,6 +291,7 @@ export function PaymentSettingsSection({
 }: PaymentSettingsSectionProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  const { status } = useStatus()
   const updateOption = useUpdateOption()
   const initialFormValues = React.useMemo<PaymentFormValues>(
     () => ({
@@ -1066,6 +1068,15 @@ export function PaymentSettingsSection({
     SePayMerchantID: currentFormValues.SePayMerchantID,
     SePaySecretKey: currentFormValues.SePaySecretKey,
   }
+  // A literal <ServerAddress> placeholder would be pasted into Cryptomus and
+  // silently break reconciliation, so show the resolved origin.
+  const cryptomusWebhookUrl = `${
+    typeof status?.server_address === 'string' &&
+    status.server_address.trim() !== ''
+      ? status.server_address.trim().replace(/\/+$/, '')
+      : window.location.origin
+  }/api/cryptomus/webhook`
+
   const cryptomusValues: CryptomusSettingsValues = {
     CryptoEnabled: currentFormValues.CryptoEnabled,
     CryptomusMerchantID: currentFormValues.CryptomusMerchantID,
@@ -2205,10 +2216,10 @@ export function PaymentSettingsSection({
                   <div className='flex gap-2'>
                     <Input
                       id='cryptomus-webhook'
-                      value='<ServerAddress>/api/cryptomus/webhook'
+                      value={cryptomusWebhookUrl}
                       readOnly
                     />
-                    <CopyButton value='<ServerAddress>/api/cryptomus/webhook' />
+                    <CopyButton value={cryptomusWebhookUrl} />
                   </div>
                   <p className='text-muted-foreground text-sm'>
                     {t(
