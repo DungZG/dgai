@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import * as z from 'zod'
 
+import { CopyButton } from '@/components/copy-button'
 import { JsonCodeEditor } from '@/components/json-code-editor'
 import { RiskAcknowledgementDialog } from '@/components/risk-acknowledgement-dialog'
 import {
@@ -44,6 +45,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getPaymentErrorTranslation } from '@/features/wallet/lib/payment'
@@ -63,6 +65,12 @@ import { safeNumberFieldProps } from '../utils/numeric-field'
 import { AmountDiscountVisualEditor } from './amount-discount-visual-editor'
 import { AmountOptionsVisualEditor } from './amount-options-visual-editor'
 import { CreemProductsVisualEditor } from './creem-products-visual-editor'
+import {
+  buildCryptomusUpdates,
+  type CryptomusSettingsValues,
+  cryptomusSettingsShape,
+  refineCryptomusSettings,
+} from './cryptomus-settings'
 import { PaymentMethodsVisualEditor } from './payment-methods-visual-editor'
 import {
   formatJsonForEditor,
@@ -227,6 +235,8 @@ const paymentSchema = z.object({
   SePayMerchantID: z.string(),
   SePaySecretKey: z.string(),
 })
+  .extend(cryptomusSettingsShape)
+  .superRefine(refineCryptomusSettings)
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
 type WaffoFormFieldValues = Omit<WaffoSettingsValues, 'WaffoPayMethods'>
@@ -235,6 +245,7 @@ type PaymentBaseFormValues = Omit<
   | keyof WaffoFormFieldValues
   | keyof WaffoPancakeSettingsValues
   | keyof VietQRSettingsValues
+  | keyof CryptomusSettingsValues
 >
 
 const CURRENT_COMPLIANCE_TERMS_VERSION = 'v1'
@@ -252,6 +263,7 @@ type PaymentSettingsSectionProps = {
   waffoDefaultValues: WaffoSettingsValues
   waffoPancakeDefaultValues: WaffoPancakeSettingsValues
   vietqrDefaultValues: VietQRSettingsValues
+  cryptomusDefaultValues: CryptomusSettingsValues
   waffoPancakeProvisionedStoreID?: string
   waffoPancakeProvisionedProductID?: string
   complianceDefaults: PaymentComplianceDefaults
@@ -271,6 +283,7 @@ export function PaymentSettingsSection({
   waffoDefaultValues,
   waffoPancakeDefaultValues,
   vietqrDefaultValues,
+  cryptomusDefaultValues,
   waffoPancakeProvisionedStoreID,
   waffoPancakeProvisionedProductID,
   complianceDefaults,
@@ -284,12 +297,14 @@ export function PaymentSettingsSection({
       ...waffoDefaultValues,
       ...waffoPancakeDefaultValues,
       ...vietqrDefaultValues,
+      ...cryptomusDefaultValues,
     }),
     [
       defaultValues,
       waffoDefaultValues,
       waffoPancakeDefaultValues,
       vietqrDefaultValues,
+      cryptomusDefaultValues,
     ]
   )
   const initialRef = React.useRef(initialFormValues)
@@ -929,6 +944,8 @@ export function PaymentSettingsSection({
       updates.push({ key: 'SePaySecretKey', value: sanitized.SePaySecretKey })
     }
 
+    updates.push(...buildCryptomusUpdates(values, initialRef.current))
+
     const hasWaffoPancakeChanges =
       sanitized.WaffoPancakeMerchantID !== initial.WaffoPancakeMerchantID ||
       sanitized.WaffoPancakePrivateKey.length > 0 ||
@@ -943,6 +960,11 @@ export function PaymentSettingsSection({
 
     for (const update of updates) {
       await updateOption.mutateAsync(update)
+    }
+
+    if (updates.some((update) => update.key === 'CryptomusPaymentAPIKey')) {
+      form.setValue('CryptomusPaymentAPIKey', '')
+      form.setValue('CryptomusPaymentAPIKeyConfigured', true)
     }
 
     if (!hasWaffoPancakeChanges) {
@@ -1044,6 +1066,16 @@ export function PaymentSettingsSection({
     SePayMerchantID: currentFormValues.SePayMerchantID,
     SePaySecretKey: currentFormValues.SePaySecretKey,
   }
+  const cryptomusValues: CryptomusSettingsValues = {
+    CryptoEnabled: currentFormValues.CryptoEnabled,
+    CryptomusMerchantID: currentFormValues.CryptomusMerchantID,
+    CryptomusPaymentAPIKey: currentFormValues.CryptomusPaymentAPIKey,
+    CryptomusPaymentAPIKeyConfigured:
+      currentFormValues.CryptomusPaymentAPIKeyConfigured,
+    CryptoNetwork: currentFormValues.CryptoNetwork,
+    CryptoMinTopUp: currentFormValues.CryptoMinTopUp,
+    CryptoMaxTopUp: currentFormValues.CryptoMaxTopUp,
+  }
 
   return (
     <SettingsSection title={t('Payment Gateway')}>
@@ -1126,12 +1158,13 @@ export function PaymentSettingsSection({
           />
           <Tabs defaultValue='general' className='min-w-0'>
             <div className='overflow-x-auto pb-1'>
-              <TabsList className='grid min-w-[52rem] grid-cols-7'>
+              <TabsList className='grid min-w-[60rem] grid-cols-8'>
                 <TabsTrigger value='general'>{t('General')}</TabsTrigger>
                 <TabsTrigger value='epay'>Epay</TabsTrigger>
                 <TabsTrigger value='stripe'>{t('Stripe')}</TabsTrigger>
                 <TabsTrigger value='creem'>Creem</TabsTrigger>
                 <TabsTrigger value='vietqr'>{t('VietQR')}</TabsTrigger>
+                <TabsTrigger value='cryptomus'>Cryptomus</TabsTrigger>
                 <TabsTrigger value='waffo-pancake'>Waffo Pancake</TabsTrigger>
                 <TabsTrigger value='waffo'>Waffo</TabsTrigger>
               </TabsList>
@@ -1967,6 +2000,223 @@ export function PaymentSettingsSection({
                 values={vietqrValues}
                 onValueChange={setVietQRValue}
               />
+            </TabsContent>
+
+            <TabsContent value='cryptomus' className={paymentTabContentClassName}>
+              <div className='space-y-4'>
+                <div>
+                  <h3 className='text-lg font-medium'>
+                    {t('USDT crypto top-up')}
+                  </h3>
+                  <p className='text-muted-foreground text-sm'>
+                    {t(
+                      'Accept USDT top-ups through Cryptomus. This gateway is disabled by default and stays hidden at checkout until you enable it.'
+                    )}
+                  </p>
+                </div>
+
+                <Alert>
+                  <AlertDescription className='text-xs'>
+                    {t(
+                      'Create the merchant and payment API key in the Cryptomus merchant dashboard, then verify a small live payment before enabling this gateway for real top-ups. Changing a saved key is not needed unless the old key is revoked.'
+                    )}
+                  </AlertDescription>
+                </Alert>
+
+                <FormField
+                  control={form.control}
+                  name='CryptoEnabled'
+                  render={({ field }) => (
+                    <SettingsSwitchItem>
+                      <SettingsSwitchContent>
+                        <FormLabel>
+                          {t('Enable USDT top-up via Cryptomus')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t(
+                            'When off, no crypto payment method is offered at checkout.'
+                          )}
+                        </FormDescription>
+                      </SettingsSwitchContent>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </SettingsSwitchItem>
+                  )}
+                />
+
+                <div className='grid gap-6 md:grid-cols-2'>
+                  <FormField
+                    control={form.control}
+                    name='CryptomusMerchantID'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Merchant ID')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t(
+                              'Paste the merchant ID from the Cryptomus merchant dashboard'
+                            )}
+                            autoComplete='off'
+                            {...field}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='CryptomusPaymentAPIKey'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Payment API key')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='password'
+                            autoComplete='new-password'
+                            placeholder={
+                              cryptomusValues.CryptomusPaymentAPIKeyConfigured
+                                ? t('Leave blank to keep the existing key')
+                                : t(
+                                    'Paste the payment API key from the Cryptomus merchant dashboard'
+                                  )
+                            }
+                            {...field}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {cryptomusValues.CryptomusPaymentAPIKeyConfigured
+                            ? t('A payment API key is already configured.')
+                            : t(
+                                'Required before enabling: add the payment API key from the Cryptomus merchant dashboard.'
+                              )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='CryptoNetwork'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('USDT network code')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t(
+                              'Enter the USDT network code exactly as listed in your Cryptomus merchant dashboard'
+                            )}
+                            autoComplete='off'
+                            {...field}
+                            onChange={(event) =>
+                              field.onChange(event.target.value)
+                            }
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Required before enabling. Use the exact network code Cryptomus lists for your merchant; this form does not assume a chain.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className='grid gap-1.5'>
+                    <Label htmlFor='cryptomus-currency'>
+                      {t('Token')}
+                    </Label>
+                    <Input id='cryptomus-currency' value='USDT' readOnly />
+                    <p className='text-muted-foreground text-sm'>
+                      {t('Only USDT is supported in this version.')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className='grid gap-6 md:grid-cols-2'>
+                  <FormField
+                    control={form.control}
+                    name='CryptoMinTopUp'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Minimum top-up (USD)')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            min={1}
+                            max={1000000}
+                            step={1}
+                            {...safeNumberFieldProps(field)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Whole US dollars between 1 and 1,000,000. Default 10.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='CryptoMaxTopUp'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Maximum top-up (USD)')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            min={1}
+                            max={1000000}
+                            step={1}
+                            {...safeNumberFieldProps(field)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Whole US dollars between 1 and 1,000,000 and not below the minimum. Default 100.'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className='grid gap-1.5'>
+                  <Label htmlFor='cryptomus-webhook'>
+                    {t('Webhook URL')}
+                  </Label>
+                  <div className='flex gap-2'>
+                    <Input
+                      id='cryptomus-webhook'
+                      value='<ServerAddress>/api/cryptomus/webhook'
+                      readOnly
+                    />
+                    <CopyButton value='<ServerAddress>/api/cryptomus/webhook' />
+                  </div>
+                  <p className='text-muted-foreground text-sm'>
+                    {t(
+                      'Register this fixed server route in the Cryptomus merchant dashboard payment webhook settings.'
+                    )}
+                  </p>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value='waffo' className={paymentTabContentClassName}>

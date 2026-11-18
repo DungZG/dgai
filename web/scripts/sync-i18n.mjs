@@ -48,6 +48,7 @@ const BRAND_AND_LITERAL_KEYS = new Set([
   'Client Secret',
   'Cloudflare',
   'Cohere',
+  'Cryptomus',
   'credit',
   'DeepSeek',
   'Discord',

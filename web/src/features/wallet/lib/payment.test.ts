@@ -19,8 +19,12 @@ For commercial licensing, please contact support@quantumnous.com
 import { describe, expect, test } from 'vitest'
 
 import { PAYMENT_TYPES } from '../constants'
+import type { TopupInfo } from '../types'
 import {
+  checkCryptomusAmount,
   dispatchSelectedPayment,
+  getCryptomusRange,
+  getDefaultPaymentType,
   isStripePayment,
   isWaffoPayment,
   isWaffoPancakePayment,
@@ -81,5 +85,100 @@ describe('payment dispatch', () => {
 
     expect(success).toBe(false)
     expect(called).toBe(false)
+  })
+
+  test('never posts a cryptomus method to the Epay form', async () => {
+    const calls: string[] = []
+    const success = await dispatchSelectedPayment(
+      { name: 'USDT', type: PAYMENT_TYPES.CRYPTOMUS },
+      120,
+      null,
+      {
+        regular: async () => {
+          calls.push('regular')
+          return true
+        },
+        waffo: async () => {
+          calls.push('waffo')
+          return true
+        },
+        waffoPancake: async () => {
+          calls.push('pancake')
+          return true
+        },
+      }
+    )
+
+    expect(success).toBe(false)
+    expect(calls).toEqual([])
+  })
+})
+
+describe('cryptomus payment rules', () => {
+  const cryptoInfo = (overrides: Partial<TopupInfo> = {}): TopupInfo => ({
+    enable_online_topup: true,
+    enable_stripe_topup: false,
+    pay_methods: [],
+    min_topup: 1,
+    stripe_min_topup: 1,
+    amount_options: [],
+    discount: {},
+    enable_crypto_topup: true,
+    crypto_min_topup: 10,
+    crypto_max_topup: 100,
+    ...overrides,
+  })
+
+  test('stays unavailable without the enable flag or usable USD bounds', () => {
+    expect(getCryptomusRange(cryptoInfo({ enable_crypto_topup: false }))).toBe(
+      null
+    )
+    expect(getCryptomusRange(cryptoInfo({ crypto_max_topup: 5 }))).toBe(null)
+    expect(getCryptomusRange(cryptoInfo({ crypto_max_topup: 0 }))).toBe(null)
+    expect(getCryptomusRange(cryptoInfo())).toEqual({ min: 10, max: 100 })
+  })
+
+  test('rejects amounts outside the USD bounds or not whole', () => {
+    expect(checkCryptomusAmount(9, cryptoInfo()).error).toBe('min')
+    expect(checkCryptomusAmount(10, cryptoInfo()).error).toBe(null)
+    expect(checkCryptomusAmount(100, cryptoInfo()).error).toBe(null)
+    expect(checkCryptomusAmount(101, cryptoInfo()).error).toBe('max')
+    expect(checkCryptomusAmount(10.5, cryptoInfo()).error).toBe('integer')
+    expect(checkCryptomusAmount(0, cryptoInfo()).error).toBe('integer')
+  })
+
+  test('uses the backend conversion rate for USD, CNY and custom currency invoices', () => {
+    expect(
+      checkCryptomusAmount(20, cryptoInfo({ crypto_usd_rate: 1 }))
+    ).toEqual({ invoiceUsd: 20, error: null })
+    expect(
+      checkCryptomusAmount(140, cryptoInfo({ crypto_usd_rate: 7 }))
+    ).toEqual({ invoiceUsd: 20, error: null })
+    expect(
+      checkCryptomusAmount(600, cryptoInfo({ crypto_usd_rate: 30 }))
+    ).toEqual({ invoiceUsd: 20, error: null })
+
+    const tokens = cryptoInfo({
+      quota_display_type: 'TOKENS',
+      quota_per_unit: 500_000,
+      crypto_usd_rate: 999,
+    })
+    expect(checkCryptomusAmount(10_000_000, tokens)).toEqual({
+      invoiceUsd: 20,
+      error: null,
+    })
+  })
+
+  test('never preselects the cryptomus method', () => {
+    expect(
+      getDefaultPaymentType(
+        cryptoInfo({
+          pay_methods: [
+            { name: 'USDT', type: 'cryptomus' },
+            { name: 'Stripe', type: 'stripe' },
+          ],
+        })
+      )
+    ).toBe('stripe')
   })
 })

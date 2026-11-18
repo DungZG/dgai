@@ -33,6 +33,7 @@ const (
 	PaymentMethodWaffoPancake = "waffo_pancake"
 	PaymentMethodVietQR       = "vietqr"
 	PaymentMethodBalance      = "balance"
+	PaymentMethodCryptomus    = "cryptomus"
 )
 
 const (
@@ -43,6 +44,7 @@ const (
 	PaymentProviderWaffoPancake = "waffo_pancake"
 	PaymentProviderVietQR       = "vietqr"
 	PaymentProviderBalance      = "balance"
+	PaymentProviderCryptomus    = "cryptomus"
 )
 
 var (
@@ -174,6 +176,11 @@ func claimDeferredSignupBonus(tx *gorm.DB, userId int) (int, error) {
 	minTopUp := operation_setting.GetPaymentSetting().SignupBonusMinTopUp
 	if minTopUp <= 0 || common.QuotaForNewUser <= 0 {
 		return 0, nil
+	}
+	// Different orders and gateways can settle concurrently for one wallet.
+	var user User
+	if err := lockForUpdate(tx).Select("id").First(&user, userId).Error; err != nil {
+		return 0, err
 	}
 	var paid float64
 	err := tx.Model(&TopUp{}).
@@ -582,6 +589,9 @@ func ManualCompleteTopUp(tradeNo string, callerIp string) error {
 		// 行级锁，避免并发补单
 		if err := lockForUpdate(tx).Where(refCol+" = ?", tradeNo).First(topUp).Error; err != nil {
 			return common.NewMessage("Top-up order does not exist")
+		}
+		if topUp.PaymentProvider == PaymentProviderCryptomus {
+			return common.NewMessage("Crypto payments must be verified with the payment provider")
 		}
 
 		// 幂等处理：已成功直接返回

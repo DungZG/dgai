@@ -205,6 +205,16 @@ const BILLING_SECTIONS = [
           SePayMerchantID: settings.SePayMerchantID,
           SePaySecretKey: settings.SePaySecretKey,
         }}
+        cryptomusDefaultValues={{
+          CryptoEnabled: settings.CryptoEnabled ?? false,
+          CryptomusMerchantID: settings.CryptomusMerchantID ?? '',
+          CryptomusPaymentAPIKey: settings.CryptomusPaymentAPIKey ?? '',
+          CryptomusPaymentAPIKeyConfigured:
+            settings.CryptomusPaymentAPIKeyConfigured ?? false,
+          CryptoNetwork: settings.CryptoNetwork ?? '',
+          CryptoMinTopUp: settings.CryptoMinTopUp ?? 10,
+          CryptoMaxTopUp: settings.CryptoMaxTopUp ?? 100,
+        }}
         complianceDefaults={{
           confirmed: settings['payment_setting.compliance_confirmed'] ?? false,
           termsVersion:

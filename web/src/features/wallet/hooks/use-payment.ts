@@ -32,6 +32,7 @@ import {
   isApiSuccess,
 } from '../api'
 import {
+  isCryptomusPayment,
   isStripePayment,
   isWaffoPayment,
   isWaffoPancakePayment,
@@ -64,6 +65,11 @@ export async function requestPaymentAmount(
   paymentType: string,
   calculators: PaymentAmountCalculators = defaultPaymentAmountCalculators
 ): Promise<number> {
+  // Cryptomus has no quote endpoint; its amount is the invoice basis.
+  if (isCryptomusPayment(paymentType)) {
+    return topupAmount
+  }
+
   let calculator = calculators.regular
   if (isStripePayment(paymentType)) {
     calculator = calculators.stripe

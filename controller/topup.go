@@ -115,7 +115,30 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	if isCryptoTopUpEnabled() {
+		hasCrypto := false
+		for _, method := range payMethods {
+			if method["type"] == model.PaymentMethodCryptomus {
+				hasCrypto = true
+				break
+			}
+		}
+		if !hasCrypto {
+			payMethods = append(payMethods, map[string]string{
+				"name":      "USDT",
+				"type":      model.PaymentMethodCryptomus,
+				"min_topup": strconv.Itoa(setting.CryptoMinTopUp),
+			})
+		}
+	}
+
 	data := gin.H{
+		"enable_crypto_topup": isCryptoTopUpEnabled(),
+		"crypto_min_topup":    setting.CryptoMinTopUp,
+		"crypto_max_topup":    setting.CryptoMaxTopUp,
+		// The invoice is USD, so the client needs the same display-to-USD rate
+		// the gateway applies instead of guessing it from the CNY rate.
+		"crypto_usd_rate":                  operation_setting.GetUsdToCurrencyRate(operation_setting.USDExchangeRate),
 		"enable_vietqr_topup":              isVietQRTopUpEnabled(),
 		"vietqr_bank_code":                 setting.VietQRBankCode,
 		"vietqr_bank_account":              setting.VietQRBankAccount,

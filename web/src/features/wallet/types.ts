@@ -180,6 +180,14 @@ export interface TopupInfo {
   enable_waffo_pancake_topup?: boolean
   /** Minimum topup amount for Waffo Pancake */
   waffo_pancake_min_topup?: number
+  /** Whether Cryptomus crypto top-up is enabled and fully configured */
+  enable_crypto_topup?: boolean
+  /** Crypto invoice floor in USD */
+  crypto_min_topup?: number
+  /** Crypto invoice ceiling in USD */
+  crypto_max_topup?: number
+  /** Display-unit conversion rate used by the backend for crypto invoices. */
+  crypto_usd_rate?: number
   /** Whether redemption code usage is enabled */
   enable_redemption?: boolean
   /** Whether compliance confirmation has been completed */
@@ -230,6 +238,36 @@ export interface VietQRPaymentDetails {
 }
 
 export type VietQRPaymentResponse = ApiResponse<VietQRPaymentDetails>
+
+/** 'failed' arrives when the provider rejects the payment. */
+export type CryptomusOrderStatus = 'pending' | 'success' | 'expired' | 'failed'
+
+/**
+ * Order view shared by the create and the status endpoints. The invoice is
+ * always USD; `status` mirrors the gateway order the provider settles.
+ */
+export interface CryptomusOrder {
+  trade_no: string
+  status: CryptomusOrderStatus
+  provider_status: string
+  checkout_url?: string
+  /** Decimal string, e.g. "10.43" */
+  amount_usd: string | number
+  currency: string
+  network: string
+  base_quota: number
+  bonus_quota: number
+  expires_at: number
+  needs_review: boolean
+}
+
+export type CryptomusPaymentResponse = ApiResponse<CryptomusOrder>
+export type CryptomusOrderResponse = ApiResponse<CryptomusOrder>
+
+/** Amount stays in the wallet display unit, like every other topup method. */
+export interface CryptomusPaymentRequest {
+  amount: number
+}
 
 export interface PaymentRequest {
   /** Topup amount */
@@ -299,7 +337,7 @@ export interface UserWalletData {
 /**
  * Topup record status
  */
-export type TopupStatus = 'success' | 'pending' | 'expired'
+export type TopupStatus = 'success' | 'pending' | 'expired' | 'failed'
 
 /**
  * Topup billing record

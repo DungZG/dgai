@@ -105,6 +105,12 @@ func InitOptionMap() {
 	common.OptionMap["CreemProducts"] = setting.CreemProducts
 	common.OptionMap["CreemTestMode"] = strconv.FormatBool(setting.CreemTestMode)
 	common.OptionMap["CreemWebhookSecret"] = setting.CreemWebhookSecret
+	common.OptionMap["CryptoEnabled"] = strconv.FormatBool(setting.CryptoEnabled)
+	common.OptionMap["CryptomusMerchantID"] = setting.CryptomusMerchantID
+	common.OptionMap["CryptomusPaymentAPIKey"] = setting.CryptomusPaymentAPIKey
+	common.OptionMap["CryptoNetwork"] = setting.CryptoNetwork
+	common.OptionMap["CryptoMinTopUp"] = strconv.Itoa(setting.CryptoMinTopUp)
+	common.OptionMap["CryptoMaxTopUp"] = strconv.Itoa(setting.CryptoMaxTopUp)
 	common.OptionMap["WaffoEnabled"] = strconv.FormatBool(setting.WaffoEnabled)
 	common.OptionMap["WaffoApiKey"] = setting.WaffoApiKey
 	common.OptionMap["WaffoPrivateKey"] = setting.WaffoPrivateKey
@@ -259,6 +265,9 @@ func validateOptionValue(key string, value string) error {
 		return errLegacyRetireAtReadOnly
 	}
 	if err := operation_setting.ValidateQuotaOption(key, value); err != nil {
+		return err
+	}
+	if err := validateCryptoOption(key, value); err != nil {
 		return err
 	}
 	// The sync pair is what we hand to VietQR; the merchant pair is what they
@@ -632,6 +641,18 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.SePayMerchantID = strings.TrimSpace(value)
 	case "SePaySecretKey":
 		setting.SePaySecretKey = strings.TrimSpace(value)
+	case "CryptoEnabled":
+		setting.CryptoEnabled = value == "true"
+	case "CryptomusMerchantID":
+		setting.CryptomusMerchantID = strings.TrimSpace(value)
+	case "CryptomusPaymentAPIKey":
+		setting.CryptomusPaymentAPIKey = strings.TrimSpace(value)
+	case "CryptoNetwork":
+		setting.CryptoNetwork = strings.TrimSpace(value)
+	case "CryptoMinTopUp":
+		setting.CryptoMinTopUp, _ = strconv.Atoi(value)
+	case "CryptoMaxTopUp":
+		setting.CryptoMaxTopUp, _ = strconv.Atoi(value)
 	case "CreemApiKey":
 		setting.CreemApiKey = value
 	case "CreemProducts":

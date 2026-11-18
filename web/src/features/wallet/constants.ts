@@ -37,6 +37,7 @@ export const PAYMENT_TYPES = {
   WAFFO: 'waffo',
   WAFFO_PANCAKE: 'waffo_pancake',
   VIETQR: 'vietqr',
+  CRYPTOMUS: 'cryptomus',
 } as const
 
 /**
@@ -54,6 +55,7 @@ export const PAYMENT_ICON_COLORS = {
   [PAYMENT_TYPES.CREEM]: '#6366F1',
   [PAYMENT_TYPES.WAFFO]: '#2563EB',
   [PAYMENT_TYPES.WAFFO_PANCAKE]: '#F97316',
+  [PAYMENT_TYPES.CRYPTOMUS]: '#0FA958',
 } as const
 
 /**
@@ -65,3 +67,15 @@ export const DEFAULT_DISCOUNT_RATE = 1.0
  * Default minimum topup amount
  */
 export const DEFAULT_MIN_TOPUP = 1
+
+/**
+ * A pending Cryptomus order is resolved by reading its status; polling never
+ * creates a second order.
+ */
+export const CRYPTOMUS_POLL_INTERVAL_MS = 6000
+
+/**
+ * Survives the redirect to the hosted checkout page so the return trip can
+ * re-read the order instead of trusting the redirect's query string.
+ */
+export const CRYPTOMUS_PENDING_STORAGE_KEY = 'cryptomus_pending_trade_no'

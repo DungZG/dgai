@@ -28,6 +28,7 @@ import { requestVietQRPayment } from './api'
 import { AffiliateRewardsCard } from './components/affiliate-rewards-card'
 import { BillingHistoryDialog } from './components/dialogs/billing-history-dialog'
 import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
+import { CryptomusDialog } from './components/dialogs/cryptomus-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
 import { VietQRDialog } from './components/dialogs/vietqr-dialog'
@@ -43,6 +44,7 @@ import {
   useCreemPayment,
   useWaffoPayment,
   useWaffoPancakePayment,
+  useCryptomusPayment,
 } from './hooks'
 import {
   getDefaultPaymentType,
@@ -50,6 +52,8 @@ import {
   dispatchSelectedPayment,
   getTopUpBonusPercent,
   topUpAmountUSD,
+  checkCryptomusAmount,
+  isCryptomusPayment,
 } from './lib'
 import type {
   UserWalletData,
@@ -139,6 +143,16 @@ export function Wallet(props: WalletProps) {
     fetchUser()
   }, [fetchUser])
 
+  // Only a provider-verified success refreshes the balance and order history;
+  // the checkout redirect's query string never does.
+  const [historyVersion, setHistoryVersion] = useState(0)
+  const handleCryptomusPaid = useCallback(() => {
+    setHistoryVersion((version) => version + 1)
+    void fetchUser()
+  }, [fetchUser])
+
+  const cryptomus = useCryptomusPayment(handleCryptomusPaid)
+
   useEffect(() => {
     if (props.initialShowHistory) {
       setBillingDialogOpen(true)
@@ -181,6 +195,14 @@ export function Wallet(props: WalletProps) {
 
   // Handle payment method selection
   const handlePaymentMethodSelect = async (method: PaymentMethod) => {
+    if (isCryptomusPayment(method.type)) {
+      const check = checkCryptomusAmount(topupAmount, topupInfo)
+      if (check.error) return
+      setSelectedPaymentMethod(method)
+      cryptomus.begin()
+      return
+    }
+
     setSelectedPaymentMethod(method)
     setSelectedWaffoMethodIndex(null)
     setPaymentLoading(method.type)
@@ -239,6 +261,11 @@ export function Wallet(props: WalletProps) {
       setConfirmDialogOpen(false)
       await fetchUser()
     }
+  }
+
+  // Creates the crypto order once; a failure is retried by the user, never here.
+  const handleCryptomusConfirm = async () => {
+    await cryptomus.createPayment(topupAmount)
   }
 
   // Handle redemption
@@ -311,6 +338,8 @@ export function Wallet(props: WalletProps) {
     },
     []
   )
+
+  const cryptomusCheck = checkCryptomusAmount(topupAmount, topupInfo)
 
   return (
     <>
@@ -401,6 +430,18 @@ export function Wallet(props: WalletProps) {
         )}
         usdExchangeRate={effectiveUsdExchangeRate}
       />
+      <CryptomusDialog
+        open={cryptomus.open}
+        onOpenChange={cryptomus.setOpen}
+        invoiceUsd={cryptomusCheck.invoiceUsd}
+        order={cryptomus.order}
+        creating={cryptomus.creating}
+        checking={cryptomus.checking}
+        error={cryptomus.error}
+        onConfirm={() => void handleCryptomusConfirm()}
+        onCheckStatus={cryptomus.checkPendingOrder}
+        recovering={cryptomus.recovering}
+      />
       <TransferDialog
         open={transferDialogOpen}
         onOpenChange={setTransferDialogOpen}
@@ -410,6 +451,7 @@ export function Wallet(props: WalletProps) {
       />
 
       <BillingHistoryDialog
+        key={historyVersion}
         open={billingDialogOpen}
         onOpenChange={setBillingDialogOpen}
       />

@@ -46,4 +46,29 @@ describe('payment amount routing', () => {
     expect(amount).toBe(18.75)
     expect(calls).toEqual(['waffo:120'])
   })
+
+  test('uses the request amount for cryptomus without an Epay quote', async () => {
+    const calls: string[] = []
+    const amount = await requestPaymentAmount(50, PAYMENT_TYPES.CRYPTOMUS, {
+      regular: async () => {
+        calls.push('regular')
+        return { success: true, data: '1' }
+      },
+      stripe: async () => {
+        calls.push('stripe')
+        return { success: true, data: '1' }
+      },
+      waffo: async () => {
+        calls.push('waffo')
+        return { success: true, data: '1' }
+      },
+      waffoPancake: async () => {
+        calls.push('pancake')
+        return { success: true, data: '1' }
+      },
+    })
+
+    expect(amount).toBe(50)
+    expect(calls).toEqual([])
+  })
 })

@@ -40,6 +40,7 @@ import {
 } from '@/lib/currency'
 import { cn } from '@/lib/utils'
 
+import { PAYMENT_TYPES } from '../constants'
 import {
   getDiscountLabel,
   getPaymentIcon,
@@ -47,6 +48,10 @@ import {
   calculatePresetPricing,
   getTopUpBonusPercent,
   topUpAmountUSD,
+  checkCryptomusAmount,
+  getCryptomusRange,
+  isCryptomusPayment,
+  formatUsdInvoice,
 } from '../lib'
 import type {
   PaymentMethod,
@@ -147,14 +152,59 @@ export function RechargeFormCard({
     topupInfo?.enable_stripe_topup ||
     topupInfo?.enable_vietqr_topup ||
     enableWaffoTopup ||
-    enableWaffoPancakeTopup
+    enableWaffoPancakeTopup ||
+    !!topupInfo?.enable_crypto_topup
   const hasAnyTopup = hasConfigurableTopup || enableCreemTopup
-  const hasStandardPaymentMethods =
-    Array.isArray(topupInfo?.pay_methods) && topupInfo.pay_methods.length > 0
+  // Cryptomus renders from its own enable flag; a stale entry in pay_methods
+  // must never become a clickable Epay method.
+  const payMethods = (topupInfo?.pay_methods ?? []).filter(
+    (method) => !isCryptomusPayment(method.type)
+  )
+  const hasStandardPaymentMethods = payMethods.length > 0
   const hasWaffoPaymentMethods =
     Array.isArray(waffoPayMethods) && waffoPayMethods.length > 0
+  const cryptomusRange = getCryptomusRange(topupInfo)
+  const cryptomusCheck = checkCryptomusAmount(topupAmount, topupInfo)
+  const cryptomusDisabled = cryptomusCheck.error !== null
+  let cryptomusReason: string | undefined
+  let cryptomusDetail = formatUsdInvoice(cryptomusCheck.invoiceUsd)
+  if (cryptomusCheck.error === 'min' && cryptomusRange) {
+    cryptomusReason = t('Minimum topup amount: {{amount}}', {
+      amount: formatUsdInvoice(cryptomusRange.min),
+    })
+    cryptomusDetail = `${t('Minimum:')} ${formatUsdInvoice(cryptomusRange.min)}`
+  } else if (cryptomusCheck.error === 'max' && cryptomusRange) {
+    cryptomusReason = t('Maximum topup amount: {{amount}}', {
+      amount: formatUsdInvoice(cryptomusRange.max),
+    })
+    cryptomusDetail = `${t('Maximum:')} ${formatUsdInvoice(cryptomusRange.max)}`
+  } else if (cryptomusCheck.error) {
+    cryptomusReason = t('Invalid top-up amount')
+    cryptomusDetail = cryptomusReason
+  }
   const minTopup = getMinTopupAmount(topupInfo)
   const redemptionEnabled = topupInfo?.enable_redemption !== false
+  const cryptomusButton = (
+    <Button
+      variant='outline'
+      onClick={() =>
+        onPaymentMethodSelect({ name: 'USDT', type: PAYMENT_TYPES.CRYPTOMUS })
+      }
+      disabled={cryptomusDisabled || !!paymentLoading}
+      aria-label={
+        cryptomusReason ? `USDT. ${cryptomusReason}` : `USDT ${cryptomusDetail}`
+      }
+      className='min-h-14 min-w-0 justify-start gap-2 rounded-lg px-3 py-2 text-left'
+    >
+      {getPaymentIcon(PAYMENT_TYPES.CRYPTOMUS, 'h-4 w-4')}
+      <span className='flex min-w-0 flex-col items-start gap-0.5'>
+        <span className='max-w-full truncate'>USDT</span>
+        <span className='text-muted-foreground max-w-full truncate text-[11px] leading-4 font-normal'>
+          {cryptomusDetail}
+        </span>
+      </span>
+    </Button>
+  )
 
   if (loading) {
     return (
@@ -376,9 +426,9 @@ export function RechargeFormCard({
                 <Label className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
                   {t('Payment Method')}
                 </Label>
-                {hasStandardPaymentMethods ? (
+                {hasStandardPaymentMethods || cryptomusRange ? (
                   <div className='grid grid-cols-2 gap-1.5 sm:gap-3 lg:grid-cols-3'>
-                    {topupInfo?.pay_methods?.map((method) => {
+                    {payMethods.map((method) => {
                       const minTopup = Math.max(
                         method.min_topup || 0,
                         getMinTopupAmount(topupInfo)
@@ -441,17 +491,30 @@ export function RechargeFormCard({
                         button
                       )
                     })}
+                    {cryptomusRange && !cryptomusDisabled
+                      ? cryptomusButton
+                      : null}
+                    {cryptomusRange && cryptomusDisabled ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger render={cryptomusButton} />
+                          <TooltipContent>{cryptomusReason}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : null}
                   </div>
                 ) : null}
-                {!hasStandardPaymentMethods && !hasWaffoPaymentMethods && (
-                  <Alert>
-                    <AlertDescription>
-                      {t(
-                        'No payment methods available. Please contact administrator.'
-                      )}
-                    </AlertDescription>
-                  </Alert>
-                )}
+                {!hasStandardPaymentMethods &&
+                  !hasWaffoPaymentMethods &&
+                  !cryptomusRange && (
+                    <Alert>
+                      <AlertDescription>
+                        {t(
+                          'No payment methods available. Please contact administrator.'
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
               </div>
 
               {enableWaffoTopup &&

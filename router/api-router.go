@@ -64,6 +64,7 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.POST("/stripe/webhook", anonymousRequestBodyLimit, controller.StripeWebhook)
 		apiRouter.POST("/creem/webhook", anonymousRequestBodyLimit, controller.CreemWebhook)
 		apiRouter.POST("/sepay/webhook", anonymousRequestBodyLimit, controller.SePayWebhook)
+		apiRouter.POST("/cryptomus/webhook", anonymousRequestBodyLimit, controller.CryptomusWebhook)
 		apiRouter.POST("/waffo/webhook", anonymousRequestBodyLimit, controller.WaffoWebhook)
 		// :env separates test vs prod URLs so the operator can register each
 		// in Pancake's matching webhook slot; handler enforces env match.
@@ -141,6 +142,8 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.POST("/waffo-pancake/pay", middleware.CriticalRateLimit(), controller.RequestWaffoPancakePay)
 				selfRoute.POST("/vietqr/pay", middleware.CriticalRateLimit(), controller.RequestVietQRPay)
 				selfRoute.POST("/vietqr/confirm", middleware.UserCriticalRateLimit("vietqr-confirm"), controller.VietQRConfirmPayment)
+				selfRoute.POST("/cryptomus/pay", middleware.CriticalRateLimit(), controller.RequestCryptomusPay)
+				selfRoute.GET("/cryptomus/orders/:trade_no", controller.GetCryptomusOrder)
 				selfRoute.POST("/aff_transfer", middleware.UserCriticalRateLimit("aff-transfer"), controller.TransferAffQuota)
 				selfRoute.PUT("/setting", controller.UpdateUserSetting)
 

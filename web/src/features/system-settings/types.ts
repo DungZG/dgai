@@ -371,6 +371,13 @@ export type BillingSettings = {
   SePayEnabled: boolean
   SePayMerchantID: string
   SePaySecretKey: string
+  CryptoEnabled: boolean
+  CryptomusMerchantID: string
+  CryptomusPaymentAPIKey: string
+  CryptomusPaymentAPIKeyConfigured: boolean
+  CryptoNetwork: string
+  CryptoMinTopUp: number
+  CryptoMaxTopUp: number
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number

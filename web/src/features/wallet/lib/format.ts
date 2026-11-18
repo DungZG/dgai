@@ -36,6 +36,16 @@ export function formatCreemPrice(
 }
 
 /**
+ * Crypto invoices are USD no matter what the wallet displays (CNY, TOKENS…),
+ * so this must not go through the display-currency helpers.
+ */
+export function formatUsdInvoice(amount: number | null | undefined): string {
+  if (amount == null || !Number.isFinite(amount)) return '-'
+  const fixed = amount.toFixed(2)
+  return `$${fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed}`
+}
+
+/**
  * Format large quota numbers with K/M suffix
  */
 export function formatQuotaShort(quota: number): string {

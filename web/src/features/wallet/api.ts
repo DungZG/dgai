@@ -41,6 +41,9 @@ import type {
   WaffoPaymentResponse,
   WaffoPancakePaymentRequest,
   WaffoPancakePaymentResponse,
+  CryptomusPaymentRequest,
+  CryptomusPaymentResponse,
+  CryptomusOrderResponse,
 } from './types'
 
 // ============================================================================
@@ -207,6 +210,37 @@ export async function requestWaffoPancakePayment(
   const res = await api.post('/api/user/waffo-pancake/pay', request, {
     skipBusinessError: true,
   } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Create a Cryptomus order. The response may carry a pending order without a
+ * checkout URL; it must then be resolved by reading its status, never by
+ * creating another order.
+ */
+export async function requestCryptomusPayment(
+  request: CryptomusPaymentRequest
+): Promise<CryptomusPaymentResponse> {
+  const res = await api.post('/api/user/cryptomus/pay', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Read one Cryptomus order. Status is the only thing this endpoint changes, so
+ * polling it is always safe; `disableDuplicate` keeps each poll a real read.
+ */
+export async function getCryptomusOrder(
+  tradeNo: string
+): Promise<CryptomusOrderResponse> {
+  const res = await api.get(
+    `/api/user/cryptomus/orders/${encodeURIComponent(tradeNo)}`,
+    {
+      skipBusinessError: true,
+      disableDuplicate: true,
+    } as Record<string, unknown>
+  )
   return res.data
 }
 

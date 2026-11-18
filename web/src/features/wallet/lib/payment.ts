@@ -111,6 +111,69 @@ export function isWaffoPancakePayment(paymentType: string): boolean {
   return paymentType === PAYMENT_TYPES.WAFFO_PANCAKE
 }
 
+/**
+ * Cryptomus pays through its own checkout dialog and has no quote endpoint.
+ */
+export function isCryptomusPayment(paymentType: string): boolean {
+  return paymentType === PAYMENT_TYPES.CRYPTOMUS
+}
+
+export interface CryptomusRange {
+  min: number
+  max: number
+}
+
+const CRYPTOMUS_BOUND_LIMIT = 1_000_000
+
+/** Null unless crypto top-up is enabled and both USD bounds are usable. */
+export function getCryptomusRange(
+  info: TopupInfo | null
+): CryptomusRange | null {
+  if (!info?.enable_crypto_topup) return null
+  const min = Math.floor(Number(info.crypto_min_topup))
+  const max = Math.floor(Number(info.crypto_max_topup))
+  const usable = (value: number) =>
+    Number.isFinite(value) && value >= 1 && value <= CRYPTOMUS_BOUND_LIMIT
+  if (!usable(min) || !usable(max) || max < min) return null
+  return { min, max }
+}
+
+/**
+ * The gateway converts the display amount back to USD before invoicing; mirror
+ * that conversion so the preview equals the invoice.
+ */
+export function cryptomusInvoiceUSD(
+  amount: number,
+  info: TopupInfo | null
+): number {
+  if (info?.quota_display_type === 'TOKENS') {
+    const perUnit = info.quota_per_unit || 0
+    return perUnit > 0 ? amount / perUnit : Number.NaN
+  }
+  const usdRate = Number(info?.crypto_usd_rate)
+  return amount / (usdRate > 0 ? usdRate : 1)
+}
+
+export type CryptomusAmountError = 'disabled' | 'integer' | 'min' | 'max'
+
+/**
+ * The request amount keeps the display unit; the floor and ceiling are USD.
+ */
+export function checkCryptomusAmount(
+  amount: number,
+  info: TopupInfo | null
+): { invoiceUsd: number; error: CryptomusAmountError | null } {
+  const invoiceUsd = cryptomusInvoiceUSD(amount, info)
+  const range = getCryptomusRange(info)
+  if (!range) return { invoiceUsd, error: 'disabled' }
+  if (!Number.isInteger(amount) || amount <= 0) {
+    return { invoiceUsd, error: 'integer' }
+  }
+  if (invoiceUsd < range.min) return { invoiceUsd, error: 'min' }
+  if (invoiceUsd > range.max) return { invoiceUsd, error: 'max' }
+  return { invoiceUsd, error: null }
+}
+
 export interface PaymentProcessors {
   regular: (topupAmount: number, paymentType: string) => Promise<boolean>
   waffo: (topupAmount: number, payMethodIndex: number) => Promise<boolean>
@@ -123,6 +186,11 @@ export async function dispatchSelectedPayment(
   waffoMethodIndex: number | null,
   processors: PaymentProcessors
 ): Promise<boolean> {
+  if (isCryptomusPayment(paymentMethod.type)) {
+    // Falling through would post a cryptomus method to the Epay form endpoint.
+    return false
+  }
+
   if (isWaffoPayment(paymentMethod.type)) {
     if (waffoMethodIndex === null) {
       return false
@@ -145,9 +213,13 @@ export function getDefaultPaymentType(topupInfo: TopupInfo | null): string {
     return DEFAULT_PAYMENT_TYPE
   }
 
-  // Return first available payment method or default
-  if (topupInfo.pay_methods?.length > 0) {
-    return topupInfo.pay_methods[0].type
+  // Return first available payment method or default. Cryptomus is chosen from
+  // its own USDT button, so it never becomes the preselected method.
+  const firstStandardMethod = topupInfo.pay_methods?.find(
+    (method) => !isCryptomusPayment(method.type)
+  )
+  if (firstStandardMethod) {
+    return firstStandardMethod.type
   }
 
   if (topupInfo.enable_stripe_topup) {
