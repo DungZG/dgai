@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
+import { SITE_CONTACT } from '@/lib/site-contact'
 import { cn } from '@/lib/utils'
 
 interface FooterLink {
@@ -121,6 +122,39 @@ function LegalLinks(props: { leadingSeparator?: boolean }) {
   )
 }
 
+export function CustomerSupport() {
+  const { t } = useTranslation()
+
+  return (
+    <section
+      aria-labelledby='customer-support-title'
+      className='border-border/50 bg-background/60 rounded-xl border px-4 py-3'
+    >
+      <h2
+        id='customer-support-title'
+        className='text-foreground text-xs font-semibold tracking-wide uppercase'
+      >
+        {t('Customer Support')}
+      </h2>
+      <p className='text-muted-foreground mt-1 text-xs leading-relaxed'>
+        {t('Need help with your DGAI account or API?')}
+      </p>
+      <a
+        href={`mailto:${SITE_CONTACT.supportEmail}`}
+        className='text-foreground focus-visible:ring-ring mt-2 inline-flex rounded-sm text-sm font-medium underline underline-offset-4 outline-none hover:opacity-80 focus-visible:ring-2'
+      >
+        {SITE_CONTACT.supportEmail}
+      </a>
+      <Link
+        to='/contact'
+        className='text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-2 block w-fit rounded-sm text-xs underline underline-offset-4 outline-none focus-visible:ring-2'
+      >
+        {t('View contact details')}
+      </Link>
+    </section>
+  )
+}
+
 // inline=true returns just the inner span for composition in a parent flex
 // row. inline=false wraps in a centered/right-aligned div (default).
 function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
@@ -168,8 +202,11 @@ export function Footer(props: FooterProps) {
       {
         title: t('footer.columns.about.title'),
         links: [
-          { text: t('footer.columns.about.links.aboutProject'), href: '/about' },
-          { text: t('footer.columns.about.links.contact'), href: '/about' },
+          {
+            text: t('footer.columns.about.links.aboutProject'),
+            href: '/about',
+          },
+          { text: t('footer.columns.about.links.contact'), href: '/contact' },
           { text: t('footer.columns.about.links.features'), href: '/pricing' },
         ],
       },
@@ -186,7 +223,10 @@ export function Footer(props: FooterProps) {
         links: [
           { text: t('footer.columns.related.links.oneApi'), href: '/docs' },
           { text: t('footer.columns.related.links.midjourney'), href: '/docs' },
-          { text: t('footer.columns.related.links.newApiKeyTool'), href: '/docs' },
+          {
+            text: t('footer.columns.related.links.newApiKeyTool'),
+            href: '/docs',
+          },
         ],
       },
     ],
@@ -204,12 +244,15 @@ export function Footer(props: FooterProps) {
         )}
       >
         <div className='mx-auto w-full max-w-6xl px-6 py-5'>
-          <div className='bg-muted/20 border-border/50 flex flex-col items-center justify-between gap-4 rounded-2xl border px-4 py-4 backdrop-blur-sm sm:flex-row sm:px-5'>
-            <div
-              className='custom-footer text-muted-foreground min-w-0 text-center text-sm sm:text-left'
-              dangerouslySetInnerHTML={{ __html: footerHtml }}
-            />
-            <div className='border-border/60 text-muted-foreground/45 flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t pt-4 text-xs sm:w-auto sm:justify-end sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5'>
+          <div className='bg-muted/20 border-border/50 rounded-2xl border px-4 py-4 backdrop-blur-sm sm:px-5'>
+            <div className='grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(15rem,auto)] md:items-center'>
+              <div
+                className='custom-footer text-muted-foreground min-w-0 text-center text-sm sm:text-left'
+                dangerouslySetInnerHTML={{ __html: footerHtml }}
+              />
+              <CustomerSupport />
+            </div>
+            <div className='border-border/60 text-muted-foreground/45 mt-5 flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t pt-4 text-xs sm:justify-end'>
               <LegalLinks />
               <ProjectAttribution currentYear={currentYear} inline />
             </div>
@@ -240,19 +283,22 @@ export function Footer(props: FooterProps) {
             <p className='text-muted-foreground/60 mt-3 max-w-[200px] text-xs leading-relaxed'>
               {t('Powerful API Management Platform')}
             </p>
+            <div className='mt-5 max-w-xs'>
+              <CustomerSupport />
+            </div>
           </div>
 
           {/* Links columns */}
           {isDemoSiteMode && (
             <div className='grid grid-cols-3 gap-8 md:gap-16'>
-              {displayColumns.map((column, index) => (
-                <div key={index}>
+              {displayColumns.map((column) => (
+                <div key={column.title}>
                   <p className='text-muted-foreground/50 mb-3 text-xs font-medium tracking-wider uppercase'>
                     {t(column.title)}
                   </p>
                   <ul className='space-y-2.5'>
-                    {column.links.map((link, linkIndex) => (
-                      <li key={linkIndex}>
+                    {column.links.map((link) => (
+                      <li key={`${link.text}-${link.href}`}>
                         <FooterLinkItem link={link} />
                       </li>
                     ))}

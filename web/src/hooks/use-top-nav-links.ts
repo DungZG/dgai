@@ -100,5 +100,12 @@ export function useTopNavLinks(): TopNavLink[] {
     links.push({ title: t('About'), href: '/about' })
   }
 
+  // Customer support is always public so visitors can contact the business
+  // without signing in or depending on optional backend navigation settings.
+  links.push({
+    title: t('footer.columns.about.links.contact'),
+    href: '/contact',
+  })
+
   return links
 }
