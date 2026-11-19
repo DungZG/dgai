@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/card'
 import { SITE_CONTACT } from '@/lib/site-contact'
 
-import { CONTACT_PAGE_DESCRIPTION, CONTACT_PAGE_TITLE } from './constants'
+import { CONTACT_PAGE_DESCRIPTION } from './constants'
 
 const SUPPORT_TOPICS = [
   'Payment issues',
@@ -44,22 +44,15 @@ export function Contact() {
   const { t } = useTranslation()
 
   useEffect(() => {
-    const previousTitle = document.title
-    const description = document.querySelector<HTMLMetaElement>(
+    const description = document.head.querySelector<HTMLMetaElement>(
       'meta[name="description"]'
     )
-    const previousDescription = description?.content
+    if (!description) return
 
-    document.title = CONTACT_PAGE_TITLE
-    if (description) {
-      description.content = CONTACT_PAGE_DESCRIPTION
-    }
-
+    const previousDescription = description.content
+    description.content = CONTACT_PAGE_DESCRIPTION
     return () => {
-      document.title = previousTitle
-      if (description && previousDescription !== undefined) {
-        description.content = previousDescription
-      }
+      description.content = previousDescription
     }
   }, [])
 

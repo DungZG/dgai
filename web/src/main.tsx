@@ -67,7 +67,7 @@ const rootElement = document.querySelector<HTMLElement>('#root')
 if (!rootElement) {
   throw new Error('Root element not found')
 }
-// Set document.title and favicon from cached status, then refresh from network
+// Prime branding from cache; the root route owns the title after mounting.
 ;(function initSystemBranding() {
   try {
     if (typeof window === 'undefined' || typeof document === 'undefined') return
@@ -90,7 +90,6 @@ if (!rootElement) {
     queryClient
       .ensureQueryData(statusQueryOptions)
       .then((s) => {
-        if (s?.system_name) apply(s.system_name as string)
         if (s?.logo) applyFaviconToDom(s.logo as string)
       })
       .catch(() => {

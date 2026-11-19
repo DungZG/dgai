@@ -20,10 +20,10 @@ import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   createRootRouteWithContext,
-  HeadContent,
   Outlet,
   redirect,
   useNavigate,
+  useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
@@ -32,6 +32,7 @@ import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeCustomizationProvider } from '@/context/theme-customization-provider'
 import { saveAffiliateCode } from '@/features/auth/lib/storage'
+import { CONTACT_PAGE_TITLE } from '@/features/contact/constants'
 import { GeneralError } from '@/features/errors/general-error'
 import { NotFoundError } from '@/features/errors/not-found-error'
 import { getSetupStatus } from '@/features/setup/api'
@@ -48,9 +49,21 @@ import { useAuthStore } from '@/stores/auth-store'
 function RootComponent() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const isContactPage = useRouterState({
+    select: (state) =>
+      state.matches.some((match) => match.routeId === '/contact'),
+  })
 
   // Load system configuration (logo, system name, etc.) from backend
-  useSystemConfig({ autoLoad: true })
+  const { systemName } = useSystemConfig({ autoLoad: true })
+  const title = isContactPage ? CONTACT_PAGE_TITLE : systemName
+
+  useEffect(() => {
+    document.title = title
+    const metaTitle =
+      document.head.querySelector<HTMLMetaElement>('meta[name="title"]')
+    if (metaTitle) metaTitle.content = title
+  }, [title])
 
   useEffect(() => {
     const aff = new URLSearchParams(window.location.search).get('aff')?.trim()
@@ -95,7 +108,6 @@ function RootComponent() {
 
   return (
     <ThemeCustomizationProvider>
-      <HeadContent />
       <NavigationProgress />
       <Outlet />
       <Toaster closeButton duration={5000} position='top-center' richColors />

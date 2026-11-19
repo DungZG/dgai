@@ -19,20 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Contact } from '@/features/contact'
-import {
-  CONTACT_PAGE_DESCRIPTION,
-  CONTACT_PAGE_TITLE,
-} from '@/features/contact/constants'
 
 export const Route = createFileRoute('/contact')({
-  head: () => ({
-    meta: [
-      { title: CONTACT_PAGE_TITLE },
-      {
-        name: 'description',
-        content: CONTACT_PAGE_DESCRIPTION,
-      },
-    ],
-  }),
   component: Contact,
 })

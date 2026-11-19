@@ -24,7 +24,7 @@ import { afterAll, beforeAll, expect, it, vi } from 'vitest'
 import en from '@/i18n/locales/en.json'
 import viLocale from '@/i18n/locales/vi.json'
 
-import { CONTACT_PAGE_DESCRIPTION, CONTACT_PAGE_TITLE } from '../constants'
+import { CONTACT_PAGE_DESCRIPTION } from '../constants'
 import { Contact } from '../index'
 
 vi.mock('@/components/layout', () => ({
@@ -71,11 +71,6 @@ it('shows DGAI support contacts and public mailto and website links', () => {
   expect(
     screen.getByRole('heading', { level: 1, name: 'Contact Us' })
   ).toBeVisible()
-  expect(document.title).toBe(CONTACT_PAGE_TITLE)
-  expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-    'content',
-    CONTACT_PAGE_DESCRIPTION
-  )
   expect(screen.getByText('DGAI')).toBeVisible()
 
   const emailLinks = screen.getAllByRole('link', {
@@ -89,6 +84,21 @@ it('shows DGAI support contacts and public mailto and website links', () => {
   expect(
     screen.getByRole('link', { name: 'https://dgai.io.vn' })
   ).toHaveAttribute('href', 'https://dgai.io.vn')
+})
+
+it('reuses the site description tag and restores its content on exit', () => {
+  const { unmount } = renderContact()
+  const descriptions = document.head.querySelectorAll(
+    'meta[name="description"]'
+  )
+  expect(descriptions).toHaveLength(1)
+  expect(descriptions[0]).toHaveAttribute('content', CONTACT_PAGE_DESCRIPTION)
+
+  unmount()
+  expect(descriptions[0]).toHaveAttribute(
+    'content',
+    'Original site description'
+  )
 })
 
 it('lists all five customer support topics without signing in', () => {
