@@ -125,7 +125,11 @@ func GetRevenueReport(groupBy RevenueGroupBy, startTimestamp, endTimestamp int64
 
 		cost, known := costByKey[costKey{agg.ChannelId, agg.ModelName}]
 		if !known {
-			row.CostKnown = false
+			// A request that used no tokens and was not charged cannot change
+			// any total, so it must not hide the margin of the other rows.
+			if agg.PromptTokens > 0 || agg.CompletionTokens > 0 || agg.Quota > 0 {
+				row.CostKnown = false
+			}
 			continue
 		}
 		// shortcut: prompt_tokens includes cached tokens, which the upstream

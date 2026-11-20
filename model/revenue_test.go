@@ -66,6 +66,8 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 				{Type: LogTypeConsume, UserId: 1, ChannelId: 1, ModelName: "priced", PromptTokens: 1_000_000, CompletionTokens: 500_000, Quota: 500_000, CreatedAt: base + 100},
 				{Type: LogTypeConsume, UserId: 1, ChannelId: 1, ModelName: "priced", PromptTokens: 1_000_000, CompletionTokens: 500_000, Quota: 500_000, CreatedAt: base + day + 100},
 				{Type: LogTypeConsume, UserId: 1, ChannelId: 2, ModelName: "unpriced", PromptTokens: 10, CompletionTokens: 10, Quota: 250_000, CreatedAt: base + 200},
+				// An empty request on the priced day must not mark that day's cost unknown.
+				{Type: LogTypeConsume, UserId: 1, ChannelId: 2, ModelName: "ghost", CreatedAt: base + day + 200},
 				{Type: LogTypeTopup, UserId: 1, ChannelId: 1, ModelName: "priced", Quota: 999_999, CreatedAt: base + 300},
 			} {
 				row := row
