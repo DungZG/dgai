@@ -66,15 +66,30 @@ func GetRevenueReport(groupBy RevenueGroupBy, startTimestamp, endTimestamp int64
 		return nil, err
 	}
 
+	// The day and user dimensions are numeric; MySQL renders division as a
+	// decimal, so cast them in the dialect's own integer spelling and group by
+	// that same expression. Model names stay text, because casting a name to an
+	// integer would collapse every model into one bucket.
+	dimSelect := dimExpr
+	if groupBy != RevenueGroupByModel {
+		castType := "INTEGER"
+		switch {
+		case common.UsingLogDatabase(common.DatabaseTypeMySQL):
+			castType = "SIGNED"
+		case common.UsingLogDatabase(common.DatabaseTypePostgreSQL):
+			castType = "BIGINT"
+		}
+		dimSelect = "CAST(" + dimExpr + " AS " + castType + ")"
+	}
 	var aggs []revenueAgg
 	query := LOG_DB.Model(&Log{}).
-		Select("CAST("+dimExpr+" AS TEXT) AS dim, channel_id, model_name, "+
+		Select(dimSelect+" AS dim, channel_id, model_name, "+
 			"count(*) AS requests, "+
 			"COALESCE(sum(prompt_tokens), 0) AS prompt_tokens, "+
 			"COALESCE(sum(completion_tokens), 0) AS completion_tokens, "+
 			"COALESCE(sum(quota), 0) AS quota").
 		Where("type = ? AND created_at >= ? AND created_at <= ?", LogTypeConsume, startTimestamp, endTimestamp).
-		Group(dimExpr + ", channel_id, model_name")
+		Group(dimSelect + ", channel_id, model_name")
 	if err := query.Scan(&aggs).Error; err != nil {
 		return nil, err
 	}
@@ -206,4 +221,102 @@ func usernameById(userId int) string {
 		return "#" + strconv.Itoa(userId)
 	}
 	return username
+}
+
+// UserTokenStat is one user's recorded token usage in a window. TopModel is the
+// model that consumed the most of that user's tokens, so the page answers
+// "which model does this user use most" without a second request.
+type UserTokenStat struct {
+	Key              string  `json:"key"`
+	Requests         int64   `json:"requests"`
+	PromptTokens     int64   `json:"prompt_tokens"`
+	CompletionTokens int64   `json:"completion_tokens"`
+	TotalTokens      int64   `json:"total_tokens"`
+	TopModel         string  `json:"top_model"`
+	TopModelTokens   int64   `json:"top_model_tokens"`
+	TopModelShare    float64 `json:"top_model_share"`
+	ModelCount       int     `json:"model_count"`
+}
+
+type UserTokenStatsReport struct {
+	StartTimestamp int64           `json:"start_timestamp"`
+	EndTimestamp   int64           `json:"end_timestamp"`
+	Rows           []UserTokenStat `json:"rows"`
+	Totals         UserTokenStat   `json:"totals"`
+}
+
+type userModelAgg struct {
+	UserId           int
+	ModelName        string
+	Requests         int64
+	PromptTokens     int64
+	CompletionTokens int64
+}
+
+// GetUserTokenStats aggregates consume logs by user and model, then keeps each
+// user's largest model. Ties break on the model name so a refresh cannot label
+// the same data differently.
+func GetUserTokenStats(startTimestamp, endTimestamp int64) (*UserTokenStatsReport, error) {
+	var aggs []userModelAgg
+	err := LOG_DB.Model(&Log{}).
+		Select("user_id, model_name, count(*) AS requests, "+
+			"COALESCE(sum(prompt_tokens), 0) AS prompt_tokens, "+
+			"COALESCE(sum(completion_tokens), 0) AS completion_tokens").
+		Where("type = ? AND created_at >= ? AND created_at <= ?", LogTypeConsume, startTimestamp, endTimestamp).
+		Group("user_id, model_name").
+		Scan(&aggs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	type userAcc struct {
+		stat       UserTokenStat
+		topTokens  int64
+		modelCount int
+	}
+	byUser := make(map[int]*userAcc, len(aggs))
+	for _, agg := range aggs {
+		acc := byUser[agg.UserId]
+		if acc == nil {
+			acc = &userAcc{stat: UserTokenStat{Key: usernameById(agg.UserId)}}
+			byUser[agg.UserId] = acc
+		}
+		tokens := agg.PromptTokens + agg.CompletionTokens
+		acc.stat.Requests += agg.Requests
+		acc.stat.PromptTokens += agg.PromptTokens
+		acc.stat.CompletionTokens += agg.CompletionTokens
+		acc.modelCount++
+		if tokens > acc.topTokens || (tokens == acc.topTokens && agg.ModelName < acc.stat.TopModel) {
+			acc.topTokens = tokens
+			acc.stat.TopModel = agg.ModelName
+		}
+	}
+
+	report := &UserTokenStatsReport{
+		StartTimestamp: startTimestamp,
+		EndTimestamp:   endTimestamp,
+		Rows:           make([]UserTokenStat, 0, len(byUser)),
+	}
+	for _, acc := range byUser {
+		row := acc.stat
+		row.TotalTokens = row.PromptTokens + row.CompletionTokens
+		row.TopModelTokens = acc.topTokens
+		row.ModelCount = acc.modelCount
+		if row.TotalTokens > 0 {
+			row.TopModelShare = float64(row.TopModelTokens) / float64(row.TotalTokens) * 100
+		}
+		report.Rows = append(report.Rows, row)
+		report.Totals.Requests += row.Requests
+		report.Totals.PromptTokens += row.PromptTokens
+		report.Totals.CompletionTokens += row.CompletionTokens
+	}
+	report.Totals.TotalTokens = report.Totals.PromptTokens + report.Totals.CompletionTokens
+	report.Totals.Key = "total"
+	sort.Slice(report.Rows, func(i, j int) bool {
+		if report.Rows[i].TotalTokens != report.Rows[j].TotalTokens {
+			return report.Rows[i].TotalTokens > report.Rows[j].TotalTokens
+		}
+		return report.Rows[i].Key < report.Rows[j].Key
+	})
+	return report, nil
 }

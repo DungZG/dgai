@@ -227,6 +227,7 @@ func SetApiRouter(router *gin.Engine) {
 		revenueRoute.Use(middleware.AdminAuth())
 		{
 			revenueRoute.GET("/report", controller.GetRevenueReport)
+			revenueRoute.GET("/token-stats", controller.GetUserTokenStats)
 		}
 		// Provider cost and margin reporting (read-only over logs, never on the relay path)
 		providerCostRoute := apiRouter.Group("/provider_cost")

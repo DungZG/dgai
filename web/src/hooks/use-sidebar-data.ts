@@ -170,6 +170,11 @@ export function useSidebarData(): SidebarData {
             icon: ReceiptText,
           },
           {
+            title: t('User Token Usage'),
+            url: '/token-stats',
+            icon: Activity,
+          },
+          {
             title: t('System Info'),
             url: '/system-info',
             icon: ServerCog,

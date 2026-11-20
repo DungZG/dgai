@@ -315,6 +315,39 @@ wire_api = "responses"
 env_key = "DGAI_API_KEY"
 ```
 
+### Giảm ngắt stream khi upstream phản hồi chậm
+
+Production bật heartbeat SSE bằng hai option quản trị:
+
+| Option | Giá trị |
+| --- | --- |
+| `general_setting.ping_interval_enabled` | `true` |
+| `general_setting.ping_interval_seconds` | `10` |
+
+Gateway gửi comment SSE `: PING` trong lúc chờ upstream; client phải bỏ qua
+comment này, không coi nó là nội dung model. Không cần restart khi lưu option.
+Heartbeat giúp tránh timeout do kết nối im lặng, nhưng không vượt được deadline
+tổng hoặc watchdog đòi nội dung thật ở client. Khi heartbeat đã gửi header,
+lỗi upstream tiếp theo được trả trong stream; HTTP 200 không chứng minh thành công.
+
+Nếu Hermes vẫn ngắt trong lúc chờ model, kiểm tra phiên bản và các biến sau
+trong môi trường chạy Hermes, không phải trong container dgai:
+
+```dotenv
+HERMES_STREAM_READ_TIMEOUT=300
+HERMES_STREAM_STALE_TIMEOUT=300
+```
+
+Khởi động lại tiến trình Hermes sau khi thay đổi. Watchdog stale có thể bỏ qua
+comment SSE và chỉ tính nội dung model, nên vẫn cần thời gian chờ riêng.
+Xem [tài liệu Hermes](https://hermes-agent.nousresearch.com/docs/reference/environment-variables/).
+Không tự giảm reasoning hoặc cắt context của khách tại gateway; người dùng có
+thể chủ động compact hội thoại và giảm reasoning để rút ngắn thời gian chờ.
+
+`client_gone` chỉ cho biết phía gọi đã ngắt, không tự chứng minh nguyên nhân
+hoặc miễn phí. Khi đối soát phải xem cả `request_id`, trạng thái kết thúc stream,
+usage upstream hay ước lượng local, và quota ghi nhận.
+
 ## Tài liệu trong ứng dụng
 
 Trang `/docs` phục vụ tài liệu riêng của dgai (nội dung ở

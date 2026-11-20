@@ -37,10 +37,20 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 			db, err := gorm.Open(driver, &gorm.Config{NamingStrategy: schema.NamingStrategy{TablePrefix: "revenue_test_"}})
 			require.NoError(t, err)
 			require.NoError(t, db.AutoMigrate(&ProviderCost{}, &Log{}, &User{}))
+			// The matrix may reuse a database between runs; clear the prefixed
+			// tables so fixed ids and log rows cannot collide with earlier data.
+			for _, model := range []any{&Log{}, &ProviderCost{}, &User{}} {
+				require.NoError(t, db.Unscoped().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(model).Error)
+			}
 
 			prevDB, prevLogDB, prevQuota := DB, LOG_DB, common.QuotaPerUnit
+			prevMainType, prevLogType := common.MainDatabaseType(), common.LogDatabaseType()
 			DB, LOG_DB = db, db
+			common.SetDatabaseTypes(common.DatabaseType(dialect), common.DatabaseType(dialect))
 			common.QuotaPerUnit = 500000
+			t.Cleanup(func() {
+				common.SetDatabaseTypes(prevMainType, prevLogType)
+			})
 			t.Cleanup(func() {
 				DB, LOG_DB = prevDB, prevLogDB
 				common.QuotaPerUnit = prevQuota
@@ -93,6 +103,40 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 			require.NoError(t, err)
 			require.Len(t, byModel.Rows, 2)
 			assert.Equal(t, "priced", byModel.Rows[0].Key, "sorted by revenue")
+
+			// A second user with a different top model proves the pick is per
+			// user, not one global maximum.
+			require.NoError(t, db.Create(&User{Id: 2, Username: "bob", AffCode: "bob"}).Error)
+			for _, row := range []Log{
+				{Type: LogTypeConsume, UserId: 2, ChannelId: 1, ModelName: "priced", PromptTokens: 10, CompletionTokens: 10, Quota: 1, CreatedAt: base + 400},
+				{Type: LogTypeConsume, UserId: 2, ChannelId: 2, ModelName: "unpriced", PromptTokens: 1_000_000, CompletionTokens: 0, Quota: 1, CreatedAt: base + 401},
+				{Type: LogTypeTopup, UserId: 2, ChannelId: 1, ModelName: "priced", Quota: 999_999, CreatedAt: base + 402},
+			} {
+				row := row
+				require.NoError(t, db.Create(&row).Error)
+			}
+
+			stats, err := GetUserTokenStats(base, base+2*day)
+			require.NoError(t, err)
+			require.Len(t, stats.Rows, 2)
+			assert.Equal(t, "alice", stats.Rows[0].Key, "sorted by total tokens")
+			alice := stats.Rows[0]
+			assert.Equal(t, int64(3), alice.Requests)
+			assert.Equal(t, int64(2_000_010), alice.PromptTokens)
+			assert.Equal(t, int64(1_000_010), alice.CompletionTokens)
+			assert.Equal(t, int64(3_000_020), alice.TotalTokens)
+			assert.Equal(t, "priced", alice.TopModel)
+			assert.Equal(t, int64(3_000_000), alice.TopModelTokens)
+			assert.Equal(t, 2, alice.ModelCount)
+			assert.InDelta(t, 99.9993, alice.TopModelShare, 0.001)
+
+			bob := stats.Rows[1]
+			assert.Equal(t, "bob", bob.Key)
+			assert.Equal(t, "unpriced", bob.TopModel, "each user keeps their own largest model")
+			assert.Equal(t, int64(1_000_020), bob.TotalTokens)
+
+			assert.Equal(t, int64(5), stats.Totals.Requests, "top-up logs are not usage")
+			assert.Equal(t, int64(4_000_040), stats.Totals.TotalTokens)
 		})
 	}
 }
