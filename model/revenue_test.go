@@ -93,7 +93,7 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 			assert.Equal(t, 1.0, second.Revenue)
 			assert.True(t, second.CostKnown)
 
-			assert.Equal(t, int64(3), report.Totals.Requests)
+			assert.Equal(t, int64(4), report.Totals.Requests)
 			assert.Equal(t, 2.5, report.Totals.Revenue)
 			assert.False(t, report.Totals.CostKnown, "one unpriced row hides the total margin")
 
@@ -104,8 +104,9 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 
 			byModel, err := GetRevenueReport(RevenueGroupByModel, base, base+2*day)
 			require.NoError(t, err)
-			require.Len(t, byModel.Rows, 2)
+			require.Len(t, byModel.Rows, 3)
 			assert.Equal(t, "priced", byModel.Rows[0].Key, "sorted by revenue")
+			assert.Equal(t, "ghost", byModel.Rows[2].Key, "an empty request is still a row")
 
 			// A second user with a different top model proves the pick is per
 			// user, not one global maximum.
@@ -124,13 +125,13 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 			require.Len(t, stats.Rows, 2)
 			assert.Equal(t, "alice", stats.Rows[0].Key, "sorted by total tokens")
 			alice := stats.Rows[0]
-			assert.Equal(t, int64(3), alice.Requests)
+			assert.Equal(t, int64(4), alice.Requests)
 			assert.Equal(t, int64(2_000_010), alice.PromptTokens)
 			assert.Equal(t, int64(1_000_010), alice.CompletionTokens)
 			assert.Equal(t, int64(3_000_020), alice.TotalTokens)
 			assert.Equal(t, "priced", alice.TopModel)
 			assert.Equal(t, int64(3_000_000), alice.TopModelTokens)
-			assert.Equal(t, 2, alice.ModelCount)
+			assert.Equal(t, 3, alice.ModelCount)
 			assert.InDelta(t, 99.9993, alice.TopModelShare, 0.001)
 
 			bob := stats.Rows[1]
@@ -138,7 +139,7 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 			assert.Equal(t, "unpriced", bob.TopModel, "each user keeps their own largest model")
 			assert.Equal(t, int64(1_000_020), bob.TotalTokens)
 
-			assert.Equal(t, int64(5), stats.Totals.Requests, "top-up logs are not usage")
+			assert.Equal(t, int64(6), stats.Totals.Requests, "top-up logs are not usage")
 			assert.Equal(t, int64(4_000_040), stats.Totals.TotalTokens)
 		})
 	}
