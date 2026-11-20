@@ -140,6 +140,9 @@ func GetRevenueReport(groupBy RevenueGroupBy, startTimestamp, endTimestamp int64
 		EndTimestamp:   endTimestamp,
 		Rows:           make([]RevenueRow, 0, len(rowsByKey)),
 	}
+	// A total margin is only meaningful when every row has a cost; one unpriced
+	// row would otherwise hide its spend behind a positive headline.
+	report.Totals.CostKnown = true
 	for _, row := range rowsByKey {
 		finalizeRevenueRow(row)
 		report.Rows = append(report.Rows, *row)
@@ -148,7 +151,7 @@ func GetRevenueReport(groupBy RevenueGroupBy, startTimestamp, endTimestamp int64
 		report.Totals.CompletionTokens += row.CompletionTokens
 		report.Totals.Quota += row.Quota
 		report.Totals.Cost += row.Cost
-		report.Totals.CostKnown = report.Totals.CostKnown || row.CostKnown
+		report.Totals.CostKnown = report.Totals.CostKnown && row.CostKnown
 	}
 	finalizeRevenueRow(&report.Totals)
 	report.Totals.Key = "total"

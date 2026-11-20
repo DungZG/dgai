@@ -93,6 +93,7 @@ func TestRevenueReportDatabaseMatrix(t *testing.T) {
 
 			assert.Equal(t, int64(3), report.Totals.Requests)
 			assert.Equal(t, 2.5, report.Totals.Revenue)
+			assert.False(t, report.Totals.CostKnown, "one unpriced row hides the total margin")
 
 			byUser, err := GetRevenueReport(RevenueGroupByUser, base, base+2*day)
 			require.NoError(t, err)
