@@ -33,7 +33,7 @@ Giá tính theo USD/1M token.`
 
 func (bot *telegramBot) handlePriceCommand(message *telegramMessage, args string) error {
 	chatID := message.Chat.ID
-	user, ok := bot.priceAdmin(message)
+	createdBy, ok := bot.priceAdmin(message)
 	if !ok {
 		return nil
 	}
@@ -56,7 +56,7 @@ func (bot *telegramBot) handlePriceCommand(message *telegramMessage, args string
 		Announce:      command.announce,
 		Note:          command.note,
 		ChatID:        chatID,
-		CreatedBy:     user.Id,
+		CreatedBy:     createdBy,
 	}
 	if err := model.CreatePriceSchedule(row); err != nil {
 		return bot.sendMessage(chatID, "Không lưu được lịch đổi giá: "+err.Error())
@@ -110,7 +110,7 @@ func (bot *telegramBot) handlePriceCancel(message *telegramMessage, args string)
 }
 
 func (bot *telegramBot) handlePriceUndo(message *telegramMessage, args string) error {
-	user, ok := bot.priceAdmin(message)
+	createdBy, ok := bot.priceAdmin(message)
 	if !ok {
 		return nil
 	}
@@ -138,7 +138,7 @@ func (bot *telegramBot) handlePriceUndo(message *telegramMessage, args string) e
 		Announce:      true,
 		Note:          fmt.Sprintf("undo #%d", source.Id),
 		ChatID:        message.Chat.ID,
-		CreatedBy:     user.Id,
+		CreatedBy:     createdBy,
 	}
 	if err := model.CreatePriceSchedule(row); err != nil {
 		return bot.sendMessage(message.Chat.ID, "Không tạo được lịch hoàn tác: "+err.Error())
@@ -164,20 +164,37 @@ func (bot *telegramBot) handlePriceCheck(message *telegramMessage, args string) 
 	return bot.sendCard(message.Chat.ID, readPriceCheck(name, input, output, cache), nil)
 }
 
-func (bot *telegramBot) priceAdmin(message *telegramMessage) (*model.User, bool) {
+func (bot *telegramBot) priceAdmin(message *telegramMessage) (int, bool) {
 	if message.From == nil {
-		return nil, false
+		return 0, false
 	}
 	user, err := bot.linkedUser(message.From)
+	if err == nil && user.Role >= common.RoleAdminUser {
+		return user.Id, true
+	}
+	if bot.adminChats[message.From.ID] {
+		if err == nil {
+			return user.Id, true
+		}
+		return 0, true
+	}
 	if err != nil {
-		_ = bot.sendMessage(message.Chat.ID, "Liên kết Telegram với tài khoản quản trị trong Hồ sơ trước.")
-		return nil, false
+		_ = bot.sendMessage(message.Chat.ID, "Liên kết Telegram với tài khoản trong Hồ sơ trước, hoặc nhờ quản trị viên thêm ID của bạn vào DGAI_TELEGRAM_ADMIN_IDS.")
+		return 0, false
 	}
-	if user.Role < common.RoleAdminUser {
-		_ = bot.sendMessage(message.Chat.ID, "Chỉ quản trị viên dùng được lệnh này.")
-		return nil, false
+	_ = bot.sendMessage(message.Chat.ID, "Chỉ quản trị viên dùng được lệnh này.")
+	return 0, false
+}
+
+func (bot *telegramBot) isPriceAdmin(from *telegramUser) bool {
+	if from == nil {
+		return false
 	}
-	return user, true
+	if bot.adminChats[from.ID] {
+		return true
+	}
+	user, err := bot.linkedUser(from)
+	return err == nil && user.Role >= common.RoleAdminUser
 }
 
 func parsePriceCommand(args string, now int64) (*priceCommand, error) {
@@ -377,8 +394,7 @@ func (bot *telegramBot) handlePriceCallback(query *telegramCallbackQuery) error 
 		return nil
 	}
 	chatID := query.Message.Chat.ID
-	user, err := bot.linkedUser(from)
-	if err != nil || user.Role < common.RoleAdminUser {
+	if !bot.isPriceAdmin(from) {
 		return bot.answerCallbackQuery(query.ID, "Không có quyền.")
 	}
 	parts := strings.Split(query.Data, ":")

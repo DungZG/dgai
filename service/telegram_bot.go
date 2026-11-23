@@ -30,6 +30,7 @@ type telegramBot struct {
 	token       string
 	supportURL  string
 	supportChat int64
+	adminChats  map[int64]bool
 	apiBaseURL  string
 	client      *http.Client
 }
@@ -103,7 +104,24 @@ func newTelegramBot() *telegramBot {
 			bot.supportChat = chatID
 		}
 	}
+	bot.adminChats = parseTelegramAdminIDs(os.Getenv("DGAI_TELEGRAM_ADMIN_IDS"))
 	return bot
+}
+
+// parseTelegramAdminIDs reads the allowlist that may run price commands. The
+// list is independent of account linking so an operator can use the bot
+// without turning their customer account into a web administrator.
+func parseTelegramAdminIDs(raw string) map[int64]bool {
+	ids := make(map[int64]bool)
+	for _, field := range strings.FieldsFunc(raw, func(r rune) bool { return r == ',' || r == ' ' || r == ';' }) {
+		id, err := strconv.ParseInt(strings.TrimSpace(field), 10, 64)
+		if err != nil || id <= 0 {
+			common.SysLog(common.LogText("Ignoring invalid Telegram admin ID: %s", field))
+			continue
+		}
+		ids[id] = true
+	}
+	return ids
 }
 
 func (bot *telegramBot) run() {
