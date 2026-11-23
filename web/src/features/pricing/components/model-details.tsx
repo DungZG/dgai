@@ -601,7 +601,6 @@ function ModelHeader(props: { model: PricingModel }) {
   const model = props.model
   const modelIconKey = model.icon || model.vendor_icon
   const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 20) : null
-  const description = model.description || model.vendor_description || null
 
   return (
     <header className='pb-4'>
@@ -634,11 +633,6 @@ function ModelHeader(props: { model: PricingModel }) {
         <span className='text-muted-foreground/30'>·</span>
         <ModelBillingModeBadge model={model} />
       </div>
-      {description && (
-        <p className='text-muted-foreground mt-2 text-sm leading-relaxed'>
-          {description}
-        </p>
-      )}
     </header>
   )
 }
