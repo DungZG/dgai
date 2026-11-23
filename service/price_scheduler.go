@@ -61,6 +61,15 @@ func ApplyPriceSchedule(id int) error {
 }
 
 func applyPriceSchedule(row *model.PriceSchedule) error {
+	// The API applies an immediate change while the ticker may already have the
+	// same row in hand; re-read so only one of them writes.
+	fresh, err := model.GetPriceSchedule(row.Id)
+	if err == nil {
+		if fresh.Status != model.PriceSchedulePending && fresh.Status != model.PriceScheduleDraft {
+			return nil
+		}
+		row = fresh
+	}
 	if row.NewRatio <= 0 || row.NewCompletion <= 0 || row.NewCache <= 0 {
 		_ = model.MarkPriceScheduleFailed(row.Id, "price values must be positive")
 		return fmt.Errorf("price change %d has invalid values", row.Id)

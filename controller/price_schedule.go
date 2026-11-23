@@ -71,6 +71,9 @@ func CreatePriceSchedule(c *gin.Context) {
 			common.ApiError(c, err)
 			return
 		}
+		if stored, err := model.GetPriceSchedule(row.Id); err == nil {
+			row = stored
+		}
 	}
 	common.ApiSuccess(c, row)
 }
