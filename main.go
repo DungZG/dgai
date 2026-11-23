@@ -162,7 +162,6 @@ func main() {
 	controller.RegisterScheduledSystemTasks()
 	service.StartSystemTaskRunner()
 	service.StartTelegramBot()
-	service.StartPriceScheduler()
 
 	if os.Getenv("BATCH_UPDATE_ENABLED") == "true" {
 		common.BatchUpdateEnabled = true
@@ -340,6 +339,8 @@ func InitResources() error {
 		}
 	}
 	model.InitOptionMap()
+	// Price changes touch the option map, so start after it is loaded.
+	service.StartPriceScheduler()
 
 	// 清理旧的磁盘缓存文件
 	common.CleanupOldCacheFiles()
