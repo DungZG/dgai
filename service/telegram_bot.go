@@ -80,6 +80,7 @@ func StartTelegramBot() {
 		return
 	}
 	common.SysLog(common.LogText("Telegram bot polling started"))
+	activeTelegramBot = bot
 	go bot.run()
 }
 
@@ -227,6 +228,16 @@ func (bot *telegramBot) handlePrivateMessage(message *telegramMessage) error {
 		))
 	case "support":
 		return bot.openSupport(message, args)
+	case "price":
+		return bot.handlePriceCommand(message, args)
+	case "prices":
+		return bot.handlePriceList(message)
+	case "cancel":
+		return bot.handlePriceCancel(message, args)
+	case "undo":
+		return bot.handlePriceUndo(message, args)
+	case "pricecheck":
+		return bot.handlePriceCheck(message, args)
 	default:
 		return bot.sendMessage(message.Chat.ID, "Không nhận ra lệnh. Gửi /help để xem danh sách lệnh.")
 	}

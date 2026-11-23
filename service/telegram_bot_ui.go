@@ -81,6 +81,8 @@ func (bot *telegramBot) handleCallbackQuery(query *telegramCallbackQuery) error 
 	case strings.HasPrefix(query.Data, "topupcheck:"):
 		_ = bot.answerCallbackQuery(query.ID, "Đang kiểm tra...")
 		return bot.checkTopUp(chatID, from, strings.TrimPrefix(query.Data, "topupcheck:"))
+	case strings.HasPrefix(query.Data, "price:"):
+		return bot.handlePriceCallback(query)
 	case query.Data == "models":
 		_ = bot.answerCallbackQuery(query.ID, "")
 		return bot.showModels(chatID, messageID, from)
@@ -164,6 +166,9 @@ Nền tảng API AI đa nhà cung cấp, ví USD và nạp tự động.
 	}
 	if docs := bot.docsURL(); docs != "" {
 		rows = append(rows, []telegramInlineKeyboardButton{urlButton("🌐 API Docs", docs)})
+	}
+	if user, err := bot.linkedUser(from); err == nil && user.Role >= common.RoleAdminUser {
+		text += "\n\n🛠 <b>Quản trị giá:</b> /price /prices /cancel /undo /pricecheck"
 	}
 	return text, keyboard(rows...)
 }

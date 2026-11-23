@@ -238,6 +238,14 @@ func SetApiRouter(router *gin.Engine) {
 			providerCostRoute.DELETE("/:id", controller.DeleteProviderCost)
 			providerCostRoute.GET("/margins", controller.GetModelMargins)
 		}
+		// Scheduled price changes (armed here or from the Telegram bot)
+		priceScheduleRoute := apiRouter.Group("/price_schedule")
+		priceScheduleRoute.Use(middleware.AdminAuth())
+		{
+			priceScheduleRoute.GET("/", controller.ListPriceSchedules)
+			priceScheduleRoute.POST("/", controller.CreatePriceSchedule)
+			priceScheduleRoute.DELETE("/:id", controller.CancelPriceSchedule)
+		}
 		optionRoute := apiRouter.Group("/option")
 		optionRoute.Use(middleware.RootAuth())
 		{

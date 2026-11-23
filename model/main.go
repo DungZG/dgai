@@ -63,6 +63,12 @@ func initCol() {
 	}
 }
 
+// InitColumnNames prepares the dialect-specific identifiers used by raw SQL.
+// It is exported for tests that open a database without InitDB.
+func InitColumnNames() {
+	initCol()
+}
+
 var DB *gorm.DB
 
 var LOG_DB *gorm.DB
@@ -378,6 +384,7 @@ func migrateDB() error {
 		&AuthzRole{},
 		&UserAccessToken{},
 		&ProviderCost{},
+		&PriceSchedule{},
 	)
 	if err != nil {
 		return err
