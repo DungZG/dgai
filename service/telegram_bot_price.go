@@ -28,7 +28,7 @@ type priceCommand struct {
 const priceCommandUsage = `Cách dùng:
 /price <model> <giá vào> <giá ra> [giá cache] [tuỳ chọn]
 Ví dụ: /price gpt-6.2-sol 0.11 0.66 --after 2h --sale 90
-Tuỳ chọn: --after 90m | --at 22:00 | --sale 90 | --no-announce | --note "ghi chú"
+Tuỳ chọn: --after 90m | --at 22:00 | --sale 90 | --no-announce | --note ghichu
 Giá tính theo USD/1M token.`
 
 func (bot *telegramBot) handlePriceCommand(message *telegramMessage, args string) error {

@@ -42,10 +42,14 @@ func TestPriceScheduleDatabaseMatrix(t *testing.T) {
 			require.NoError(t, db.Unscoped().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&Model{}).Error)
 
 			prevDB, prevLogDB := DB, LOG_DB
+			prevMainType, prevLogType := common.MainDatabaseType(), common.LogDatabaseType()
 			DB, LOG_DB = db, db
 			common.SetDatabaseTypes(common.DatabaseType(dialect), common.DatabaseType(dialect))
 			InitColumnNames()
-			t.Cleanup(func() { DB, LOG_DB = prevDB, prevLogDB })
+			t.Cleanup(func() {
+				common.SetDatabaseTypes(prevMainType, prevLogType)
+				DB, LOG_DB = prevDB, prevLogDB
+			})
 
 			row := &PriceSchedule{
 				ModelName: "m", NewRatio: 0.05, NewCompletion: 4, NewCache: 0.3,

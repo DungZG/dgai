@@ -20,6 +20,7 @@ func setupPriceScheduleDB(t *testing.T) *gorm.DB {
 	require.NoError(t, db.AutoMigrate(&model.PriceSchedule{}, &model.Option{}, &model.Model{}, &model.ProviderCost{}))
 
 	prevDB, prevLogDB := model.DB, model.LOG_DB
+	prevMainType, prevLogType := common.MainDatabaseType(), common.LogDatabaseType()
 	model.DB, model.LOG_DB = db, db
 	common.SetDatabaseTypes(common.DatabaseTypeSQLite, common.DatabaseTypeSQLite)
 	model.InitColumnNames()
@@ -31,6 +32,7 @@ func setupPriceScheduleDB(t *testing.T) *gorm.DB {
 		common.OptionMapRWMutex.Lock()
 		common.OptionMap = prevOptionMap
 		common.OptionMapRWMutex.Unlock()
+		common.SetDatabaseTypes(prevMainType, prevLogType)
 		model.DB, model.LOG_DB = prevDB, prevLogDB
 	})
 	return db
