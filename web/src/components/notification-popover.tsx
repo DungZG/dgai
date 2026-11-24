@@ -91,8 +91,9 @@ function getRelativeTime(publishDate: string | Date, t: TFunction): string {
   const diffMonths = Math.floor(diffDays / 30)
   const diffYears = Math.floor(diffDays / 365)
 
-  // If future time, show specific date
-  if (diffMs < 0) return formatDateTimeObject(pubDate)
+  // A future announcement shows only its absolute date; returning the same
+  // string here would print the date twice.
+  if (diffMs < 0) return ''
 
   // Return relative time based on difference
   if (diffSeconds < 60) return t('Just now')
