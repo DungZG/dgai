@@ -44,8 +44,6 @@ export function ApiKeyGroupCell(props: ApiKeyGroupCellProps) {
 
   const group = props.group?.trim() || ''
   if (group !== 'auto') {
-    const ratio =
-      group && typeof props.ratio === 'number' ? props.ratio : undefined
     return (
       <TruncatedCell
         className={isMobile ? 'w-full' : 'max-w-50'}
@@ -55,7 +53,6 @@ export function ApiKeyGroupCell(props: ApiKeyGroupCellProps) {
       >
         <GroupBadge
           group={group}
-          ratio={ratio}
           ratioLabel={group ? undefined : t('Inherited')}
           type='text'
           className='px-0'

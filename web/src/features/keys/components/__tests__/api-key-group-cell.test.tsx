@@ -97,26 +97,14 @@ describe('API key group table cell', () => {
     expect(screen.queryByText('Auto')).not.toBeInTheDocument()
   })
 
-  test.each([
-    [0.8, 'bg-info/10', 'text-info', 'border-info/30'],
-    [1, 'bg-muted', 'text-muted-foreground', 'border-muted-foreground/30'],
-    [3, 'bg-warning/10', 'text-warning', 'border-warning/30'],
-  ])(
-    'preserves the original %s multiplier color in the compact layout',
-    (ratio, background, color, border) => {
+  test.each([0.8, 1, 3, 12.345678])(
+    'hides the %s multiplier for a normal group',
+    (ratio) => {
       const { container } = render(
         <CellHarness group='default' ratio={ratio} />
       )
-      const multiplier = screen.getByText(`${ratio}x`).parentElement
-      expect(multiplier).toHaveClass(
-        background,
-        color,
-        border,
-        'rounded-full',
-        'tabular-nums',
-        'h-5',
-        'min-w-12'
-      )
+      expect(screen.getByText('default')).toBeInTheDocument()
+      expect(container).not.toHaveTextContent(`${ratio}x`)
       expect(
         container.querySelector('[data-auto-group-flow-border]')
       ).toBeNull()
@@ -136,13 +124,13 @@ describe('API key group table cell', () => {
     expect(await screen.findByText('Follow user group')).toBeVisible()
   })
 
-  test('keeps a long group name and exact multiplier available through keyboard focus', async () => {
+  test('keeps a long group name available through keyboard focus', async () => {
     const groupName = 'production-with-a-very-long-custom-group-name'
     render(<CellHarness group={groupName} ratio={12.345678} />)
     expect(
       screen.getByText(groupName).closest('[data-slot="tooltip-trigger"]')
     ).toHaveClass('max-w-50')
-    expect(screen.getByText('12.345678x')).toBeInTheDocument()
+    expect(screen.queryByText('12.345678x')).not.toBeInTheDocument()
     await userEvent.tab()
     expect(
       await screen.findByText(groupName, {
