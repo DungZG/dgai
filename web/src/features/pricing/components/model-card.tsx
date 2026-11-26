@@ -27,7 +27,7 @@ import { getLobeIcon } from '@/lib/lobe-icon'
 import { cn } from '@/lib/utils'
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
-import { DEFAULT_TOKEN_UNIT } from '../constants'
+import { DEFAULT_TOKEN_UNIT, EXCLUDED_GROUPS } from '../constants'
 import { useBillingTime } from '../hooks/use-billing-time'
 import {
   getCardExamplePrice,
@@ -82,7 +82,9 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
           : undefined,
     }
   }, [props.model, salePercent])
-  const groups = props.model.enable_groups || []
+  const groups = (props.model.enable_groups || []).filter(
+    (group) => !EXCLUDED_GROUPS.includes(group)
+  )
   const endpoints = props.model.supported_endpoint_types || []
   const modelIconKey = props.model.icon || props.model.vendor_icon
   const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 28) : null

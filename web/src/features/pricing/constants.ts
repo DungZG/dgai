@@ -126,7 +126,7 @@ export const MAX_FILTER_ITEMS = 5
 export const SIDEBAR_WIDTH = 'w-64'
 
 /** Excluded groups */
-export const EXCLUDED_GROUPS = ['', 'auto']
+export const EXCLUDED_GROUPS = ['', 'auto', 'plus']
 
 /** Quota type values */
 export const QUOTA_TYPE_VALUES = {
