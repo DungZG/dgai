@@ -7588,6 +7588,12 @@
     "Zoom": "缩放",
     "Dismiss": "关闭",
     "Top up $10 and enter code DGAIHSTX to get $5 bonus": "Top up $10 and enter code DGAIHSTX to get $5 bonus",
-    "One use per account · Ends 31/12/2026": "One use per account · Ends 31/12/2026"
+    "One use per account · Ends 31/12/2026": "One use per account · Ends 31/12/2026",
+    "Bank transfer": "银行转账",
+    "Transfer to complete the payment": "转账以完成支付",
+    "VietQR code": "VietQR 二维码",
+    "Bank": "银行",
+    "Account Name": "账户名",
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "请勿修改转账备注，银行确认后套餐将自动开通。"
   }
 }

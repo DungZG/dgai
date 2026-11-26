@@ -7588,6 +7588,12 @@
     "Zoom": "Zoom",
     "Dismiss": "Fermer",
     "Top up $10 and enter code DGAIHSTX to get $5 bonus": "Top up $10 and enter code DGAIHSTX to get $5 bonus",
-    "One use per account · Ends 31/12/2026": "One use per account · Ends 31/12/2026"
+    "One use per account · Ends 31/12/2026": "One use per account · Ends 31/12/2026",
+    "Bank transfer": "Virement bancaire",
+    "Transfer to complete the payment": "Virez pour finaliser le paiement",
+    "VietQR code": "Code VietQR",
+    "Bank": "Banque",
+    "Account Name": "Nom du compte",
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Conservez le libellé du virement. Le forfait s’active dès confirmation par la banque."
   }
 }

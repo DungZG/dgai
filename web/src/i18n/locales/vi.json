@@ -7588,6 +7588,12 @@
     "Zoom": "Zoom",
     "Dismiss": "Đóng",
     "Top up $10 and enter code DGAIHSTX to get $5 bonus": "Nạp từ $10, nhập mã DGAIHSTX để nhận $5 ưu đãi",
-    "One use per account · Ends 31/12/2026": "Mỗi tài khoản 1 lần · Hết hạn 31/12/2026"
+    "One use per account · Ends 31/12/2026": "Mỗi tài khoản 1 lần · Hết hạn 31/12/2026",
+    "Bank transfer": "Chuyển khoản",
+    "Transfer to complete the payment": "Chuyển khoản để hoàn tất thanh toán",
+    "VietQR code": "Mã VietQR",
+    "Bank": "Ngân hàng",
+    "Account Name": "Chủ tài khoản",
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Giữ nguyên nội dung chuyển khoản. Gói sẽ tự kích hoạt ngay khi ngân hàng xác nhận."
   }
 }

@@ -7588,6 +7588,12 @@
     "Zoom": "ズーム",
     "Dismiss": "閉じる",
     "Top up $10 and enter code DGAIHSTX to get $5 bonus": "Top up $10 and enter code DGAIHSTX to get $5 bonus",
-    "One use per account · Ends 31/12/2026": "One use per account · Ends 31/12/2026"
+    "One use per account · Ends 31/12/2026": "One use per account · Ends 31/12/2026",
+    "Bank transfer": "銀行振込",
+    "Transfer to complete the payment": "振込んで支払いを完了",
+    "VietQR code": "VietQR コード",
+    "Bank": "銀行",
+    "Account Name": "口座名義",
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "振込内容は変更しないでください。銀行の確認後、プランは自動で有効になります。"
   }
 }
