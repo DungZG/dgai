@@ -377,3 +377,44 @@ func TestTopUpBonusFinalizersDatabaseMatrix(t *testing.T) {
 		})
 	}
 }
+
+// A published promotion code pays once per account and only after the paid
+// total reaches its minimum, and the ledger entry blocks a second grant.
+func TestRedeemPromoCodeOnceAfterMinimum(t *testing.T) {
+	db := useTopUpBonusDB(t)
+	previousOptionMap := common.OptionMap
+	common.OptionMap = map[string]string{
+		PromoCodeRulesOptionKey: `[{"code":"DGAIHSTX","quota":2500000,"min_top_up_usd":10,"expires_at":0},{"code":"OLD","quota":2500000,"min_top_up_usd":0,"expires_at":1}]`,
+	}
+	t.Cleanup(func() { common.OptionMap = previousOptionMap })
+
+	user := &User{Id: 501, Username: "promo-user", Password: "unused-password", Status: common.UserStatusEnabled, Group: "default"}
+	require.NoError(t, db.Create(user).Error)
+
+	granted, err := RedeemPromoCode("DGAIHSTX", user.Id)
+	require.Error(t, err, "no top-up yet, so the minimum is not reached")
+	assert.Zero(t, granted)
+
+	require.NoError(t, db.Create(&TopUp{
+		UserId: user.Id, Amount: 5000000, Money: 10, TradeNo: "VQRPROMO01",
+		PaymentMethod: PaymentMethodVietQR, PaymentProvider: PaymentProviderVietQR,
+		Status: common.TopUpStatusSuccess, CreateTime: 1, CompleteTime: 1,
+	}).Error)
+
+	granted, err = RedeemPromoCode("dgaihstx", user.Id)
+	require.NoError(t, err, "the code is matched case-insensitively")
+	assert.Equal(t, 2500000, granted)
+	var stored User
+	require.NoError(t, db.First(&stored, user.Id).Error)
+	assert.Equal(t, 2500000, stored.Quota)
+
+	granted, err = RedeemPromoCode("DGAIHSTX", user.Id)
+	require.Error(t, err, "the same account cannot redeem twice")
+	assert.Zero(t, granted)
+
+	_, err = RedeemPromoCode("UNKNOWN", user.Id)
+	require.Error(t, err)
+
+	_, err = RedeemPromoCode("OLD", user.Id)
+	require.Error(t, err, "an expired code grants nothing")
+}

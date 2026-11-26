@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { CommandMenu } from '@/components/command-menu'
 import { AnimatedOutlet } from '@/components/page-transition'
+import { PromoBanner } from '@/components/promo-banner'
 import { SkipToMain } from '@/components/skip-to-main'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { LayoutProvider } from '@/context/layout-provider'
@@ -51,6 +52,7 @@ export function AuthenticatedLayout(props: AuthenticatedLayoutProps) {
                 'peer-data-[variant=inset]:h-[calc(100svh-var(--app-header-height,0px)-(var(--spacing)*4))]'
               )}
             >
+              <PromoBanner />
               {props.children ?? <AnimatedOutlet />}
             </SidebarInset>
           </div>

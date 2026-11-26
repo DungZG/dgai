@@ -1303,10 +1303,16 @@ func TopUp(c *gin.Context) {
 	}
 	quota, err := model.Redeem(req.Key, id)
 	if err != nil {
-		// 不向用户暴露兑换失败的细分原因，避免攻击者根据错误类型判断兑换码状态。
-		common.ApiErrorT(c, "Redemption failed, please try again later")
-		logger.LogError(c, common.LogText("failed to redeem key %s for user %d: %s", req.Key, id, err.Error()))
-		return
+		// A published promotion code is not a secret, so it is tried after the
+		// single-use redemption codes and reports the same generic failure.
+		promoQuota, promoErr := model.RedeemPromoCode(req.Key, id)
+		if promoErr != nil {
+			// 不向用户暴露兑换失败的细分原因，避免攻击者根据错误类型判断兑换码状态。
+			common.ApiErrorT(c, "Redemption failed, please try again later")
+			logger.LogError(c, common.LogText("failed to redeem key %s for user %d: %s", req.Key, id, err.Error()))
+			return
+		}
+		quota = promoQuota
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
