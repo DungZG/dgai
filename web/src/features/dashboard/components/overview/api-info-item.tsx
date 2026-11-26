@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Zap, ExternalLink, Gauge } from 'lucide-react'
+import { Zap, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { CopyButton } from '@/components/copy-button'
@@ -24,7 +24,6 @@ import { StatusBadge } from '@/components/status-badge'
 import { Button } from '@/components/ui/button'
 import {
   getLatencyColorClass,
-  openExternalSpeedTest,
 } from '@/features/dashboard/lib/api-info'
 import type { ApiInfoItem, PingStatus } from '@/features/dashboard/types'
 import { getBgColorClass } from '@/lib/colors'
@@ -104,16 +103,6 @@ export function ApiInfoItemComponent(props: ApiInfoItemProps) {
             <Zap
               className={cn('size-3.5', status.testing && 'animate-pulse')}
             />
-          </Button>
-
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={() => openExternalSpeedTest(item.url)}
-            className='hidden size-7 p-0 sm:inline-flex'
-            title={t('External Speed Test')}
-          >
-            <Gauge className='size-3.5' />
           </Button>
 
           <CopyButton

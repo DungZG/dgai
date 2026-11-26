@@ -52,15 +52,6 @@ export async function testUrlLatency(url: string): Promise<PingStatus> {
 }
 
 /**
- * Open external speed test link
- */
-export function openExternalSpeedTest(url: string): void {
-  const encodedUrl = encodeURIComponent(url)
-  const speedTestUrl = `https://www.tcptest.cn/http/${encodedUrl}`
-  window.open(speedTestUrl, '_blank', 'noopener,noreferrer')
-}
-
-/**
  * Get default ping status
  */
 export function getDefaultPingStatus(): PingStatus {
