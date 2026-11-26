@@ -118,7 +118,14 @@ function buildDetailSegments(
   language: string,
   usageSchema?: BillingUsageSchema
 ): DetailSegment[] {
-  const segments = buildTypeDetailSegments(log, other, t, language, usageSchema)
+  const segments = buildTypeDetailSegments(
+    log,
+    other,
+    t,
+    isAdmin,
+    language,
+    usageSchema
+  )
   const adminSegments: DetailSegment[] = []
   // Quota saturation is a rare, admin-only anomaly marker; surface it first
   // and in danger styling so it stands out on the related billing log. The
@@ -134,6 +141,7 @@ function buildTypeDetailSegments(
   log: UsageLog,
   other: LogOtherData | null,
   t: (key: string, opts?: Record<string, unknown>) => string,
+  isAdmin: boolean,
   language: string,
   usageSchema?: BillingUsageSchema
 ): DetailSegment[] {
@@ -322,7 +330,11 @@ function buildTypeDetailSegments(
         ? t('User Exclusive Ratio')
         : t('Group Ratio')
 
-      if (effectiveRatio != null && Number.isFinite(effectiveRatio)) {
+      if (
+        isAdmin &&
+        effectiveRatio != null &&
+        Number.isFinite(effectiveRatio)
+      ) {
         segments.push({
           text: `${ratioLabel} ${formatRatioCompact(effectiveRatio)}x`,
         })
@@ -644,7 +656,7 @@ export function useCommonLogsColumns(
                 )}
               </Tooltip>
             </TooltipProvider>
-            {(group || groupRatio != null) && (
+            {isAdmin && (group || groupRatio != null) && (
               <span className='block max-w-full truncate text-xs leading-none'>
                 {group ? (
                   <GroupBadge
