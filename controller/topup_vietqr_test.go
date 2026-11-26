@@ -138,3 +138,56 @@ func TestCreateVietQRTopUpCreatesPendingOrder(t *testing.T) {
 	assert.Equal(t, user.Id, stored.UserId)
 	assert.EqualValues(t, 10, stored.Amount)
 }
+
+// A plan paid by bank transfer must be told apart from a wallet top-up: the
+// prefixes differ, and a transfer that already activated a plan must not be
+// matched again.
+func TestMatchSePaySubscriptionOrder(t *testing.T) {
+	oldDB := model.DB
+	t.Cleanup(func() { model.DB = oldDB })
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(&model.SubscriptionOrder{}))
+	model.DB = db
+	t.Cleanup(func() {
+		if sqlDB, closeErr := db.DB(); closeErr == nil {
+			_ = sqlDB.Close()
+		}
+	})
+	require.NoError(t, db.Create(&model.SubscriptionOrder{
+		UserId: 1, PlanId: 2, Money: 20, TradeNo: "SVR12345678",
+		PaymentMethod: model.PaymentMethodVietQR, PaymentProvider: model.PaymentProviderVietQR,
+		Status: common.TopUpStatusPending, CreateTime: 1,
+	}).Error)
+	require.NoError(t, db.Create(&model.SubscriptionOrder{
+		UserId: 1, PlanId: 2, Money: 20, TradeNo: "SVR87654321",
+		PaymentMethod: model.PaymentMethodVietQR, PaymentProvider: model.PaymentProviderVietQR,
+		Status: common.TopUpStatusSuccess, CreateTime: 1,
+	}).Error)
+
+	code := "SVR12345678"
+	prefixedCode := "DGAI SVR12345678"
+	tests := []struct {
+		name string
+		req  sePayWebhookRequest
+		want string
+	}{
+		{"memo", sePayWebhookRequest{Content: "DGAI SVR12 345678 chuyen tien"}, "SVR12345678"},
+		{"payment code", sePayWebhookRequest{Code: &code}, "SVR12345678"},
+		{"prefixed code", sePayWebhookRequest{Code: &prefixedCode}, "SVR12345678"},
+		{"already activated", sePayWebhookRequest{Content: "DGAISVR87654321"}, ""},
+		{"wallet top-up", sePayWebhookRequest{Content: "DGAIVQR11XF4LRX"}, ""},
+		{"unrelated transfer", sePayWebhookRequest{Content: "chuyen tien"}, ""},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			order := matchSePaySubscriptionOrder(tc.req)
+			if tc.want == "" {
+				assert.Nil(t, order)
+				return
+			}
+			require.NotNil(t, order)
+			assert.Equal(t, tc.want, order.TradeNo)
+		})
+	}
+}

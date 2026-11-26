@@ -111,6 +111,10 @@ func SePayWebhook(c *gin.Context) {
 
 	topUp := matchSePayTopUp(req)
 	if topUp == nil {
+		if order := matchSePaySubscriptionOrder(req); order != nil {
+			completeSePaySubscriptionOrder(c, order, req)
+			return
+		}
 		// A transfer that matches no order is still a successful delivery:
 		// returning an error would make SePay retry it forever.
 		logger.LogWarn(ctx, common.LogText("sepay webhook no matching top-up transaction_id=%d content=%q amount=%.0f", req.Id, req.Content, req.TransferAmount))
@@ -157,4 +161,26 @@ func matchSePayTopUp(req sePayWebhookRequest) *model.TopUp {
 		return nil
 	}
 	return topUp
+}
+
+// completeSePaySubscriptionOrder activates the plan a bank transfer paid for.
+// The transfer amount must cover the VND figure the order quoted, so a partial
+// payment leaves the order pending for an administrator to reconcile.
+func completeSePaySubscriptionOrder(c *gin.Context, order *model.SubscriptionOrder, req sePayWebhookRequest) {
+	expectedVND := decimal.NewFromInt(vietqrVNDAmount(order.Money))
+	if decimal.NewFromFloat(req.TransferAmount).LessThan(expectedVND) {
+		logger.LogWarn(c.Request.Context(), common.LogText("sepay webhook subscription amount below order trade_no=%s expected_vnd=%s received_vnd=%.0f", order.TradeNo, expectedVND.String(), req.TransferAmount))
+		c.JSON(http.StatusOK, gin.H{"success": true})
+		return
+	}
+	LockOrder(order.TradeNo)
+	defer UnlockOrder(order.TradeNo)
+	if err := model.CompleteSubscriptionOrder(order.TradeNo, "", model.PaymentProviderVietQR, model.PaymentMethodVietQR); err != nil {
+		logger.LogError(c.Request.Context(), common.LogText("sepay webhook subscription activation failed trade_no=%s error=%q", order.TradeNo, err.Error()))
+		// Activation must be retried, so report it as an error.
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false})
+		return
+	}
+	common.SysLog(common.LogText("sepay webhook activated subscription trade_no=%s transaction_id=%d", order.TradeNo, req.Id))
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }

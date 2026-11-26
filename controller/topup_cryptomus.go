@@ -138,6 +138,15 @@ func CryptomusWebhook(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": true})
 		return
 	}
+	if order := model.GetSubscriptionOrderByTradeNo(info.OrderID); order != nil {
+		// A plan invoice never touches the wallet, so it skips the top-up queue.
+		if err := applyCryptoSubscriptionInfo(info); err != nil && !errors.Is(err, model.ErrSubscriptionOrderNotFound) {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"success": true})
+		return
+	}
 	err = model.QueueCryptoPayment(info.OrderID, info.UUID)
 	// An unknown or already-closed order is not retryable; only a storage
 	// failure asks the provider to deliver again.
@@ -175,4 +184,5 @@ func settleCryptomusPayments() {
 			_ = model.DeferCryptoPayment(payment.TradeNo, common.GetTimestamp()+60)
 		}
 	}
+	settleCryptomusSubscriptionOrders(client)
 }

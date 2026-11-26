@@ -557,3 +557,25 @@ func TestCryptomusSettlementMatrix(t *testing.T) {
 		})
 	}
 }
+
+// A plan invoice is only covered when the settled amount reaches the plan
+// price; the explicit USD figure wins over the invoice-currency amount.
+func TestCryptoPaymentCoversPlanPrice(t *testing.T) {
+	tests := []struct {
+		name  string
+		info  cryptomus.Payment
+		price float64
+		want  bool
+	}{
+		{"usd field wins", cryptomus.Payment{PaymentAmountUSD: "20.00", PaymentAmount: "0.5", Currency: "USDT"}, 20, true},
+		{"usd field short", cryptomus.Payment{PaymentAmountUSD: "19.99"}, 20, false},
+		{"invoice currency usd", cryptomus.Payment{PaymentAmount: "20.00", Currency: "USD"}, 20, true},
+		{"invoice currency other", cryptomus.Payment{PaymentAmount: "20.00", Currency: "USDT"}, 20, false},
+		{"nothing reported", cryptomus.Payment{}, 20, false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, cryptoPaymentCovers(tc.info, tc.price))
+		})
+	}
+}
