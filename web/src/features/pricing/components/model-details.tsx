@@ -61,7 +61,7 @@ import { requireServerSuccess } from '@/lib/server-error-message'
 import { cn } from '@/lib/utils'
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
-import { DEFAULT_TOKEN_UNIT } from '../constants'
+import { DEFAULT_TOKEN_UNIT, EXCLUDED_GROUPS } from '../constants'
 import { useBillingTime } from '../hooks/use-billing-time'
 import { usePricingData } from '../hooks/use-pricing-data'
 import type { ParsedTaskTier } from '../lib/billing-expr'
@@ -1093,6 +1093,12 @@ function ProviderGroupPricingSection(
   }, [props.model, t])
 
   if (availableGroups.length === 0) {
+    // Every group this model serves is hidden from the catalogue (for example a
+    // subscription-only group), so there is nothing to show.
+    const modelGroups = props.model.enable_groups || []
+    if (modelGroups.length > 0 && modelGroups.every((g) => EXCLUDED_GROUPS.includes(g))) {
+      return null
+    }
     return (
       <section>
         {!props.hideTitle && (
