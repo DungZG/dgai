@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Dialog } from '@/components/dialog'
-import { GroupBadge } from '@/components/group-badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
@@ -288,14 +287,6 @@ export function SubscriptionPurchaseDialog(props: Props) {
             <p className='text-muted-foreground text-xs'>
               {t('Wallet may be charged after the plan quota is exhausted')}
             </p>
-          )}
-          {plan.upgrade_group && (
-            <div className='flex items-center justify-between'>
-              <span className='text-muted-foreground text-sm'>
-                {t('Upgrade Group')}
-              </span>
-              <GroupBadge group={plan.upgrade_group} />
-            </div>
           )}
           <Separator />
           <div className='flex items-center justify-between'>
