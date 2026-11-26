@@ -114,7 +114,8 @@ export function CommonLogMobileCard<TData>(props: {
     group: {
       label: t('Group'),
       value: group,
-      visible: displayable && props.cells.has('token_name') && !!group,
+      visible:
+        isAdminView && displayable && props.cells.has('token_name') && !!group,
       sensitive: true,
     },
   }
