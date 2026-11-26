@@ -62,6 +62,8 @@ interface Props {
   enableCreem?: boolean
   enableWaffoPancake?: boolean
   enableOnlineTopUp?: boolean
+  enableVietQR?: boolean
+  enableCryptomus?: boolean
   epayMethods?: PaymentMethod[]
   purchaseLimit?: number
   purchaseCount?: number
@@ -84,6 +86,37 @@ export function SubscriptionPurchaseDialog(props: Props) {
   }, [props.open, props.epayMethods])
 
   const plan = props.plan?.plan
+
+  const [vietqr, setVietqr] = useState<SubscriptionVietQRPayment | null>(null)
+
+  useEffect(() => {
+    if (!props.open) setVietqr(null)
+  }, [props.open])
+
+  // SePay activates the plan from the bank webhook, so the dialog waits for the
+  // subscription to appear instead of asking the customer to reload.
+  useEffect(() => {
+    if (!vietqr || !plan) return
+    const timer = window.setInterval(() => {
+      void getSelfSubscriptions()
+        .then((res) => {
+          const active = (res.data || []).some(
+            (record) =>
+              record.subscription?.plan_id === plan.id &&
+              record.subscription?.status === 'active'
+          )
+          if (active) {
+            window.clearInterval(timer)
+            toast.success(t('Subscription purchased successfully'))
+            void props.onPurchaseSuccess?.()
+            props.onOpenChange(false)
+          }
+        })
+        .catch(() => undefined)
+    }, 5000)
+    return () => window.clearInterval(timer)
+  }, [vietqr, plan, props, t])
+
   if (!plan) return null
 
   const hasStripe = props.enableStripe && !!plan.stripe_price_id
@@ -92,7 +125,15 @@ export function SubscriptionPurchaseDialog(props: Props) {
     props.enableWaffoPancake && !!plan.waffo_pancake_product_id
   const hasEpay =
     props.enableOnlineTopUp && (props.epayMethods || []).length > 0
-  const hasAnyPayment = hasStripe || hasCreem || hasWaffoPancake || hasEpay
+  const hasVietQR = !!props.enableVietQR
+  const hasCryptomus = !!props.enableCryptomus
+  const hasAnyPayment =
+    hasStripe ||
+    hasCreem ||
+    hasWaffoPancake ||
+    hasEpay ||
+    hasVietQR ||
+    hasCryptomus
   const totalAmount = Number(plan.total_amount || 0)
   const price = Number(plan.price_amount || 0).toFixed(2)
   const quotaPerUnit =
@@ -231,6 +272,102 @@ export function SubscriptionPurchaseDialog(props: Props) {
     }
   }
 
+  const handlePayVietQR = async () => {
+    setPaying(true)
+    try {
+      const res = await paySubscriptionVietQR({ plan_id: plan.id })
+      if (res.success && res.data) {
+        setVietqr(res.data)
+      } else {
+        handleServerError(res, t('Payment request failed'))
+      }
+    } catch (error) {
+      handleServerError(error, t('Payment request failed'))
+    } finally {
+      setPaying(false)
+    }
+  }
+
+  const handlePayCryptomus = async () => {
+    setPaying(true)
+    try {
+      const res = await paySubscriptionCryptomus({ plan_id: plan.id })
+      if (res.success && res.data?.checkout_url) {
+        window.open(res.data.checkout_url, '_blank')
+        toast.success(t('Payment page opened'))
+        props.onOpenChange(false)
+      } else {
+        handleServerError(res, t('Payment request failed'))
+      }
+    } catch (error) {
+      handleServerError(error, t('Payment request failed'))
+    } finally {
+      setPaying(false)
+    }
+  }
+
+  if (vietqr) {
+    return (
+      <Dialog
+        open={props.open}
+        onOpenChange={props.onOpenChange}
+        title={
+          <>
+            <Crown className='h-5 w-5' />
+            {t('Transfer to complete the payment')}
+          </>
+        }
+        contentClassName='max-sm:w-[calc(100vw-1.5rem)] sm:max-w-md'
+        titleClassName='flex items-center gap-2'
+        contentHeight='auto'
+        bodyClassName='space-y-3'
+      >
+        <p className='text-muted-foreground text-sm'>
+          {t(
+            'Scan the QR code with your banking app, or transfer manually using the account details below.'
+          )}
+        </p>
+        <img
+          src={vietqr.qr_url}
+          alt={t('VietQR code')}
+          className='mx-auto w-full max-w-[260px] rounded-md border'
+        />
+        <div className='space-y-1.5 text-sm'>
+          <div className='flex justify-between gap-3'>
+            <span className='text-muted-foreground'>{t('Amount')}</span>
+            <span className='font-mono font-medium'>
+              {new Intl.NumberFormat(undefined, {
+                maximumFractionDigits: 0,
+              }).format(vietqr.amount_vnd)}{' '}
+              VND
+            </span>
+          </div>
+          <div className='flex justify-between gap-3'>
+            <span className='text-muted-foreground'>{t('Content')}</span>
+            <span className='font-mono font-medium'>{vietqr.memo}</span>
+          </div>
+          <div className='flex justify-between gap-3'>
+            <span className='text-muted-foreground'>{t('Bank')}</span>
+            <span className='font-mono'>
+              {vietqr.bank_code} · {vietqr.bank_account}
+            </span>
+          </div>
+          <div className='flex justify-between gap-3'>
+            <span className='text-muted-foreground'>{t('Account Name')}</span>
+            <span>{vietqr.account_name}</span>
+          </div>
+        </div>
+        <Alert>
+          <AlertDescription>
+            {t(
+              'Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.'
+            )}
+          </AlertDescription>
+        </Alert>
+      </Dialog>
+    )
+  }
+
   return (
     <Dialog
       open={props.open}
@@ -308,38 +445,30 @@ export function SubscriptionPurchaseDialog(props: Props) {
           </Alert>
         )}
 
-        <div className='flex flex-col gap-2 rounded-md border p-3'>
-          <div className='flex items-center justify-between gap-2 text-xs'>
-            <span className='text-muted-foreground'>{t('Required')}</span>
-            <span>{formatQuota(balanceCost)}</span>
-          </div>
-          <div className='flex items-center justify-between gap-2 text-xs'>
-            <span className='text-muted-foreground'>{t('Available')}</span>
-            <span>{formatQuota(userQuota)}</span>
-          </div>
-          {!allowBalancePay ? (
-            <Alert variant='destructive'>
-              <AlertDescription>
-                {t('This plan does not allow balance redemption')}
-              </AlertDescription>
-            </Alert>
-          ) : (
-            insufficientBalance && (
+        {allowBalancePay && (
+          <div className='flex flex-col gap-2 rounded-md border p-3'>
+            <div className='flex items-center justify-between gap-2 text-xs'>
+              <span className='text-muted-foreground'>{t('Required')}</span>
+              <span>{formatQuota(balanceCost)}</span>
+            </div>
+            <div className='flex items-center justify-between gap-2 text-xs'>
+              <span className='text-muted-foreground'>{t('Available')}</span>
+              <span>{formatQuota(userQuota)}</span>
+            </div>
+            {insufficientBalance && (
               <Alert variant='destructive'>
                 <AlertDescription>{t('Insufficient balance')}</AlertDescription>
               </Alert>
-            )
-          )}
-          <Button
-            variant='outline'
-            onClick={handlePayBalance}
-            disabled={
-              paying || limitReached || !allowBalancePay || insufficientBalance
-            }
-          >
-            {t('Pay with Balance')}
-          </Button>
-        </div>
+            )}
+            <Button
+              variant='outline'
+              onClick={handlePayBalance}
+              disabled={paying || limitReached || insufficientBalance}
+            >
+              {t('Pay with Balance')}
+            </Button>
+          </div>
+        )}
 
         {hasAnyPayment && (
           <div className='space-y-3'>
@@ -376,6 +505,28 @@ export function SubscriptionPurchaseDialog(props: Props) {
                     disabled={paying || limitReached}
                   >
                     Waffo Pancake
+                  </Button>
+                )}
+              </div>
+            )}
+            {(hasVietQR || hasCryptomus) && (
+              <div className='grid grid-cols-2 gap-2'>
+                {hasVietQR && (
+                  <Button
+                    variant='outline'
+                    onClick={handlePayVietQR}
+                    disabled={paying || limitReached}
+                  >
+                    {t('Bank transfer')}
+                  </Button>
+                )}
+                {hasCryptomus && (
+                  <Button
+                    variant='outline'
+                    onClick={handlePayCryptomus}
+                    disabled={paying || limitReached}
+                  >
+                    USDT
                   </Button>
                 )}
               </div>

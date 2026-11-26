@@ -162,6 +162,33 @@ export async function paySubscriptionBalance(
   return res.data
 }
 
+export interface SubscriptionVietQRPayment {
+  trade_no: string
+  amount_vnd: number
+  memo: string
+  qr_url: string
+  bank_code: string
+  bank_account: string
+  account_name: string
+  expires_at: number
+}
+
+export async function paySubscriptionVietQR(
+  data: SubscriptionPayRequest
+): Promise<ApiResponse<SubscriptionVietQRPayment>> {
+  const res = await api.post('/api/subscription/vietqr/pay', data)
+  return res.data
+}
+
+export async function paySubscriptionCryptomus(
+  data: SubscriptionPayRequest
+): Promise<
+  ApiResponse<{ trade_no: string; checkout_url: string; amount_usd: number }>
+> {
+  const res = await api.post('/api/subscription/cryptomus/pay', data)
+  return res.data
+}
+
 // Mints a Pancake OnetimeProduct (see controller for the OnetimeProduct vs
 // SubscriptionProduct rationale) using persisted creds + StoreID.
 export async function createWaffoPancakeSubscriptionProduct(data: {
