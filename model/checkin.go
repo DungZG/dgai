@@ -1,13 +1,69 @@
 package model
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"gorm.io/gorm"
 )
+
+// The reward is quoted in credits where ten credits equal one dollar. One and
+// two credit days dominate; four and five are a 0.01% tail each.
+var checkinCreditWeights = []struct {
+	credits     int
+	basisPoints int
+}{
+	{1, 6000},
+	{2, 3000},
+	{3, 998},
+	{4, 1},
+	{5, 1},
+}
+
+// Check-in days roll over at midnight Vietnam time regardless of the server clock.
+var checkinZone = time.FixedZone("ICT", 7*3600)
+
+func checkinDate(now time.Time) string {
+	return now.In(checkinZone).Format("2006-01-02")
+}
+
+// drawCheckinCredits picks today's reward. crypto/rand keeps the rare outcomes
+// unpredictable, so nobody can time the draw.
+func drawCheckinCredits() int {
+	n, err := rand.Int(rand.Reader, big.NewInt(10000))
+	if err != nil {
+		return 1
+	}
+	roll := int(n.Int64())
+	cumulative := 0
+	for _, weight := range checkinCreditWeights {
+		cumulative += weight.basisPoints
+		if roll < cumulative {
+			return weight.credits
+		}
+	}
+	return 1
+}
+
+// checkinQuotaForCredits converts a credit reward into wallet quota and keeps
+// it inside the range configured by the administrator.
+func checkinQuotaForCredits(credits int, minQuota int, maxQuota int) int {
+	perCredit := 0
+	if common.QuotaPerUnit > 0 {
+		perCredit = int(common.QuotaPerUnit) / 10
+	}
+	quota := credits * perCredit
+	if minQuota > 0 && quota < minQuota {
+		quota = minQuota
+	}
+	if maxQuota >= minQuota && maxQuota > 0 && quota > maxQuota {
+		quota = maxQuota
+	}
+	return quota
+}
 
 // Checkin 签到记录
 type Checkin struct {
@@ -40,7 +96,7 @@ func GetUserCheckinRecords(userId int, startDate, endDate string) ([]Checkin, er
 
 // HasCheckedInToday 检查用户今天是否已签到
 func HasCheckedInToday(userId int) (bool, error) {
-	today := time.Now().Format("2006-01-02")
+	today := checkinDate(time.Now())
 	var count int64
 	err := DB.Model(&Checkin{}).
 		Where("user_id = ? AND checkin_date = ?", userId, today).
@@ -66,13 +122,10 @@ func UserCheckin(userId int) (*Checkin, error) {
 		return nil, common.NewMessage("Already checked in today")
 	}
 
-	// 计算随机额度奖励
-	quotaAwarded := setting.MinQuota
-	if setting.MaxQuota > setting.MinQuota {
-		quotaAwarded = setting.MinQuota + rand.Intn(setting.MaxQuota-setting.MinQuota+1)
-	}
+	// 计算随机额度奖励：1-5 credit，4/5 credit 概率各 0.01%
+	quotaAwarded := checkinQuotaForCredits(drawCheckinCredits(), setting.MinQuota, setting.MaxQuota)
 
-	today := time.Now().Format("2006-01-02")
+	today := checkinDate(time.Now())
 	checkin := &Checkin{
 		UserId:       userId,
 		CheckinDate:  today,

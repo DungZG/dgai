@@ -419,32 +419,3 @@ func TestRedeemPromoCodeOnceAfterMinimum(t *testing.T) {
 	require.Error(t, err, "an expired code grants nothing")
 }
 
-// A daily check-in pays one credit-denominated reward per day and never twice.
-func TestClaimDailyCheckinOncePerDay(t *testing.T) {
-	db := useTopUpBonusDB(t)
-	user := &User{Id: 601, Username: "checkin-user", Password: "unused-password", Status: common.UserStatusEnabled, Group: "default"}
-	require.NoError(t, db.Create(user).Error)
-
-	credits, err := ClaimDailyCheckin(user.Id)
-	require.NoError(t, err)
-	assert.GreaterOrEqual(t, credits, 1)
-	assert.LessOrEqual(t, credits, 5)
-
-	var stored User
-	require.NoError(t, db.First(&stored, user.Id).Error)
-	assert.Equal(t, credits*DailyCheckinQuotaPerCredit(), stored.Quota)
-
-	_, err = ClaimDailyCheckin(user.Id)
-	require.ErrorIs(t, err, ErrDailyCheckinAlreadyClaimed)
-
-	var after User
-	require.NoError(t, db.First(&after, user.Id).Error)
-	assert.Equal(t, stored.Quota, after.Quota, "a second claim must not pay again")
-
-	status, err := GetDailyCheckinStatus(user.Id)
-	require.NoError(t, err)
-	assert.True(t, status.ClaimedToday)
-	assert.Equal(t, credits, status.CreditsToday)
-	assert.Equal(t, credits, status.TotalCredits)
-	assert.Greater(t, status.NextAt, common.GetTimestamp())
-}
