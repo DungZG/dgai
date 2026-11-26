@@ -1156,7 +1156,7 @@
     "Check resolved IPs against IP filters even when accessing by domain": "ドメインによるアクセスであっても、解決されたIPをIPフィルターと照合してチェックします",
     "Check status": "ステータスを確認",
     "Check the override matrix at row = user group, column = billing group. If that cell is set, use it. Otherwise use the billing group base ratio from the pricing table.": "上書きマトリクスの「行 = ユーザーグループ、列 = 課金グループ」のセルを確認します。設定されていればその値を、なければ料金表の課金グループの基本倍率を使います。",
-    "Check-in failed": "チェックインできませんでした",
+    "Check-in failed": "チェックインに失敗しました",
     "Check-in failed, please try again later": "チェックインに失敗しました。しばらくしてから再試行してください",
     "Check-in failed: quota update error": "チェックインに失敗しました：クォータの更新でエラーが発生しました",
     "Check-in feature is not enabled": "チェックイン機能は有効になっていません",
@@ -7594,6 +7594,16 @@
     "VietQR code": "VietQR コード",
     "Bank": "銀行",
     "Account Name": "口座名義",
-    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "振込内容は変更しないでください。銀行の確認後、プランは自動で有効になります。"
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "振込内容は変更しないでください。銀行の確認後、プランは自動で有効になります。",
+    "Daily check-in": "毎日チェックイン",
+    "10 credits = $1 · 1–5 credits per day": "10 クレジット = $1 · 1日 1〜5 クレジット",
+    "Check in": "チェックイン",
+    "You received {{credits}} credits": "{{credits}} クレジットを受け取りました",
+    "You received {{credits}} credits today": "本日 {{credits}} クレジットを受け取りました",
+    "Come back after 00:00 to check in again": "00:00 以降に再度チェックインできます",
+    "Check in today to receive 1–5 credits": "本日チェックインして 1〜5 クレジットを受け取る",
+    "Total credits: {{credits}}": "累計クレジット：{{credits}}",
+    "You have already checked in today": "本日はすでにチェックイン済みです",
+    "Daily check-in reward: {{credits}} credits": "毎日チェックイン報酬：{{credits}} クレジット"
   }
 }

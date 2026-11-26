@@ -1156,7 +1156,7 @@
     "Check resolved IPs against IP filters even when accessing by domain": "Проверять разрешенные IP-адреса по IP-фильтрам даже при доступе по домену",
     "Check status": "Проверить статус",
     "Check the override matrix at row = user group, column = billing group. If that cell is set, use it. Otherwise use the billing group base ratio from the pricing table.": "Проверьте матрицу переопределений: строка = группа пользователя, столбец = тарифная группа. Если ячейка задана — используется она, иначе базовый коэффициент тарифной группы из таблицы.",
-    "Check-in failed": "Регистрация не удалась.",
+    "Check-in failed": "Не удалось отметиться",
     "Check-in failed, please try again later": "Не удалось отметиться, попробуйте позже",
     "Check-in failed: quota update error": "Не удалось отметиться: ошибка обновления квоты",
     "Check-in feature is not enabled": "Функция отметок не включена",
@@ -1164,7 +1164,7 @@
     "Check-in Settings": "Настройки прибытия",
     "Check-in successful": "Отметка выполнена",
     "Check-in successful! Received": "Прибытие прошло успешно! Получено",
-    "Checked in": "Зарегистрирован",
+    "Checked in": "Отмечено",
     "Checking connection": "Проверка подключения",
     "Checking file integrity...": "Проверка целостности файла…",
     "Checking name...": "Проверяю имя...",
@@ -7594,6 +7594,16 @@
     "VietQR code": "Код VietQR",
     "Bank": "Банк",
     "Account Name": "Имя получателя",
-    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Не меняйте назначение платежа. План активируется автоматически после подтверждения банком."
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Не меняйте назначение платежа. План активируется автоматически после подтверждения банком.",
+    "Daily check-in": "Ежедневная отметка",
+    "10 credits = $1 · 1–5 credits per day": "10 кредитов = $1 · 1–5 кредитов в день",
+    "Check in": "Отметиться",
+    "You received {{credits}} credits": "Вы получили {{credits}} кредитов",
+    "You received {{credits}} credits today": "Сегодня вы получили {{credits}} кредитов",
+    "Come back after 00:00 to check in again": "Возвращайтесь после 00:00",
+    "Check in today to receive 1–5 credits": "Отметьтесь сегодня и получите 1–5 кредитов",
+    "Total credits: {{credits}}": "Всего кредитов: {{credits}}",
+    "You have already checked in today": "Сегодня вы уже отметились",
+    "Daily check-in reward: {{credits}} credits": "Награда за отметку: {{credits}} кредитов"
   }
 }

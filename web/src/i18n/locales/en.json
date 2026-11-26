@@ -7594,6 +7594,16 @@
     "VietQR code": "VietQR code",
     "Bank": "Bank",
     "Account Name": "Account Name",
-    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer."
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.",
+    "Daily check-in": "Daily check-in",
+    "10 credits = $1 · 1–5 credits per day": "10 credits = $1 · 1–5 credits per day",
+    "Check in": "Check in",
+    "You received {{credits}} credits": "You received {{credits}} credits",
+    "You received {{credits}} credits today": "You received {{credits}} credits today",
+    "Come back after 00:00 to check in again": "Come back after 00:00 to check in again",
+    "Check in today to receive 1–5 credits": "Check in today to receive 1–5 credits",
+    "Total credits: {{credits}}": "Total credits: {{credits}}",
+    "You have already checked in today": "You have already checked in today",
+    "Daily check-in reward: {{credits}} credits": "Daily check-in reward: {{credits}} credits"
   }
 }

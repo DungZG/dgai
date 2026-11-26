@@ -91,3 +91,39 @@ export async function getUptimeStatus() {
   )
   return res.data
 }
+
+// ----------------------------------------------------------------------------
+// Daily check-in
+// ----------------------------------------------------------------------------
+
+export interface DailyCheckinStatus {
+  claimed_today: boolean
+  credits_today: number
+  total_credits: number
+  next_at: number
+  quota_per_credit: number
+}
+
+export interface DailyCheckinResult {
+  credits: number
+  quota: number
+  quota_per_credit: number
+}
+
+export async function getDailyCheckin(): Promise<{
+  success: boolean
+  message?: string
+  data?: DailyCheckinStatus
+}> {
+  const res = await api.get('/api/user/checkin')
+  return res.data
+}
+
+export async function claimDailyCheckin(): Promise<{
+  success: boolean
+  message?: string
+  data?: DailyCheckinResult
+}> {
+  const res = await api.post('/api/user/checkin')
+  return res.data
+}

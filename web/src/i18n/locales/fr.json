@@ -1156,7 +1156,7 @@
     "Check resolved IPs against IP filters even when accessing by domain": "Vérifier les adresses IP résolues par rapport aux filtres IP même lors de l'accès par domaine",
     "Check status": "Vérifier le statut",
     "Check the override matrix at row = user group, column = billing group. If that cell is set, use it. Otherwise use the billing group base ratio from the pricing table.": "Consultez la matrice de remplacement à la ligne = groupe d’utilisateurs, colonne = groupe de facturation. Si la cellule est définie, utilisez-la ; sinon utilisez le taux de base du groupe de facturation du tableau tarifaire.",
-    "Check-in failed": "Échec de la connexion",
+    "Check-in failed": "Échec du pointage",
     "Check-in failed, please try again later": "Échec de l'enregistrement, veuillez réessayer plus tard",
     "Check-in failed: quota update error": "Échec de l'enregistrement : erreur de mise à jour du quota",
     "Check-in feature is not enabled": "La fonction d'enregistrement n'est pas activée",
@@ -1164,7 +1164,7 @@
     "Check-in Settings": "Paramètres de connexion",
     "Check-in successful": "Enregistrement réussi",
     "Check-in successful! Received": "Connexion réussie ! Reçu",
-    "Checked in": "Vérifié",
+    "Checked in": "Pointé",
     "Checking connection": "Vérification de la connexion",
     "Checking file integrity...": "Vérification du fichier…",
     "Checking name...": "Vérification du nom...",
@@ -7594,6 +7594,16 @@
     "VietQR code": "Code VietQR",
     "Bank": "Banque",
     "Account Name": "Nom du compte",
-    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Conservez le libellé du virement. Le forfait s’active dès confirmation par la banque."
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Conservez le libellé du virement. Le forfait s’active dès confirmation par la banque.",
+    "Daily check-in": "Pointage quotidien",
+    "10 credits = $1 · 1–5 credits per day": "10 crédits = 1 $ · 1 à 5 crédits par jour",
+    "Check in": "Pointer",
+    "You received {{credits}} credits": "Vous avez reçu {{credits}} crédits",
+    "You received {{credits}} credits today": "Aujourd'hui, vous avez reçu {{credits}} crédits",
+    "Come back after 00:00 to check in again": "Revenez après 00:00 pour pointer à nouveau",
+    "Check in today to receive 1–5 credits": "Pointez aujourd'hui pour recevoir 1 à 5 crédits",
+    "Total credits: {{credits}}": "Crédits totaux : {{credits}}",
+    "You have already checked in today": "Vous avez déjà pointé aujourd'hui",
+    "Daily check-in reward: {{credits}} credits": "Récompense de pointage : {{credits}} crédits"
   }
 }

@@ -7594,6 +7594,16 @@
     "VietQR code": "VietQR 二維碼",
     "Bank": "銀行",
     "Account Name": "帳戶名稱",
-    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "請勿修改轉帳備註，銀行確認後方案將自動開通。"
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "請勿修改轉帳備註，銀行確認後方案將自動開通。",
+    "Daily check-in": "每日簽到",
+    "10 credits = $1 · 1–5 credits per day": "10 積分 = $1 · 每天 1–5 積分",
+    "Check in": "簽到",
+    "You received {{credits}} credits": "您獲得 {{credits}} 積分",
+    "You received {{credits}} credits today": "今天您獲得 {{credits}} 積分",
+    "Come back after 00:00 to check in again": "00:00 後可再次簽到",
+    "Check in today to receive 1–5 credits": "今天簽到可獲 1–5 積分",
+    "Total credits: {{credits}}": "累計積分：{{credits}}",
+    "You have already checked in today": "今天已經簽到過了",
+    "Daily check-in reward: {{credits}} credits": "每日簽到獎勵：{{credits}} 積分"
   }
 }

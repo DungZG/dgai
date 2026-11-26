@@ -1164,7 +1164,7 @@
     "Check-in Settings": "Cài đặt điểm danh",
     "Check-in successful": "Điểm danh thành công",
     "Check-in successful! Received": "Điểm danh thành công! Đã nhận",
-    "Checked in": "Đã check-in",
+    "Checked in": "Đã điểm danh",
     "Checking connection": "Đang kiểm tra kết nối",
     "Checking file integrity...": "Đang kiểm tra tính toàn vẹn của tệp…",
     "Checking name...": "Đang kiểm tra tên...",
@@ -7594,6 +7594,16 @@
     "VietQR code": "Mã VietQR",
     "Bank": "Ngân hàng",
     "Account Name": "Chủ tài khoản",
-    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Giữ nguyên nội dung chuyển khoản. Gói sẽ tự kích hoạt ngay khi ngân hàng xác nhận."
+    "Keep the transfer content unchanged. The plan activates automatically once the bank confirms the transfer.": "Giữ nguyên nội dung chuyển khoản. Gói sẽ tự kích hoạt ngay khi ngân hàng xác nhận.",
+    "Daily check-in": "Điểm danh hằng ngày",
+    "10 credits = $1 · 1–5 credits per day": "10 credit = $1 · mỗi ngày 1–5 credit",
+    "Check in": "Điểm danh",
+    "You received {{credits}} credits": "Bạn nhận được {{credits}} credit",
+    "You received {{credits}} credits today": "Hôm nay bạn nhận {{credits}} credit",
+    "Come back after 00:00 to check in again": "Quay lại sau 00:00 để điểm danh tiếp",
+    "Check in today to receive 1–5 credits": "Điểm danh hôm nay để nhận 1–5 credit",
+    "Total credits: {{credits}}": "Tổng credit đã nhận: {{credits}}",
+    "You have already checked in today": "Hôm nay bạn đã điểm danh rồi",
+    "Daily check-in reward: {{credits}} credits": "Thưởng điểm danh: {{credits}} credit"
   }
 }
