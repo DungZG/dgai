@@ -97,7 +97,7 @@ func RequestCryptomusPay(c *gin.Context) {
 	}
 	origin := cryptoOrigin()
 	client := cryptoClient()
-	info, err := client.Create(c.Request.Context(), cryptomus.CreateRequest{Amount: usd, Currency: "USD", OrderID: tradeNo, Network: payment.Network, ToCurrency: "USDT", Currencies: []cryptomus.Currency{{Currency: "USDT", Network: payment.Network}}, URLCallback: origin + "/api/cryptomus/webhook", URLReturn: origin + "/wallet", URLSuccess: origin + "/wallet", Lifetime: 3600, IsPaymentMultiple: true})
+	info, err := client.Create(c.Request.Context(), cryptomus.CreateRequest{Amount: usd, Currency: "USD", OrderID: tradeNo, Network: payment.Network, ToCurrency: "USDT", Currencies: []cryptomus.Currency{{Currency: "USDT", Network: payment.Network}}, URLCallback: origin + "/api/cryptomus/webhook", URLReturn: origin + "/wallet", URLSuccess: origin + "/wallet", Lifetime: 3600, IsPaymentMultiple: true, AccuracyPaymentPercent: cryptomus.SettlementTolerancePercent})
 	if err != nil {
 		info, err = client.Info(c.Request.Context(), tradeNo)
 	}

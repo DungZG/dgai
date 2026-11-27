@@ -75,17 +75,18 @@ func RequestSubscriptionCryptomusPay(c *gin.Context) {
 	}
 	origin := cryptoOrigin()
 	info, err := cryptoClient().Create(c.Request.Context(), cryptomus.CreateRequest{
-		Amount:            decimal.NewFromFloat(plan.PriceAmount).StringFixed(2),
-		Currency:          "USD",
-		OrderID:           tradeNo,
-		Network:           setting.CryptoNetwork,
-		ToCurrency:        "USDT",
-		Currencies:        []cryptomus.Currency{{Currency: "USDT", Network: setting.CryptoNetwork}},
-		URLCallback:       origin + "/api/cryptomus/webhook",
-		URLReturn:         origin + "/wallet",
-		URLSuccess:        origin + "/wallet",
-		Lifetime:          3600,
-		IsPaymentMultiple: true,
+		Amount:                 decimal.NewFromFloat(plan.PriceAmount).StringFixed(2),
+		Currency:               "USD",
+		OrderID:                tradeNo,
+		Network:                setting.CryptoNetwork,
+		ToCurrency:             "USDT",
+		Currencies:             []cryptomus.Currency{{Currency: "USDT", Network: setting.CryptoNetwork}},
+		URLCallback:            origin + "/api/cryptomus/webhook",
+		URLReturn:              origin + "/wallet",
+		URLSuccess:             origin + "/wallet",
+		Lifetime:               3600,
+		IsPaymentMultiple:      true,
+		AccuracyPaymentPercent: cryptomus.SettlementTolerancePercent,
 	})
 	if err != nil {
 		_ = model.ExpireSubscriptionOrder(tradeNo, model.PaymentProviderCryptomus)
@@ -129,19 +130,17 @@ func applyCryptoSubscriptionInfo(info cryptomus.Payment) error {
 	return model.CompleteSubscriptionOrder(order.TradeNo, common.GetJsonString(info), model.PaymentProviderCryptomus, model.PaymentMethodCryptomus)
 }
 
-// cryptoPaymentCovers reports whether the settled amount reaches the plan
-// price. The explicit USD figure wins when the provider sends it.
+// cryptoPaymentCovers reports whether the settled amount pays the plan. The
+// explicit USD figure wins when the provider sends it.
 func cryptoPaymentCovers(info cryptomus.Payment, priceUSD float64) bool {
-	expected := decimal.NewFromFloat(priceUSD)
+	expected := decimal.NewFromFloat(priceUSD).StringFixed(2)
 	if strings.TrimSpace(info.PaymentAmountUSD) != "" {
-		paid, err := decimal.NewFromString(info.PaymentAmountUSD)
-		return err == nil && paid.GreaterThanOrEqual(expected)
+		return cryptomus.CoversAmount(info.PaymentAmountUSD, expected)
 	}
 	if strings.TrimSpace(info.PaymentAmount) == "" || info.Currency != "USD" {
 		return false
 	}
-	paid, err := decimal.NewFromString(info.PaymentAmount)
-	return err == nil && paid.GreaterThanOrEqual(expected)
+	return cryptomus.CoversAmount(info.PaymentAmount, expected)
 }
 
 // settleCryptomusSubscriptionOrders polls plan invoices that are still pending,

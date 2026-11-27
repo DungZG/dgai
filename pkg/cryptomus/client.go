@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/shopspring/decimal"
 )
 
 const MaxResponseBytes = 1 << 20
@@ -254,4 +255,25 @@ func orderedValue(decoder *json.Decoder) ([]byte, error) {
 		return b.Bytes(), nil
 	}
 	return nil, ErrProtocol
+}
+
+// SettlementTolerancePercent is the shortfall a settled invoice may still show
+// and count as paid. The provider converts the invoice amount through its own
+// rate, so a $100 invoice can settle at $99.99; without this allowance a paid
+// order stays pending forever.
+const SettlementTolerancePercent = 1
+
+// CoversAmount reports whether a settled amount pays an invoice of expected,
+// allowing the provider's conversion shortfall.
+func CoversAmount(paid string, expected string) bool {
+	got, err := decimal.NewFromString(strings.TrimSpace(paid))
+	if err != nil {
+		return false
+	}
+	want, err := decimal.NewFromString(strings.TrimSpace(expected))
+	if err != nil || !want.IsPositive() {
+		return false
+	}
+	tolerance := want.Mul(decimal.NewFromInt(SettlementTolerancePercent)).Div(decimal.NewFromInt(100))
+	return got.GreaterThanOrEqual(want.Sub(tolerance))
 }

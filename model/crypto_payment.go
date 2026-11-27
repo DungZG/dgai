@@ -231,10 +231,13 @@ func ApplyCryptomusPayment(info cryptomus.Payment, callerIP string) error {
 		// payment_amount is the settled value in the invoice currency, so the
 		// invoice is covered only when it reaches the quoted USD amount; the
 		// explicit USD field wins when the provider reports it.
+		// The provider converts the invoice through its own rate, so the settled
+		// figure can sit a cent under the quote and still be the full payment.
 		paid := status == "paid" || status == "paid_over"
-		covered := paidErr == nil && paidAmount.GreaterThanOrEqual(amount)
+		expectedText := amount.String()
+		covered := paidErr == nil && cryptomus.CoversAmount(paidAmount.String(), expectedText)
 		if paidUSDErr == nil && paidUSD.IsPositive() {
-			covered = paidUSD.GreaterThanOrEqual(amount)
+			covered = cryptomus.CoversAmount(paidUSD.String(), expectedText)
 		}
 		if paid && (!info.IsFinal || payerErr != nil || !payerAmount.IsPositive() || !covered) {
 			invalid = true
