@@ -30,3 +30,10 @@ func TestResolvePublicGroupReachesHiddenGroup(t *testing.T) {
 	assert.Equal(t, "default", ResolvePublicGroup("default", "default"))
 	assert.Equal(t, "", ResolvePublicGroup("", "plus"))
 }
+
+// A model's serving-group list must not name an internal group.
+func TestPublicGroupListRenamesAndDedupes(t *testing.T) {
+	assert.Equal(t, []string{"default"}, PublicGroupList([]string{"default", "plus"}))
+	assert.Equal(t, []string{"default", "vip"}, PublicGroupList([]string{"plus", "vip"}))
+	assert.Empty(t, PublicGroupList(nil))
+}

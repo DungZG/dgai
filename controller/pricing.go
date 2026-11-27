@@ -69,6 +69,11 @@ func GetPricing(c *gin.Context) {
 	// public group and its public ratio so the markup is not readable in JSON.
 	usableGroup = common.PublicGroupMap(usableGroup)
 	groupRatio = common.PublicGroupRatioMap(groupRatio)
+	// Each model carries the groups it serves; the internal group name must not
+	// leak through that list either.
+	for i := range pricing {
+		pricing[i].EnableGroup = common.PublicGroupList(pricing[i].EnableGroup)
+	}
 
 	c.JSON(200, gin.H{
 		"success":            true,

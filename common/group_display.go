@@ -65,3 +65,22 @@ func ResolvePublicGroup(name string, userGroup string) string {
 	}
 	return userGroup
 }
+
+// PublicGroupList rewrites a model's serving groups for the catalogue, keeping
+// the order and removing duplicates created by the rename.
+func PublicGroupList(groups []string) []string {
+	if len(groups) == 0 {
+		return groups
+	}
+	result := make([]string, 0, len(groups))
+	seen := make(map[string]struct{}, len(groups))
+	for _, name := range groups {
+		visible := PublicUserGroup(name)
+		if _, duplicate := seen[visible]; duplicate {
+			continue
+		}
+		seen[visible] = struct{}{}
+		result = append(result, visible)
+	}
+	return result
+}
