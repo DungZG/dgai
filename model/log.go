@@ -123,8 +123,9 @@ func formatUserLogs(logs []*Log, startIdx int) {
 	assignDisplayLogIds(logs, startIdx)
 }
 
-// formatUserLogOther strips administrator metadata and replaces the hidden
-// group name and multiplier with the public figures.
+// formatUserLogOther strips administrator metadata and, when the row belongs to
+// an internal group, replaces the group name and multiplier with the public
+// figures. A public group keeps its own name and ratio.
 func formatUserLogOther(value string) string {
 	stripped := formatLogOtherJSON(value, logOtherVisibilityUser)
 	if stripped == "" || stripped == "{}" {
@@ -134,31 +135,21 @@ func formatUserLogOther(value string) string {
 	if err := common.UnmarshalJsonStr(stripped, &values); err != nil {
 		return stripped
 	}
-	changed := false
-	for _, key := range []string{"group", "group_ratio", "user_group_ratio"} {
-		raw, exists := values[key]
-		if !exists {
-			continue
-		}
+	hidden := false
+	if raw, exists := values["group"]; exists {
 		var text string
-		if err := common.Unmarshal(raw, &text); err == nil {
-			if hidden := common.IsHiddenUserGroup(text); hidden {
-				values[key] = json.RawMessage(`"default"`)
-				changed = true
-				continue
-			}
-		}
-		if key == "group" {
-			continue
-		}
-		var ratio float64
-		if err := common.Unmarshal(raw, &ratio); err == nil && ratio != 1 {
-			values[key] = json.RawMessage(`1`)
-			changed = true
+		if err := common.Unmarshal(raw, &text); err == nil && common.IsHiddenUserGroup(text) {
+			hidden = true
+			values["group"] = json.RawMessage(`"default"`)
 		}
 	}
-	if !changed {
+	if !hidden {
 		return stripped
+	}
+	for _, key := range []string{"group_ratio", "user_group_ratio"} {
+		if _, exists := values[key]; exists {
+			values[key] = json.RawMessage(`1`)
+		}
 	}
 	encoded, err := common.Marshal(values)
 	if err != nil {
