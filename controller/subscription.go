@@ -42,6 +42,10 @@ func GetSubscriptionPlans(c *gin.Context) {
 	result := make([]SubscriptionPlanDTO, 0, len(plans))
 	for _, p := range plans {
 		p.NormalizeDefaults()
+		// The plan's target group is an internal routing detail; the catalogue
+		// shows the public group so the private multiplier stays unknown.
+		p.UpgradeGroup = common.PublicUserGroup(p.UpgradeGroup)
+		p.DowngradeGroup = common.PublicUserGroup(p.DowngradeGroup)
 		result = append(result, SubscriptionPlanDTO{
 			Plan: p,
 		})
@@ -66,11 +70,27 @@ func GetSubscriptionSelf(c *gin.Context) {
 		activeSubscriptions = []model.SubscriptionSummary{}
 	}
 
+	publicSubscriptions(activeSubscriptions)
+	publicSubscriptions(allSubscriptions)
 	common.ApiSuccess(c, gin.H{
 		"billing_preference": pref,
 		"subscriptions":      activeSubscriptions, // all active subscriptions
 		"all_subscriptions":  allSubscriptions,    // all subscriptions including expired
 	})
+}
+
+// publicSubscriptions renames the internal group snapshots a subscription
+// carries. The stored rows are untouched: billing still uses the real group.
+func publicSubscriptions(subs []model.SubscriptionSummary) {
+	for i := range subs {
+		sub := subs[i].Subscription
+		if sub == nil {
+			continue
+		}
+		sub.UpgradeGroup = common.PublicUserGroup(sub.UpgradeGroup)
+		sub.PrevUserGroup = common.PublicUserGroup(sub.PrevUserGroup)
+		sub.DowngradeGroup = common.PublicUserGroup(sub.DowngradeGroup)
+	}
 }
 
 func UpdateSubscriptionPreference(c *gin.Context) {

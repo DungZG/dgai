@@ -37,3 +37,9 @@ func TestPublicGroupListRenamesAndDedupes(t *testing.T) {
 	assert.Equal(t, []string{"default", "vip"}, PublicGroupList([]string{"plus", "vip"}))
 	assert.Empty(t, PublicGroupList(nil))
 }
+
+// Renaming is idempotent and leaves an empty value empty, so a plan with no
+// target group does not gain one.
+func TestPublicUserGroupKeepsEmpty(t *testing.T) {
+	assert.Equal(t, "", PublicUserGroup(""))
+}
