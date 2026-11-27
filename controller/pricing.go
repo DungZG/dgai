@@ -56,6 +56,8 @@ func GetPricing(c *gin.Context) {
 	}
 
 	usableGroup = service.GetUserUsableGroups(group)
+	// Filter on the real groups so an internal group still sees its models;
+	// only the names and ratios returned are made public.
 	pricing = filterPricingByUsableGroups(pricing, usableGroup)
 	// check groupRatio contains usableGroup
 	for group := range ratio_setting.GetGroupRatioCopy() {
@@ -63,6 +65,10 @@ func GetPricing(c *gin.Context) {
 			delete(groupRatio, group)
 		}
 	}
+	// An internal group applies a private multiplier; the catalogue reports the
+	// public group and its public ratio so the markup is not readable in JSON.
+	usableGroup = common.PublicGroupMap(usableGroup)
+	groupRatio = common.PublicGroupRatioMap(groupRatio)
 
 	c.JSON(200, gin.H{
 		"success":            true,

@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -114,9 +115,56 @@ func assignDisplayLogIds(logs []*Log, startIdx int) {
 func formatUserLogs(logs []*Log, startIdx int) {
 	for i := range logs {
 		logs[i].ChannelName = ""
-		logs[i].Other = formatLogOtherJSON(logs[i].Other, logOtherVisibilityUser)
+		// The internal group name and its multiplier are routing details; a
+		// customer sees the row as the public group.
+		logs[i].Group = common.PublicUserGroup(logs[i].Group)
+		logs[i].Other = formatUserLogOther(logs[i].Other)
 	}
 	assignDisplayLogIds(logs, startIdx)
+}
+
+// formatUserLogOther strips administrator metadata and replaces the hidden
+// group name and multiplier with the public figures.
+func formatUserLogOther(value string) string {
+	stripped := formatLogOtherJSON(value, logOtherVisibilityUser)
+	if stripped == "" || stripped == "{}" {
+		return stripped
+	}
+	var values map[string]json.RawMessage
+	if err := common.UnmarshalJsonStr(stripped, &values); err != nil {
+		return stripped
+	}
+	changed := false
+	for _, key := range []string{"group", "group_ratio", "user_group_ratio"} {
+		raw, exists := values[key]
+		if !exists {
+			continue
+		}
+		var text string
+		if err := common.Unmarshal(raw, &text); err == nil {
+			if hidden := common.IsHiddenUserGroup(text); hidden {
+				values[key] = json.RawMessage(`"default"`)
+				changed = true
+				continue
+			}
+		}
+		if key == "group" {
+			continue
+		}
+		var ratio float64
+		if err := common.Unmarshal(raw, &ratio); err == nil && ratio != 1 {
+			values[key] = json.RawMessage(`1`)
+			changed = true
+		}
+	}
+	if !changed {
+		return stripped
+	}
+	encoded, err := common.Marshal(values)
+	if err != nil {
+		return stripped
+	}
+	return string(encoded)
 }
 
 // FormatAdminLogs removes root-only diagnostics while retaining operational

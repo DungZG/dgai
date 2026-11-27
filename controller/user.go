@@ -508,7 +508,7 @@ func buildSelfUserData(user *model.User) map[string]any {
 		"oidc_id":           user.OidcId,
 		"wechat_id":         user.WeChatId,
 		"telegram_id":       user.TelegramId,
-		"group":             user.Group,
+		"group":             common.PublicUserGroup(user.Group),
 		"quota":             user.Quota,
 		"used_quota":        user.UsedQuota,
 		"request_count":     user.RequestCount,
@@ -626,7 +626,7 @@ func GetUserModels(c *gin.Context) {
 		return
 	}
 	groups := service.GetUserUsableGroups(user.Group)
-	group := c.Query("group")
+	group := common.ResolvePublicGroup(c.Query("group"), user.Group)
 	var groupsToQuery []string
 	switch {
 	case group == "":
