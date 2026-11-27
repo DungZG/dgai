@@ -79,11 +79,8 @@ func RedeemPromoCode(code string, userId int) (int, error) {
 			return err
 		}
 		if rule.MinTopUpUSD > 0 {
-			var paid float64
-			if err := tx.Model(&TopUp{}).
-				Select("coalesce(sum(money), 0)").
-				Where("user_id = ? AND status = ?", userId, common.TopUpStatusSuccess).
-				Scan(&paid).Error; err != nil {
+			paid, err := paidTopUpTotalTx(tx, userId)
+			if err != nil {
 				return err
 			}
 			if paid < rule.MinTopUpUSD {

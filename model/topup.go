@@ -167,6 +167,19 @@ func creditTopUpWithPromotion(tx *gorm.DB, userId int, baseQuota int, updates ma
 	return bonus, nil
 }
 
+// paidTopUpTotalTx sums the money the customer actually paid INTO THE WALLET.
+// A plan purchase also writes a top_ups row for the ledger, but it credits no
+// wallet quota (amount stays 0), so counting it would let a customer reach a
+// top-up threshold without ever topping up.
+func paidTopUpTotalTx(tx *gorm.DB, userId int) (float64, error) {
+	var paid float64
+	err := tx.Model(&TopUp{}).
+		Select("coalesce(sum(money), 0)").
+		Where("user_id = ? AND status = ? AND amount > 0", userId, common.TopUpStatusSuccess).
+		Scan(&paid).Error
+	return paid, err
+}
+
 // claimDeferredSignupBonus grants the signup reward once, when the customer's
 // paid total first reaches the configured minimum. The caller marks the order
 // successful before crediting, so the total already includes this payment.
@@ -182,11 +195,7 @@ func claimDeferredSignupBonus(tx *gorm.DB, userId int) (int, error) {
 	if err := lockForUpdate(tx).Select("id").First(&user, userId).Error; err != nil {
 		return 0, err
 	}
-	var paid float64
-	err := tx.Model(&TopUp{}).
-		Select("coalesce(sum(money), 0)").
-		Where("user_id = ? AND status = ?", userId, common.TopUpStatusSuccess).
-		Scan(&paid).Error
+	paid, err := paidTopUpTotalTx(tx, userId)
 	if err != nil {
 		return 0, err
 	}

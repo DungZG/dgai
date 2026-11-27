@@ -419,3 +419,30 @@ func TestRedeemPromoCodeOnceAfterMinimum(t *testing.T) {
 	require.Error(t, err, "an expired code grants nothing")
 }
 
+// A plan purchase writes a top_ups ledger row with no wallet credit; counting
+// it as a top-up would let the customer claim a top-up reward without paying in.
+func TestPaidTopUpTotalIgnoresPlanPurchase(t *testing.T) {
+	db := useTopUpBonusDB(t)
+	user := &User{Id: 701, Username: "plan-buyer", Password: "unused-password", Status: common.UserStatusEnabled, Group: "default"}
+	require.NoError(t, db.Create(user).Error)
+
+	require.NoError(t, db.Create(&TopUp{
+		UserId: user.Id, Amount: 0, Money: 100, TradeNo: "SCRY-PLAN-701",
+		PaymentMethod: PaymentMethodCryptomus, PaymentProvider: PaymentProviderCryptomus,
+		Status: common.TopUpStatusSuccess, CreateTime: 1, CompleteTime: 1,
+	}).Error)
+
+	total, err := paidTopUpTotalTx(db, user.Id)
+	require.NoError(t, err)
+	assert.Zero(t, total, "a plan purchase credits no wallet quota")
+
+	require.NoError(t, db.Create(&TopUp{
+		UserId: user.Id, Amount: 5000000, Money: 10, TradeNo: "VQR-TOPUP-701",
+		PaymentMethod: PaymentMethodVietQR, PaymentProvider: PaymentProviderVietQR,
+		Status: common.TopUpStatusSuccess, CreateTime: 2, CompleteTime: 2,
+	}).Error)
+
+	total, err = paidTopUpTotalTx(db, user.Id)
+	require.NoError(t, err)
+	assert.Equal(t, 10.0, total)
+}
